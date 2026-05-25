@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>peachless.</title>
+  <meta name="description" content="Every pixel tells a story. Let the world know yours.">
+
+  <meta property="og:title" content="peachless. — Every pixel tells a story.">
+  <meta property="og:description" content="Every pixel tells a story. Let the world know yours.">
+  <meta property="og:image" content="https://peachless.design/assets/images/og-image.jpg">
+  <meta property="og:url" content="https://peachless.design/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="peachless.">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="peachless. — Every pixel tells a story.">
+  <meta name="twitter:image" content="https://peachless.design/assets/images/og-image.jpg">
+
+  <link rel="canonical" href="https://peachless.design/">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&family=Cormorant+Garamond:ital,wght@1,400&family=Inter:wght@400;500;600;700&display=swap">
+
+  <link rel="preconnect" href="https://assets.peachless.design" crossorigin>
+  <link rel="dns-prefetch" href="https://assets.peachless.design">
+
+  <!-- Global Component CSS loader (excludes /core/header.css — overridden by shell.css) -->
+  <script>
+    (function () {
+      var BASE = 'https://assets.peachless.design';
+      var CSS_FILES = [
+        '/components/contact-form/contact-form.css',
+        '/components/fortune-peach/fortune-peach.css',
+        '/components/guideline-page/guideline-page.css',
+        '/components/logo-showcase/logo-showcase.css',
+        '/components/portfolio-photo/portfolio-photo.css',
+        '/components/portfolio-uiux/portfolio-uiux.css',
+        '/components/project-cards/project-cards.css',
+        '/components/tagline/tagline.css',
+        '/components/twin-gallery/twin-gallery.css',
+        '/core/contact-form.css',
+        '/core/elegant-footer.css',
+        '/core/mobile-menu.css',
+        '/core/portfolio.css',
+        '/core/project-cards.css',
+        '/core/prototype-showcase.css'
+      ];
+      CSS_FILES.forEach(function (p) {
+        var href = BASE + p;
+        if (document.querySelector('link[href="' + href + '"]')) return;
+        var l = document.createElement('link');
+        l.rel = 'stylesheet';
+        l.href = href;
+        document.head.appendChild(l);
+      });
+    })();
+  </script>
+
+  <link rel="stylesheet" href="/css/shell.css">
+</head>
+<body data-page="home">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header" role="banner">
+    <div class="site-header__inner">
+      <nav class="site-nav site-nav--left" aria-label="Primary left">
+        <ul>
+          <li class="site-nav__folder">
+            <a href="/projects" aria-haspopup="true" aria-expanded="false">Projects</a>
+            <ul class="site-nav__dropdown">
+              <li><a href="/projects/guidelines">Guidelines</a></li>
+              <li><a href="/projects/logo-design">Logo Design</a></li>
+              <li><a href="/uiux">UI/UX</a></li>
+              <li><a href="/photography">Photography</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+
+      <a href="/" class="site-header__logo site-title header-title" aria-label="peachless. home">peachless.</a>
+
+      <nav class="site-nav site-nav--right" aria-label="Primary right">
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      <button class="header-menu-toggle" type="button" aria-expanded="false" aria-controls="mmx-overlay" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="home-hero">
+      <img src="/assets/images/hero.png" alt="" loading="eager">
+    </section>
+
+    <div class="home-intro">
+      <h1>Design isn't just something you see,<br>it's something you feel.</h1>
+      <p><em>peachless.</em> — my creative universe, showcasing work shaped by curiosity, clarity and emotion. Here, every color, shape and pixel is crafted with intention.</p>
+      <a href="/about" class="home-cta">Learn more</a>
+    </div>
+
+    <!-- Tagline component -->
+    <div data-component="tagline" hidden
+         data-line1="Every pixel tells a story."
+         data-line2=" Let the world know yours."></div>
+
+    <!-- Twin Gallery — inlined (with corrected image paths and link) -->
+    <div class="twin-gallery">
+      <a href="/projects/logo-design" class="panel left">
+        <img src="/assets/images/panel-graphic-design.png" alt="Graphic Design">
+      </a>
+      <a href="/uiux" class="panel right">
+        <img src="/assets/images/panel-uiux.png" alt="UI/UX">
+      </a>
+    </div>
+
+    <div class="guidelines-wrapper">
+      <a href="/projects/guidelines" class="guidelines-panel">
+        <img src="/assets/images/guidelines-panel.png" alt="Guidelines">
+      </a>
+    </div>
+
+    <!-- Easter egg -->
+    <div data-component="fortune-peach"></div>
+  </main>
+
+  <footer id="elegant-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="brand-name">peachless.</div>
+        <p class="brand-tagline">Every pixel tells a story. Let the world know yours.</p>
+      </div>
+
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <ul>
+          <li><a href="/uiux">UI/UX</a></li>
+          <li><a href="/photography">Photography</a></li>
+          <li><a href="/projects/logo-design">Logo Design</a></li>
+          <li><a href="/projects/guidelines">Guidelines</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="footer-social"></div>
+      <div class="footer-line"></div>
+      <div class="footer-legal">
+        <p>&copy; 2025 peachless. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Global Component JS loader (sequential utilities + loader, then parallel rest) -->
+  <script>
+    (function () {
+      var BASE = 'https://assets.peachless.design';
+      var PRIORITY = ['/core/utilities.js', '/core/component-loader.js'];
+      var PARALLEL = [
+        '/core/elegant-footer.js',
+        '/core/mobile-menu.js',
+        '/core/project-card.js',
+        '/core/prototype-showcase.js',
+        '/core/tagline.js',
+        '/components/contact-form/contact-form.js',
+        '/components/fortune-peach/fortune-peach.js',
+        '/components/guideline-page/guideline-page.js',
+        '/components/logo-showcase/logo-showcase.js',
+        '/components/portfolio-photo/portfolio-photo.js',
+        '/components/portfolio-uiux/portfolio.js',
+        '/components/project-cards/project-cards.js',
+        '/components/tagline/tagline.js',
+        '/components/twin-gallery/twin-gallery.js'
+      ];
+      function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+          if (document.querySelector('script[src="' + src + '"]')) return resolve();
+          var s = document.createElement('script');
+          s.src = src;
+          s.async = false;
+          s.onload = resolve;
+          s.onerror = reject;
+          document.body.appendChild(s);
+        });
+      }
+      (async function () {
+        for (var i = 0; i < PRIORITY.length; i++) {
+          await loadScript(BASE + PRIORITY[i]);
+        }
+        await Promise.all(PARALLEL.map(function (p) { return loadScript(BASE + p); }));
+      })();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "peachless-site",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "serve": "npx --yes serve@14 . -l 8080",
+    "verify": "node scripts/verify-pages.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}
