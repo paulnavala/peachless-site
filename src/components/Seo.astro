@@ -1,0 +1,32 @@
+---
+interface Props {
+  title?: string; // page name without suffix; empty = home
+  description: string;
+}
+const { title = '', description } = Astro.props;
+const fullTitle = title ? `${title} — peachless.` : 'peachless.';
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL('/og/peachless.jpg', Astro.site);
+---
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<meta property="og:site_name" content="peachless." />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content="website" />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1500" />
+<meta property="og:image:height" content="750" />
+<meta name="twitter:card" content="summary_large_image" />
+<script
+  type="application/ld+json"
+  set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'peachless.',
+    url: Astro.site?.toString(),
+    description,
+  })}
+/>
