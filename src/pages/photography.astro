@@ -1,0 +1,38 @@
+---
+import { getCollection } from 'astro:content';
+import { getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import PhotographyGallery from '../components/islands/PhotographyGallery.vue';
+import '../styles/components/portfolio-photo.css';
+import '../styles/components/close-button-fix.css';
+
+const entries = (await getCollection('photos')).sort((a, b) => a.data.order - b.data.order);
+
+const items = await Promise.all(
+  entries.map(async (e) => {
+    const thumb = await getImage({
+      src: e.data.after,
+      widths: [640, 1200, 1920],
+      sizes: '(max-width: 600px) 92vw, (max-width: 1024px) 46vw, 30vw',
+      format: 'webp',
+    });
+    const modalAfter = await getImage({ src: e.data.after, width: 1920, format: 'webp' });
+    const modalBefore = e.data.before
+      ? await getImage({ src: e.data.before, width: 1920, format: 'webp' })
+      : null;
+    return {
+      id: e.id,
+      title: e.data.title,
+      src: thumb.src,
+      srcset: thumb.srcSet.attribute,
+      modalAfter: modalAfter.src,
+      ...(modalBefore ? { modalBefore: modalBefore.src } : {}),
+    };
+  })
+);
+---
+<Base title="Photography" description="Photography by peachless. — before/after edits and selected shots.">
+  <section id="portfolio-photo" class="pg" aria-label="Photography Gallery">
+    <PhotographyGallery client:visible items={items} />
+  </section>
+</Base>
