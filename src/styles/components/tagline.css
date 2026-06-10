@@ -1,0 +1,12 @@
+/* Tagline styles (mirrors core/tagline.css) */
+
+.tagline-hero { display: flex; justify-content: center; align-items: center; min-height: 55vh; text-align: center; background: transparent; overflow: hidden; width: 100%; padding: clamp(1.5rem, 6vw, 4rem) clamp(1rem, 6vw, 5rem); box-sizing: border-box; }
+.tagline.typewriter { font-family: inherit; font-weight: inherit; font-style: italic; font-size: clamp(1.5rem, 5vw, 3.5rem); line-height: 1.2; color: inherit; text-align: center; position: relative; width: min(90vw, 48rem); max-width: 100%; margin: 0 auto; padding-inline: clamp(0.75rem, 4vw, 2.5rem); box-sizing: border-box; }
+.tagline .text, .tagline .line { display: inline-block; width: auto; max-width: 100%; text-align: center; position: relative; white-space: normal; text-wrap: balance; }
+.tagline .line .slot { display: inline-block; }
+.tagline.typewriter .text span { display: inline; white-space: normal; }
+.tagline.typewriter.fade { animation: fadeout 2.5s ease-in-out forwards; }
+@keyframes fadeout { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(0); } }
+@keyframes glow { 0% { text-shadow: 0 0 8px currentColor; opacity: 1; } 80% { text-shadow: 0 0 3px currentColor; } 100% { text-shadow: none; opacity: 1; } }
+
+

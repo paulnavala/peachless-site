@@ -1,6 +1,63 @@
 ---
+import { getEntry } from 'astro:content';
+import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
+import Tagline from '../components/islands/Tagline.vue';
+import hero from '../assets/home/hero.png';
+import '../styles/components/tagline.css';
+
+const home = await getEntry('pages', 'home');
+const site = await getEntry('site', 'site');
+const { heading, lead, buttonLabel, buttonHref } = home!.data;
 ---
-<Base description="Every pixel tells a story. Let the world know yours." theme="bright">
-  <section class="section section--bright"><div class="container"><h1>peachless.</h1></div></section>
+<Base description={site!.data.defaultDescription} theme="bright">
+  <section class="section section--bright home-hero">
+    <div class="container">
+      <Tagline client:load fixedCenter={true} />
+    </div>
+  </section>
+
+  <section class="section section--light home-intro">
+    <div class="container">
+      <h3>{heading}</h3>
+      <p set:html={lead} />
+      <Image src={hero} alt="" widths={[640, 1000, hero.width]} sizes="(max-width: 720px) 92vw, 720px" />
+      <a class="btn-primary" href={buttonHref}>{buttonLabel}</a>
+    </div>
+  </section>
+
+  <!-- twin-gallery section: Task 12 -->
 </Base>
+
+<style>
+  .home-hero .container {
+    min-height: 55vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .home-intro .container {
+    max-width: 800px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .home-intro img {
+    max-width: min(720px, 100%);
+  }
+  .btn-primary {
+    display: inline-block;
+    background: var(--ink-strong);
+    color: #fff;
+    text-decoration: none;
+    padding: 14px 32px;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    transition: background 0.3s ease;
+  }
+  .btn-primary:hover {
+    background: var(--cacao);
+  }
+</style>
