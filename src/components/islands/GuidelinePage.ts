@@ -1,4 +1,4 @@
-import { defineComponent, h, ref, PropType, watch, onMounted, onUnmounted, computed } from 'vue';
+import { defineComponent, h, ref, type PropType, onMounted, onUnmounted } from 'vue';
 
 export type GuidelineItem = {
     name: string;
@@ -285,7 +285,7 @@ export default defineComponent({
                     ]),
 
                     // Toast Notification
-                    h('div', { class: ['toast-notification', { 'is-visible': toastMessage.value }] }, toastMessage.value),
+                    h('div', { class: ['toast-notification', { 'is-visible': toastMessage.value }] }, toastMessage.value ?? ''),
 
                     h('div', { class: 'svg-viewer-container' }, [
                         // Close Button (Top Right)
