@@ -1,0 +1,62 @@
+---
+import '../../styles/components/mobile-menu.css';
+
+interface Props {
+  nav: { label: string; href: string }[];
+}
+const { nav } = Astro.props;
+---
+<div class="mmx-overlay" aria-hidden="true">
+  <div class="mmx-inner" role="dialog" aria-modal="true" aria-label="Menu">
+    <button class="mmx-close" type="button" aria-label="Close menu">×</button>
+    <div class="mmx-brand">peachless.</div>
+    <nav class="mmx-nav" aria-label="Mobile">
+      {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+    </nav>
+  </div>
+</div>
+
+<script>
+  import { trapFocus } from '../../lib/dom';
+
+  const overlay = document.querySelector<HTMLElement>('.mmx-overlay')!;
+  const toggle = document.querySelector<HTMLButtonElement>('.site-header__burger')!;
+  const closeBtn = overlay.querySelector<HTMLButtonElement>('.mmx-close')!;
+  let releaseTrap: (() => void) | null = null;
+
+  const open = () => {
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    toggle.setAttribute('aria-expanded', 'true');
+    document.documentElement.classList.add('mmx-locked', 'mmx-open');
+    document.body.classList.add('mmx-locked', 'mmx-open');
+    releaseTrap = trapFocus(overlay, 'a[href], button');
+    (overlay.querySelector<HTMLElement>('.mmx-nav a') ?? closeBtn).focus();
+  };
+
+  const close = () => {
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    toggle.setAttribute('aria-expanded', 'false');
+    document.documentElement.classList.remove('mmx-locked', 'mmx-open');
+    document.body.classList.remove('mmx-locked', 'mmx-open');
+    releaseTrap?.();
+    releaseTrap = null;
+    toggle.focus();
+  };
+
+  toggle.addEventListener('click', () =>
+    overlay.classList.contains('open') ? close() : open()
+  );
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+  });
+  overlay.querySelectorAll('a').forEach((a) => a.addEventListener('click', close));
+  matchMedia('(min-width: 901px)').addEventListener('change', (e) => {
+    if (e.matches && overlay.classList.contains('open')) close();
+  });
+</script>

@@ -1,0 +1,119 @@
+---
+import { Image } from 'astro:assets';
+import { getEntry } from 'astro:content';
+import logo from '../../assets/logo/peachless-logo.png';
+import MobileMenu from './MobileMenu.astro';
+
+interface Props {
+  theme?: 'light' | 'bright';
+}
+const { theme = 'light' } = Astro.props;
+const site = await getEntry('site', 'site');
+const nav = site!.data.nav;
+const current = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+<header class={`site-header site-header--${theme}`}>
+  <div class="site-header__inner">
+    <a class="site-header__title" href="/">peachless.</a>
+    <a class="site-header__logo" href="/" aria-label="peachless. — home">
+      <Image src={logo} alt="" width={240} densities={[1, 2]} />
+    </a>
+    <nav class="site-header__nav" aria-label="Primary">
+      {nav.map((item) => (
+        <a href={item.href} aria-current={current === item.href ? 'page' : undefined}>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+    <button class="site-header__burger" type="button" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<MobileMenu nav={nav} />
+
+<style>
+  .site-header {
+    position: relative;
+    z-index: 10;
+  }
+  .site-header--light {
+    background: var(--linen);
+    color: #000;
+  }
+  .site-header--bright {
+    background: var(--clay);
+    color: #fff;
+  }
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    position: relative;
+    max-width: var(--container);
+    margin-inline: auto;
+    padding: 24px clamp(16px, 4vw, 40px);
+    min-height: var(--header-height);
+    box-sizing: border-box;
+  }
+  .site-header__title {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    text-decoration: none;
+    margin-right: auto;
+  }
+  /* Logo PNG absolutely centered — ported intent of old core/header.css (100×40, 120×50 mobile) */
+  .site-header__logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .site-header__logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .site-header__nav {
+    display: flex;
+    gap: 28px;
+    margin-left: auto;
+  }
+  .site-header__nav a {
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+  .site-header__nav a:hover,
+  .site-header__nav a[aria-current='page'] {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .site-header__burger {
+    display: none;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 8px;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .site-header__burger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: currentColor;
+  }
+  @media (max-width: 900px) {
+    .site-header__nav { display: none; }
+    .site-header__burger { display: flex; }
+  }
+  @media (max-width: 768px) {
+    .site-header__logo { width: 120px; height: 50px; }
+  }
+</style>
