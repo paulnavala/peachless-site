@@ -1,0 +1,19 @@
+{
+  "name": "Melody",
+  "description": "Music streaming service bringing harmony to your day.",
+  "logo": "/guidelines/peachless/01-cover.svg",
+  "guidelines": [
+    {
+      "name": "Cover",
+      "path": "/guidelines/peachless/01-cover.svg"
+    },
+    {
+      "name": "Key Art",
+      "path": "/guidelines/peachless/02-logo-construction.svg"
+    },
+    {
+      "name": "App Icons",
+      "path": "/guidelines/peachless/03-clear-space.svg"
+    }
+  ]
+}

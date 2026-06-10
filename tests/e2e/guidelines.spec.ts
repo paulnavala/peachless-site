@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('/projects/guidelines', () => {
-  test('renders the Peachless brand card', async ({ page }) => {
+  test('renders all six brand cards with Peachless first', async ({ page }) => {
     await page.goto('/projects/guidelines');
-    await expect(page.locator('.guideline-page .brand-card')).toHaveCount(1);
+    // Live card order: peachless, blend, fish-seafood, intouch, melody, the-world
+    await expect(page.locator('.guideline-page .brand-card')).toHaveCount(6);
     await expect(page.locator('.brand-name').first()).toContainText('Peachless');
   });
 

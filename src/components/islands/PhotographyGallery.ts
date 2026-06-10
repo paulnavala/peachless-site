@@ -403,8 +403,16 @@ export default defineComponent({
               'aria-label': `Open ${displayTitle(it.item)} in fullscreen`,
               onVnodeMounted: (v: any) => {
                 const el = v.el as HTMLElement;
-                // mark as loading to show skeleton until image load
-                el.classList.add('is-loading');
+                // SSR'd eager images can finish loading BEFORE Vue hydrates, so the
+                // img `load` event (and the onLoad handler below) never fires. Only
+                // show the skeleton for images still in flight; for already-complete
+                // ones mirror the onLoad logic and set the real aspect ratio.
+                const img = el.querySelector('img.pg-masonry__img') as HTMLImageElement | null;
+                if (img && img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
+                  el.style.setProperty('--m-ratio', (img.naturalWidth / img.naturalHeight).toFixed(2));
+                } else {
+                  el.classList.add('is-loading');
+                }
               },
               onMouseenter: () => prefetchModalImages(it.originalIndex),
               onFocus: () => prefetchModalImages(it.originalIndex),

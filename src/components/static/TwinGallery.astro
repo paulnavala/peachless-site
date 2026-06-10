@@ -5,17 +5,19 @@ import imgRight from '../../assets/home/gallery-uiux.png';
 import imgGuidelines from '../../assets/home/gallery-guidelines.png';
 import '../../styles/components/twin-gallery.css';
 ---
+<!-- loading="eager": these are the home page's primary below-fold media; lazy decode
+     left the panels painted as blank beige rects in capture/parity runs. -->
 <div class="twin-gallery">
   <a class="panel left" href="/projects/logo-design" aria-label="Logo Design">
-    <Image src={imgLeft} alt="Logo Design" widths={[640, 1000, imgLeft.width]} sizes="(max-width: 720px) 92vw, 46vw" />
+    <Image src={imgLeft} alt="Logo Design" loading="eager" widths={[640, 1000, imgLeft.width]} sizes="(max-width: 720px) 92vw, 46vw" />
   </a>
   <a class="panel right" href="/projects/uiux" aria-label="UI/UX">
-    <Image src={imgRight} alt="UI/UX" widths={[640, 1000, imgRight.width]} sizes="(max-width: 720px) 92vw, 46vw" />
+    <Image src={imgRight} alt="UI/UX" loading="eager" widths={[640, 1000, imgRight.width]} sizes="(max-width: 720px) 92vw, 46vw" />
   </a>
 </div>
 <div class="guidelines-wrapper">
   <a class="guidelines-panel" href="/projects/guidelines" aria-label="Guidelines">
-    <Image src={imgGuidelines} alt="Guidelines" widths={[640, 1200, imgGuidelines.width]} sizes="(max-width: 720px) 92vw, 92vw" />
+    <Image src={imgGuidelines} alt="Guidelines" loading="eager" widths={[640, 1200, imgGuidelines.width]} sizes="(max-width: 720px) 92vw, 92vw" />
   </a>
 </div>
 

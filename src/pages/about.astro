@@ -26,16 +26,24 @@ const { Content } = await render(about!);
 </Base>
 
 <style>
+  /* Live: portrait LEFT, text RIGHT, two columns kept down to tablet width;
+     content spans the full 1200px container (live ~1267px). */
   .about-grid {
     display: grid;
-    grid-template-columns: 1.4fr 1fr;
+    grid-template-columns: 1fr 1.4fr;
     gap: clamp(32px, 6vw, 80px);
     align-items: start;
-    max-width: 1100px;
+  }
+  .about-portrait {
+    order: -1; /* markup keeps text first so mobile stacking is text-first like live */
   }
   .about-content :global(h3) {
-    font-size: clamp(1.3rem, 2.2vw, 1.7rem);
-    margin-bottom: 1em;
+    /* Live lead statements: ~30px at 390, ~28px at 768, ~35px at 1440 */
+    font-size: clamp(1.75rem, 1.1rem + 1.5vw, 2.2rem);
+    margin-bottom: 1.2em;
+  }
+  .about-content :global(h3 + h3) {
+    margin-top: 1.6em; /* live has a ~75px gap between the two statement blocks */
   }
   .about-content :global(p) {
     max-width: var(--max-ch);
@@ -43,9 +51,13 @@ const { Content } = await render(about!);
   .about-portrait img {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
+    width: 100%;
+    /* Live crops the portrait taller (435x673 ≈ 0.646) than its natural ratio */
+    aspect-ratio: 435 / 673;
+    object-fit: cover;
   }
-  @media (max-width: 900px) {
+  @media (max-width: 740px) {
     .about-grid { grid-template-columns: 1fr; }
-    .about-portrait { order: -1; max-width: 420px; }
+    .about-portrait { order: 0; max-width: 420px; } /* text stacks first (live) */
   }
 </style>

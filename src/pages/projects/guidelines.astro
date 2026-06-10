@@ -4,13 +4,17 @@ import Base from '../../layouts/Base.astro';
 import GuidelinePage from '../../components/islands/GuidelinePage.vue';
 import '../../styles/components/guideline-page.css';
 
-const brands = (await getCollection('brands')).map((b) => ({
-  id: b.id,
-  name: b.data.name,
-  description: b.data.description,
-  logo: b.data.logo,
-  guidelines: b.data.guidelines,
-}));
+// Live card order (data/brand-guidelines.json in the old repo)
+const LIVE_ORDER = ['peachless', 'blend', 'fish-seafood', 'intouch', 'melody', 'the-world'];
+const brands = (await getCollection('brands'))
+  .sort((a, b) => LIVE_ORDER.indexOf(a.id) - LIVE_ORDER.indexOf(b.id))
+  .map((b) => ({
+    id: b.id,
+    name: b.data.name,
+    description: b.data.description,
+    logo: b.data.logo,
+    guidelines: b.data.guidelines,
+  }));
 ---
 <Base title="Guidelines" description="Brand guidelines — explore peachless. brand standards and visual identity.">
   <section class="section section--light">
@@ -22,3 +26,14 @@ const brands = (await getCollection('brands')).map((b) => ({
     />
   </section>
 </Base>
+
+<style is:global>
+  /* Box-model parity: live Squarespace had NO universal border-box reset, so
+     .brand-logo-container { height:200px; padding:2rem; width:100% } computed
+     content-box (264px-tall panel, overflowing width) — our global reset shrank
+     it ~32%. Compensate here instead of editing the byte-identical ported CSS.
+     Verified against docs/reference/snapshots/site.css (no `*` box-sizing rule). */
+  .guideline-page .brand-logo-container {
+    box-sizing: content-box;
+  }
+</style>

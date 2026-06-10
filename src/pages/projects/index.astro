@@ -1,8 +1,10 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProjectCards from '../../components/islands/ProjectCards.vue';
-import '../../styles/components/project-cards.css';
+// Live cascade order: core (visual) first, layout second — so the layout file's
+// 20px gaps and min-width:720px two-column rule win, as they did on live.
 import '../../styles/components/project-cards-core.css';
+import '../../styles/components/project-cards.css';
 
 const items = [
   {
@@ -25,9 +27,21 @@ const guideline = {
 };
 ---
 <Base title="Projects" description="Selected projects — logo design, UI/UX, and brand guidelines by peachless.">
-  <section class="section section--light">
+  <section class="section section--light projects-section">
     <div class="container">
       <ProjectCards client:visible items={items} guideline={guideline} />
     </div>
   </section>
 </Base>
+
+<style is:global>
+  /* Live sat the component in a full-bleed Squarespace section: the component's own
+     gutter (40px desktop / 20px mobile) is the only inset, and the card row renders
+     1100px wide at 1440 (core's max-width:1100px was content-box on live). */
+  section.projects-section {
+    padding-inline: 0;
+  }
+  .container .project-cards-container {
+    max-width: 1180px;
+  }
+</style>

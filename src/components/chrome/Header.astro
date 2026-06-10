@@ -26,7 +26,7 @@ const current = Astro.url.pathname.replace(/\/$/, '') || '/';
       ))}
     </nav>
     <button class="site-header__burger" type="button" aria-label="Open menu" aria-expanded="false">
-      <span></span><span></span><span></span>
+      <span></span><span></span>
     </button>
   </div>
 </header>
@@ -51,9 +51,10 @@ const current = Astro.url.pathname.replace(/\/$/, '') || '/';
     justify-content: space-between;
     gap: 24px;
     position: relative;
-    max-width: var(--container);
+    /* Live header is near full-bleed (~57-60px insets at 1440), not container-capped */
+    max-width: none;
     margin-inline: auto;
-    padding: 24px clamp(16px, 4vw, 40px);
+    padding: 24px clamp(16px, 4vw, 60px);
     min-height: var(--header-height);
     box-sizing: border-box;
   }
@@ -62,6 +63,11 @@ const current = Astro.url.pathname.replace(/\/$/, '') || '/';
     font-size: 1.35rem;
     text-decoration: none;
     margin-right: auto;
+  }
+  /* Live renders the wordmark in the clay accent on linen subpages
+     (Squarespace siteTitleColor -> accent #d29a84); nav links stay black. */
+  .site-header--light .site-header__title {
+    color: var(--clay);
   }
   /* Logo PNG absolutely centered — ported intent of old core/header.css (100×40, 120×50 mobile) */
   .site-header__logo {
@@ -98,6 +104,8 @@ const current = Astro.url.pathname.replace(/\/$/, '') || '/';
     display: none;
     background: none;
     border: 0;
+    /* <button> does not inherit color — without this the icon is always UA black */
+    color: inherit;
     cursor: pointer;
     padding: 8px;
     flex-direction: column;
@@ -112,6 +120,8 @@ const current = Astro.url.pathname.replace(/\/$/, '') || '/';
   @media (max-width: 900px) {
     .site-header__nav { display: none; }
     .site-header__burger { display: flex; }
+    /* Live steps the wordmark down to Squarespace's mobile title size (~16px) */
+    .site-header__title { font-size: 1rem; }
   }
   @media (max-width: 768px) {
     .site-header__logo { width: 120px; height: 50px; }

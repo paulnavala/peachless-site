@@ -36,6 +36,15 @@ h2 { font-size: clamp(2rem, 4vw, 3rem); }
 h3 { font-size: clamp(1.4rem, 2.5vw, 1.9rem); }
 h4 { font-size: clamp(1.1rem, 1.8vw, 1.4rem); }
 
+/* Squarespace headingLargeColor: live mapped h1/h2 to the clay accent
+   (safeDarkAccent #d29a84) on light sections site-wide. :where() keeps this at
+   element-level specificity so ported component class rules still win, exactly
+   as they did against Squarespace's own `h1/h2 { color: ... }` rule on live. */
+:where(.section--light) h1,
+:where(.section--light) h2 {
+  color: var(--clay);
+}
+
 p {
   margin: 0 0 1em;
 }
@@ -60,6 +69,11 @@ img {
 .section--bright {
   background-color: var(--clay);
   color: #fff;
+}
+/* For ported components that manage their own section padding (e.g. logo-showcase) —
+   live placed them in full-bleed sections with no extra Squarespace padding. */
+.section--flush {
+  padding: 0;
 }
 
 .container {

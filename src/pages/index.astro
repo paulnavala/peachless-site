@@ -20,10 +20,16 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
 
   <section class="section section--light home-intro">
     <div class="container">
-      <h3>{heading}</h3>
-      <p set:html={lead} />
-      <Image src={hero} alt="" widths={[640, 1000, hero.width]} sizes="(max-width: 720px) 92vw, 720px" />
-      <a class="btn-primary" href={buttonHref}>{buttonLabel}</a>
+      <!-- Live composition: lockup image first in source (stacks first on mobile),
+           text column pulled left of it at desktop via order. -->
+      <div class="home-intro__media">
+        <Image src={hero} alt="" widths={[480, 1000, hero.width]} sizes="(max-width: 739px) 220px, 480px" />
+      </div>
+      <div class="home-intro__text">
+        <h3>{heading}</h3>
+        <p set:html={lead} />
+        <a class="btn-primary" href={buttonHref}>{buttonLabel}</a>
+      </div>
     </div>
   </section>
 
@@ -35,34 +41,81 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
 </Base>
 
 <style>
+  /* Live clay band is ~260px tall at 1440: .section padding + the tagline itself.
+     No extra min-height (the old 55vh tripled the band height). */
   .home-hero .container {
-    min-height: 55vh;
+    min-height: 0;
     display: flex;
     align-items: center;
     justify-content: center;
   }
+  @media (max-width: 480px) {
+    /* Live renders the tagline on a single line (~18-19px) at 390px */
+    .home-hero :global(.tagline.typewriter) {
+      font-size: 1.2rem;
+    }
+  }
+
+  /* Intro: stacked (image → heading → lead → CTA) on mobile,
+     two columns (text left / lockup right) from 740px — matches live. */
   .home-intro .container {
-    max-width: 800px;
-    text-align: center;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    text-align: left;
+  }
+  .home-intro__media {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .home-intro__media img {
+    width: 100%;
+    max-width: 220px;
+    height: auto;
+  }
+  .home-intro__text {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 16px;
   }
-  .home-intro img {
-    max-width: min(720px, 100%);
+  .home-intro h3 {
+    /* Live: ~30px at 390, ~35px at 1440 */
+    font-size: clamp(1.8rem, 1.2rem + 1.6vw, 2.2rem);
+    margin: 0;
+  }
+  .home-intro p {
+    margin: 0;
+  }
+  @media (min-width: 740px) {
+    .home-intro .container {
+      grid-template-columns: 1.15fr 1fr;
+      align-items: center;
+      gap: clamp(32px, 5vw, 80px);
+    }
+    .home-intro__text {
+      order: -1; /* text column left, lockup right (live composition) */
+    }
+    .home-intro__media img {
+      /* Live lockup: ~230px at 768, ~450-500px at 1440 */
+      max-width: clamp(240px, 32vw, 480px);
+    }
   }
   .btn-primary {
-    display: inline-block;
-    background: var(--ink-strong);
+    display: block;
+    width: min(490px, 100%);
+    box-sizing: border-box;
+    background: var(--clay);
     color: #fff;
     text-decoration: none;
-    padding: 14px 32px;
-    border-radius: var(--radius-md);
+    text-align: center;
+    padding: 14px 24px;
+    border-radius: var(--radius-xl);
     font-size: 0.95rem;
     transition: background 0.3s ease;
   }
   .btn-primary:hover {
-    background: var(--cacao);
+    background: var(--clay-dark);
   }
 </style>

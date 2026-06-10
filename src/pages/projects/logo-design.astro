@@ -35,7 +35,9 @@ const logos = await Promise.all(
 );
 ---
 <Base title="Logo Design" description="Logo design portfolio — brand marks and identity systems by peachless.">
-  <section class="section section--light">
+  <!-- section--flush: .logo-showcase manages its own padding (5rem 2rem 6rem responsive);
+       stacking .section padding on top doubled the insets vs live. -->
+  <section class="section section--flush section--light">
     <LogoShowcase client:visible logos={logos} />
   </section>
 </Base>
