@@ -3,6 +3,7 @@ import { getEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Tagline from '../components/islands/Tagline.vue';
+import TwinGallery from '../components/static/TwinGallery.astro';
 import hero from '../assets/home/hero.png';
 import '../styles/components/tagline.css';
 
@@ -26,7 +27,11 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
     </div>
   </section>
 
-  <!-- twin-gallery section: Task 12 -->
+  <section class="section section--light">
+    <div class="container">
+      <TwinGallery />
+    </div>
+  </section>
 </Base>
 
 <style>

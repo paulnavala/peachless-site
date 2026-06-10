@@ -1,0 +1,368 @@
+/**
+ * Twin Gallery Component Styles
+ * 
+ * Side-by-side image gallery with hover contrast effects and touch interactions.
+ * Features Ken Burns animation and responsive behavior.
+ * 
+ * Features:
+ * - Two-column grid layout
+ * - Hover contrast pop effect (dimmed/highlighted panels)
+ * - Ken Burns gentle motion on images
+ * - Touch feedback for mobile devices
+ * - Pointer-based direction detection
+ * - Sweep highlight overlay
+ * 
+ * HTML Structure:
+ * <div class="twin-gallery">
+ *   <a href="..." class="panel left">
+ *     <img src="..." alt="...">
+ *   </a>
+ *   <a href="..." class="panel right">
+ *     <img src="..." alt="...">
+ *   </a>
+ * </div>
+ * 
+ * JavaScript Dependency:
+ * - twin-gallery.js handles hover interactions and touch behavior
+ * 
+ * @module twin-gallery
+ */
+
+/* ============================================================================
+   Gallery Container
+   ============================================================================ */
+
+/**
+ * Main gallery container
+ * Two-column grid layout
+ */
+.twin-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Equal width columns */
+  gap: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================================================
+   Panel (Image Container)
+   ============================================================================ */
+
+/**
+ * Individual panel (acts as button/link)
+ * Each panel contains one image
+ */
+.twin-gallery .panel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #0000000d; /* Very light gray background */
+  cursor: pointer;
+  text-decoration: none; /* Remove underline from links */
+  color: inherit;
+  min-height: 44px; /* Accessible tap target */
+}
+
+/**
+ * Aspect ratio container
+ * Maintains 70.7% aspect ratio (approximate 1447×1024)
+ */
+.twin-gallery .panel::before {
+  content: '';
+  display: block;
+  padding-top: 70.7%; /* Maintains aspect ratio */
+}
+
+/* ============================================================================
+   Image Styling
+   ============================================================================ */
+
+/**
+ * Panel images
+ * Absolutely positioned to fill panel
+ * Slightly scaled and dimmed by default
+ */
+.twin-gallery .panel img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Maintain aspect ratio */
+  object-position: center;
+  transform: scale(1.02); /* Slightly larger for smooth zoom */
+  opacity: 0.9;
+  filter: brightness(0.95) contrast(1); /* Slightly dimmed */
+  transition:
+    transform 0.6s ease,
+    filter 0.4s ease,
+    opacity 0.4s ease,
+    box-shadow 0.4s ease;
+  animation: drift 18s ease-in-out infinite alternate; /* Ken Burns effect */
+}
+
+/* ============================================================================
+   Hover Effects
+   ============================================================================ */
+
+/**
+ * Gallery hover: dim all images
+ * Creates contrast for highlight effect
+ */
+.twin-gallery:hover .panel img {
+  opacity: 0.4;
+  filter: brightness(0.75) contrast(0.9); /* More dimmed */
+  transform: scale(1);
+}
+
+/**
+ * Hovered/focused panel: highlight
+ * Brightens, increases contrast, scales up
+ */
+.twin-gallery .panel:hover img,
+.twin-gallery .panel:focus img,
+.twin-gallery .panel:focus-visible img {
+  opacity: 1;
+  filter: brightness(1.1) contrast(1.25); /* Enhanced brightness and contrast */
+  transform: scale(1.09) translateY(-3px); /* Scale and lift */
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25); /* Depth shadow */
+  z-index: 2; /* Above other panel */
+}
+
+/* Visible focus outline for accessibility */
+.twin-gallery .panel:focus-visible {
+  outline: 3px solid #58433b;
+  outline-offset: 3px;
+}
+
+/* ============================================================================
+   Sweep Highlight Overlay
+   ============================================================================ */
+
+/**
+ * Sweep highlight effect
+ * Creates moving highlight overlay
+ */
+.twin-gallery::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%; /* Width of highlight */
+  pointer-events: none; /* Doesn't block clicks */
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateX(0%);
+  opacity: 0;
+  transition:
+    transform 0.8s ease,
+    opacity 0.8s ease;
+}
+
+/**
+ * Show highlight on gallery hover
+ */
+.twin-gallery:hover::after {
+  opacity: 1;
+}
+
+/**
+ * Left panel highlight
+ * Moves highlight to left side
+ */
+.twin-gallery.hover-left::after {
+  transform: translateX(-10%);
+}
+
+/**
+ * Right panel highlight
+ * Moves highlight to right side
+ */
+.twin-gallery.hover-right::after {
+  transform: translateX(100%);
+}
+
+/* ============================================================================
+   Ken Burns Animation
+   ============================================================================ */
+
+/**
+ * Gentle drift animation
+ * Slow zoom and slight vertical movement
+ * Creates subtle motion on static images
+ */
+@keyframes drift {
+  0% {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.06) translate3d(0, -1.5%, 0); /* Zoom and move up slightly */
+  }
+}
+
+/* ============================================================================
+   Guidelines Panel (Optional)
+   ============================================================================ */
+
+/**
+ * Guidelines wrapper
+ * Container for guidelines panel
+ */
+.guidelines-wrapper {
+  position: relative;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+/**
+ * Guidelines panel
+ * Similar styling to gallery panels
+ */
+.guidelines-panel {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #0000000d;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+/**
+ * Guidelines panel image
+ * Shorter height (70px) for horizontal layout
+ */
+.guidelines-panel img {
+  width: 100%;
+  height: 70px;
+  object-fit: cover;
+  display: block;
+  border-radius: 18px;
+  transform: scale(1.02);
+  opacity: 0.9;
+  filter: brightness(0.95) contrast(1);
+  transition:
+    transform 0.6s ease,
+    filter 0.4s ease,
+    opacity 0.4s ease,
+    box-shadow 0.4s ease;
+  animation: drift 18s ease-in-out infinite alternate; /* Same Ken Burns effect */
+}
+
+/**
+ * Guidelines hover effect
+ * Same pop effect as gallery panels
+ */
+.guidelines-panel:hover img,
+.guidelines-panel:focus img {
+  opacity: 1;
+  filter: brightness(1.1) contrast(1.25);
+  transform: scale(1.09) translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  z-index: 2;
+}
+
+.guidelines-panel:active img {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================================================
+   Touch Mode (Mobile)
+   ============================================================================ */
+
+/**
+ * Touch mode styles
+ * Applied automatically by JavaScript on touch devices
+ */
+.twin-gallery.touch-mode .panel img {
+  transition: filter 0.3s ease; /* Faster transition on touch */
+}
+
+/**
+ * Tap focus feedback
+ * Brightens panel when tapped
+ */
+.twin-gallery.touch-mode .panel.tap-focus img {
+  filter: brightness(1.1) contrast(1.25);
+}
+
+/**
+ * Guidelines touch mode
+ */
+.guidelines-wrapper.touch-mode .guidelines-panel img {
+  transition: filter 0.3s ease;
+}
+
+.guidelines-wrapper.touch-mode .guidelines-panel.tap-focus img {
+  filter: brightness(1.1) contrast(1.25);
+}
+
+/* ============================================================================
+   Interactive States
+   ============================================================================ */
+
+/**
+ * Active state: slight press effect
+ */
+.twin-gallery .panel:active img {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+/**
+ * Mobile layout: single column
+ * Stack panels vertically on smaller screens
+ */
+@media (max-width: 768px) {
+  .twin-gallery {
+    grid-template-columns: 1fr; /* Single column */
+  }
+
+  /* Maintain aspect ratio on mobile */
+  .twin-gallery .panel::before {
+    padding-top: 70.7%; /* Same aspect ratio */
+  }
+}
+
+/* ============================================================================
+   Accessibility & Motion Preferences
+   ============================================================================ */
+
+/**
+ * Respect reduced motion preference
+ * Disables animations for users who prefer reduced motion
+ */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable Ken Burns animation */
+  .twin-gallery .panel img {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+
+  /* Hide sweep highlight */
+  .twin-gallery::after {
+    display: none;
+  }
+
+  /* Disable guidelines animation */
+  .guidelines-panel img {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}
