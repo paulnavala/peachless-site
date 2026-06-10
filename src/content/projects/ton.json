@@ -1,0 +1,16 @@
+{
+  "title": "TON Prototype",
+  "description": "An interactive exploration of interface systems for TON's design evolution. This prototype demonstrates structure, flow, and motion language in a responsive context.",
+  "figma": "https://www.figma.com/proto/RBhMF1Cg9vQJDEg2iTsJoO/Project-TON-ui-ux?node-id=1-54&p=f&t=AZlMwB4kDwuTqA2X-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=1%3A3&show-proto-sidebar=1",
+  "badges": [
+    "Prototype",
+    "Figma"
+  ],
+  "categories": [
+    "prototype",
+    "ton"
+  ],
+  "year": 2025,
+  "accent": "#D29A84",
+  "order": 1
+}

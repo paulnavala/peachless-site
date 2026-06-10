@@ -1,0 +1,8 @@
+{
+  "name": "Logo",
+  "description": "Professional branding and identity design services.",
+  "alt": "Logo design services",
+  "grid": "../../assets/logos/logo_grid.png",
+  "preview": "../../assets/logos/logo_preview.png",
+  "order": 3
+}

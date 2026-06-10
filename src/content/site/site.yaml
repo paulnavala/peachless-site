@@ -1,0 +1,12 @@
+nav:
+  - { label: "Projects", href: "/projects" }
+  - { label: "Photography", href: "/photography" }
+  - { label: "About", href: "/about" }
+  - { label: "Contact", href: "/contact" }
+tagline: "Every pixel tells a story. Let the world know yours."
+emails:
+  - { label: "personal", address: "patricia@peachless.design" }
+  - { label: "contact", address: "i.am.peachless@gmail.com" }
+defaultDescription: "Every pixel tells a story. Let the world know yours."
+formEndpoint: ""
+formHidden: {}

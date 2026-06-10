@@ -1,0 +1,8 @@
+{
+  "name": "Melody",
+  "description": "Music streaming service bringing harmony to your day.",
+  "alt": "Melody logo",
+  "grid": "../../assets/logos/melody_grid.png",
+  "preview": "../../assets/logos/melody_preview.png",
+  "order": 4
+}

@@ -1,0 +1,8 @@
+{
+  "name": "The World",
+  "description": "Global news and media organization covering world events.",
+  "alt": "The World logo",
+  "grid": "../../assets/logos/the_world_grid.png",
+  "preview": "../../assets/logos/the_world_preview.png",
+  "order": 5
+}

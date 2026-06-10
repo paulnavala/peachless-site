@@ -1,0 +1,16 @@
+{
+  "title": "Melody Memoirs Prototype",
+  "description": "An interactive exploration of interface systems for Melody Memoirs' design evolution. This prototype demonstrates structure, flow, and motion language in a responsive context.",
+  "figma": "https://www.figma.com/make/BQtydWnM0aJYReMTqpOiaB/Melody-Memoirs--Community-?node-id=0-1&p=f&t=18eWXd6TlkRVcn16-0&fullscreen=1",
+  "badges": [
+    "Prototype",
+    "Figma"
+  ],
+  "categories": [
+    "prototype",
+    "melody-memoirs"
+  ],
+  "year": 2025,
+  "accent": "#58433B",
+  "order": 2
+}
