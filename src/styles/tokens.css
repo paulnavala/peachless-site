@@ -1,0 +1,46 @@
+/* peachless. design tokens — single source of truth.
+   Values verified against Squarespace Site Styles + component CSS (2026-06-10). */
+:root {
+  /* Warm palette (canonical — matches live Site Styles) */
+  --white: #ffffff;
+  --linen: #efe1d4;          /* page background */
+  --clay: #d29a84;           /* accent */
+  --clay-light: #e4bba8;
+  --clay-dark: #b8806a;
+  --cacao: #58433b;          /* primary ink */
+  --ink: #58433b;
+  --ink-strong: #3d2e28;
+  --text-muted: #7a6459;
+  --text-light: #9c8a80;
+  --card-bg: #faf6f2;
+  --accent-rgb: 210, 154, 132;
+  --shadow-color: 88, 67, 59;
+  --shadow: 0 12px 30px rgba(88, 67, 59, 0.08);
+  --shadow-hover: 0 18px 46px rgba(88, 67, 59, 0.12);
+
+  /* Radii */
+  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-card: cubic-bezier(0.25, 0.85, 0.25, 1);
+
+  /* Fluid type scale */
+  --step--1: clamp(0.88rem, 0.36vw + 0.8rem, 0.98rem);
+  --step-0: clamp(1rem, 0.45vw + 0.9rem, 1.06rem);
+  --step-1: clamp(1.1rem, 0.65vw + 0.95rem, 1.2rem);
+  --step-2: clamp(1.25rem, 1vw + 1rem, 1.45rem);
+  --step-3: clamp(1.45rem, 1.4vw + 1.05rem, 1.75rem);
+  --max-ch: 68ch;
+
+  /* Fonts (cssVariable values provided by Astro Fonts API) */
+  --font-heading: var(--font-marcellus);
+  --font-body: var(--font-pt-serif);
+
+  /* Layout */
+  --container: min(1200px, 92vw);
+  --header-height: 88px;
+}

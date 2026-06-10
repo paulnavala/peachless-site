@@ -1,0 +1,91 @@
+/* Minimal reset + site-wide typography (replaces Squarespace Site Styles). */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--linen);
+  color: #000;
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 0 0 0.5em;
+}
+
+/* Squarespace-equivalent heading sizes (7.1 defaults at site scale) */
+h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
+h2 { font-size: clamp(2rem, 4vw, 3rem); }
+h3 { font-size: clamp(1.4rem, 2.5vw, 1.9rem); }
+h4 { font-size: clamp(1.1rem, 1.8vw, 1.4rem); }
+
+p {
+  margin: 0 0 1em;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Section themes (port of the two Squarespace themes the site uses) */
+.section {
+  padding: clamp(48px, 8vw, 110px) clamp(16px, 4vw, 40px);
+}
+.section--light {
+  background-color: var(--linen);
+  color: #000;
+}
+.section--bright {
+  background-color: var(--clay);
+  color: #fff;
+}
+
+.container {
+  max-width: var(--container);
+  margin-inline: auto;
+}
+
+/* Screen-reader-only utility (footer + skip links use it) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
