@@ -10,7 +10,7 @@ const cats = [...new Set(projects.flatMap((p) => p.data.categories))];
 const figmaEmbed = (url: string) =>
   `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(url)}`;
 ---
-<section id="portfolio-uiux">
+<section id="portfolio-uiux" class="portfolio" aria-label="UI/UX Projects">
   <div class="portfolio__wrap">
     <a class="portfolio__skip" href="#projects-list">Skip to projects</a>
 
