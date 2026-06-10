@@ -1,0 +1,24 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import GuidelinePage from '../../components/islands/GuidelinePage.vue';
+import '../../styles/components/guideline-page.css';
+
+const brands = (await getCollection('brands')).map((b) => ({
+  id: b.id,
+  name: b.data.name,
+  description: b.data.description,
+  logo: b.data.logo,
+  guidelines: b.data.guidelines,
+}));
+---
+<Base title="Guidelines" description="Brand guidelines — explore peachless. brand standards and visual identity.">
+  <section class="section section--light">
+    <GuidelinePage
+      client:visible
+      title="Brand Guidelines"
+      subtitle="Explore our brand standards and visual identity"
+      brands={brands}
+    />
+  </section>
+</Base>
