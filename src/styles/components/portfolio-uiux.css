@@ -1,0 +1,1823 @@
+/**
+ * Portfolio UI/UX Component Styles
+ * 
+ * Modern portfolio showcase with filtering, Figma embeds, intro/CTA cards,
+ * and fullscreen modal views. Features interactive project cards with badge
+ * numbering and smooth reveal animations.
+ * 
+ * Features:
+ * - Sticky header with live project count
+ * - Category-based filtering system
+ * - Lazy-loaded Figma iframe embeds
+ * - Scroll reveal animations
+ * - Fullscreen modal for prototypes
+ * - Responsive grid layouts
+ * - Accessibility support (reduced motion, high contrast)
+ * 
+ * Color System:
+ * Uses CSS custom properties for consistent theming:
+ * - Base colors: white, linen, clay, cacao, black
+ * - Semantic colors: bg, surface, ink, muted, border
+ * - Fluid typography scale (--step-0 through --step-3)
+ * 
+ * JavaScript Dependency:
+ * - portfolio.js handles data reading, filtering, and modal
+ * 
+ * @module portfolio-uiux
+ */
+
+/* ============================================================================
+   CSS Custom Properties (Design Tokens)
+   ============================================================================ */
+
+/**
+ * Brand color palette and design tokens
+ * Scoped to #portfolio-uiux for component isolation
+ */
+#portfolio-uiux {
+  /* Base Brand Colors - matching portfolio-photo and logo-showcase */
+  --white: #ffffff;
+  --linen: #efe1d4; /* Background color */
+  --clay: #d29a84; /* Accent/brand color */
+  --cacao: #58433b; /* Text color */
+  --black: #3D2E28; /* Strong text - warm dark brown */
+
+  /* Extended Color Palette */
+  --accent-light: #E4BBA8;
+  --accent-dark: #B8806A;
+  --text-muted: #7A6459;
+  --text-light: #9C8A80;
+  --card-bg: #FAF6F2;
+
+  /* RGB values for shadow consistency */
+  --shadow-color: 88, 67, 59;
+  --accent-rgb: 210, 154, 132;
+
+  /* Semantic Color Variables */
+  --bg: var(--linen); /* Background */
+  --surface: var(--card-bg); /* Card/surface background */
+  --ink: var(--cacao); /* Body text */
+  --ink-strong: #3D2E28; /* Heading text - warm dark brown */
+
+  /* Color Mixes (for softer variations) */
+  --muted: color-mix(in oklab, var(--ink) 70%, var(--linen));
+  --cap: color-mix(in oklab, var(--ink) 55%, var(--linen));
+  --border: color-mix(in oklab, var(--ink) 18%, #fff);
+  --border-strong: color-mix(in oklab, var(--ink) 28%, #fff);
+
+  /* Spacing & Layout */
+  --radius-xl: 24px; /* Large border radius */
+  --radius-md: 12px; /* Medium border radius */
+  --shadow: 0 12px 30px rgba(var(--shadow-color), 0.08);
+  --shadow-hover: 0 18px 46px rgba(var(--shadow-color), 0.12);
+  --focus: var(--clay); /* Focus ring color */
+  --padX: 24px; /* Horizontal padding */
+  --sectionY: 110px; /* Vertical section padding */
+
+  /* Fluid Typography Scale */
+  /* Responsive font sizes that scale with viewport */
+  --step--1: clamp(0.88rem, 0.36vw + 0.8rem, 0.98rem);
+  --step-0: clamp(1rem, 0.45vw + 0.9rem, 1.06rem);
+  --step-1: clamp(1.1rem, 0.65vw + 0.95rem, 1.2rem);
+  --step-2: clamp(1.25rem, 1vw + 1rem, 1.45rem);
+  --step-3: clamp(1.45rem, 1.4vw + 1.05rem, 1.75rem);
+  --max-ch: 68ch; /* Optimal reading width */
+
+  /* Badge & Accent Positioning */
+  --badge-size: 30px;
+  --badge-top-offset: -12px; /* Float above card */
+  --accent-gap: 26px; /* Space below accent (prevents overlap) */
+
+  /* Easing Curves - matching logo-showcase */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* ============================================================================
+   Container & Background
+   ============================================================================ */
+
+/**
+ * Main portfolio section
+ * Linen background with subtle gradient wash
+ */
+#portfolio-uiux.portfolio {
+  color: var(--ink);
+  padding: var(--sectionY) var(--padX);
+  background: var(--bg);
+  position: relative;
+}
+
+/**
+ * Top accent line decoration
+ */
+#portfolio-uiux.portfolio::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(280px, 40vw);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--clay), transparent);
+  opacity: 0.5;
+}
+
+/**
+ * Bottom decorative dot
+ */
+#portfolio-uiux.portfolio::after {
+  content: '';
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background: var(--clay);
+  border-radius: 50%;
+  opacity: 0.4;
+}
+
+/* ============================================================================
+   Skip Link (Accessibility)
+   ============================================================================ */
+
+/**
+ * Skip link for keyboard navigation
+ * Hidden by default, appears on focus
+ */
+#portfolio-uiux .portfolio__skip {
+  position: absolute;
+  left: -9999px; /* Off-screen */
+  top: 16px;
+  z-index: 10000;
+  background: var(--card-bg);
+  color: var(--ink-strong);
+  border: 2px solid var(--clay);
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: 
+    left 0.2s var(--ease),
+    box-shadow 0.2s var(--ease),
+    transform 0.2s var(--ease);
+}
+
+/**
+ * Visible on focus
+ * Moves into view for keyboard users
+ */
+#portfolio-uiux .portfolio__skip:focus {
+  left: 16px;
+  box-shadow: 
+    0 0 0 4px rgba(var(--accent-rgb), 0.2),
+    0 8px 24px rgba(var(--shadow-color), 0.15);
+  outline: none;
+}
+
+#portfolio-uiux .portfolio__skip:focus:hover {
+  transform: translateY(-2px);
+  background: var(--clay);
+  color: #fff;
+}
+
+/* ============================================================================
+   Section Title
+   ============================================================================ */
+
+/**
+ * Decorative section title matching portfolio-photo and logo-showcase
+ * Features staggered reveal animations
+ */
+#portfolio-uiux .ux-section-title {
+  width: min(1200px, 92vw);
+  margin: 0 auto 48px;
+  text-align: center;
+  position: relative;
+}
+
+/**
+ * Main title text
+ * PT Serif font, uppercase with letter-spacing
+ */
+#portfolio-uiux .ux-section-title__text {
+  margin: 0;
+  font-family: 'PT Serif', Georgia, serif;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--ink);
+  line-height: 1;
+  position: relative;
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: ux-title-reveal 1.2s cubic-bezier(0.23, 1, 0.32, 1) 0.2s forwards;
+  will-change: opacity, transform;
+}
+
+/**
+ * Shared reveal animation keyframes
+ */
+@keyframes ux-title-reveal {
+  to {
+    opacity: 1;
+    transform: translateZ(0);
+  }
+}
+
+/**
+ * Decorative flourish with lines and center dot
+ */
+#portfolio-uiux .ux-section-title__flourish {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: ux-title-reveal 1s cubic-bezier(0.23, 1, 0.32, 1) 0.5s forwards;
+  will-change: opacity, transform;
+}
+
+#portfolio-uiux .ux-section-title__flourish::before,
+#portfolio-uiux .ux-section-title__flourish::after {
+  content: '';
+  width: 32px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--clay));
+}
+
+#portfolio-uiux .ux-section-title__flourish::after {
+  background: linear-gradient(90deg, var(--clay), transparent);
+}
+
+#portfolio-uiux .ux-section-title__flourish-icon {
+  width: 6px;
+  height: 6px;
+  background: var(--clay);
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+/**
+ * Subtitle text
+ * Cormorant Garamond italic
+ */
+#portfolio-uiux .ux-section-title__sub {
+  display: block;
+  margin-top: 20px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.125rem;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  opacity: 0;
+  transform: translateY(6px);
+  animation: ux-title-reveal 1s cubic-bezier(0.23, 1, 0.32, 1) 0.7s forwards;
+  will-change: opacity, transform;
+}
+
+/**
+ * Mobile responsive adjustments
+ */
+@media (max-width: 600px) {
+  #portfolio-uiux .ux-section-title {
+    margin-bottom: 32px;
+  }
+
+  #portfolio-uiux .ux-section-title__text {
+    font-size: clamp(1.25rem, 6vw, 2rem);
+  }
+
+  #portfolio-uiux .ux-section-title__flourish {
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  #portfolio-uiux .ux-section-title__flourish::before,
+  #portfolio-uiux .ux-section-title__flourish::after {
+    width: 20px;
+  }
+
+  #portfolio-uiux .ux-section-title__flourish-icon {
+    width: 4px;
+    height: 4px;
+  }
+
+  #portfolio-uiux .ux-section-title__sub {
+    margin-top: 14px;
+    font-size: 0.9375rem;
+  }
+}
+
+@media (max-width: 400px) {
+  #portfolio-uiux .ux-section-title {
+    margin-bottom: 24px;
+  }
+
+  #portfolio-uiux .ux-section-title__text {
+    font-size: 1.25rem;
+  }
+
+  #portfolio-uiux .ux-section-title__sub {
+    font-size: 0.875rem;
+  }
+}
+
+/* ============================================================================
+   Sticky Header
+   ============================================================================ */
+
+/**
+ * Sticky header with title and live count
+ * Stays visible while scrolling through projects
+ */
+#portfolio-uiux .portfolio__header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  backdrop-filter: saturate(125%) blur(6px); /* Frosted glass effect */
+  background: color-mix(in oklab, var(--linen) 82%, #fff);
+  border-bottom: 1px solid var(--border);
+  margin: -24px calc(var(--padX) * -1) 18px;
+  padding: 14px var(--padX);
+  padding-top: calc(14px + env(safe-area-inset-top, 0px)); /* Safe area for notched devices */
+}
+
+/**
+ * Header inner container
+ * Flexbox layout for title and count
+ */
+#portfolio-uiux .portfolio__header-inner {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(1200px, 92vw);
+  margin: 0 auto;
+}
+
+/**
+ * Portfolio title
+ * Large, bold heading
+ */
+#portfolio-uiux .portfolio__title {
+  margin: 0;
+  font-weight: 750;
+  letter-spacing: 0.005em;
+  color: var(--ink-strong);
+  font-size: clamp(1.25rem, 1.3vw + 1rem, 1.7rem);
+}
+
+/**
+ * Live project count badge
+ * Updates dynamically via JavaScript
+ */
+#portfolio-uiux .portfolio__count {
+  font-size: 0.9rem;
+  color: var(--muted);
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+}
+
+/* Intro Card removed */
+
+/* ============================================================================
+   Filter Pills
+   ============================================================================ */
+
+/* About block */
+#portfolio-uiux .portfolio__about {
+  width: min(1200px, 92vw);
+  margin: 6px auto 16px;
+}
+
+#portfolio-uiux .portfolio__about-inner {
+  color: var(--ink);
+  max-width: var(--max-ch);
+}
+
+#portfolio-uiux .about__lead {
+  margin: 0 0 8px;
+  color: var(--ink-strong);
+  font-weight: 760;
+  font-size: clamp(1.15rem, 1.2vw + 0.9rem, 1.6rem);
+}
+
+#portfolio-uiux .portfolio__about-inner p {
+  margin: 0 0 10px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/**
+ * Filter buttons container
+ * Scrollable on mobile, centered on desktop
+ */
+#portfolio-uiux .portfolio__filters {
+  width: min(1200px, 92vw);
+  margin: 8px auto 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  overflow-x: auto; /* Horizontal scroll on mobile */
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  padding-inline: var(--padX);
+  margin-inline: calc(var(--padX) * -1);
+  padding-block: 8px;
+  /* Fade edges on mobile */
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 12px),
+    transparent 100%
+  );
+}
+
+/**
+ * Remove fade mask on desktop
+ */
+@media (min-width: 901px) {
+  #portfolio-uiux .portfolio__filters {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
+
+/**
+ * Individual filter pill/button
+ * Rounded button with hover states
+ */
+#portfolio-uiux .pill {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--ink-strong);
+  padding: 12px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    transform 0.18s,
+    background 0.18s,
+    border-color 0.18s,
+    color 0.18s;
+  scroll-snap-align: start;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  min-height: 44px; /* Touch-friendly size */
+}
+
+/**
+ * Hover state: slight lift
+ */
+#portfolio-uiux .pill:hover {
+  transform: translateY(-1px);
+}
+
+/**
+ * Active state: filled with dark background
+ */
+#portfolio-uiux .pill.is-active {
+  background: var(--ink-strong);
+  color: #fff;
+  border-color: var(--ink-strong);
+  box-shadow: 0 2px 10px rgba(var(--shadow-color), 0.12);
+}
+
+/* ============================================================================
+   Projects Container
+   ============================================================================ */
+
+/**
+ * Projects wrapper
+ * Grid layout with vertical spacing
+ */
+#portfolio-uiux .portfolio__wrap {
+  display: grid;
+  gap: 64px;
+  width: min(1200px, 92vw);
+  margin: 0 auto;
+}
+
+/* Force single-column stacking for project cards */
+#portfolio-uiux #projects-list.portfolio__wrap {
+  grid-template-columns: 1fr;
+}
+
+/* ============================================================================
+   Shared Button Styles
+   ============================================================================ */
+
+/**
+ * Base button styles
+ * Used across intro card, project cards, and CTA
+ */
+#portfolio-uiux .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 650;
+  font-size: 0.95rem;
+  border: 1px solid transparent;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.25s var(--ease),
+    background 0.25s var(--ease),
+    color 0.25s var(--ease),
+    border-color 0.25s var(--ease),
+    box-shadow 0.25s var(--ease);
+  min-height: 44px; /* Touch-friendly */
+}
+
+/**
+ * Keyboard focus state
+ */
+#portfolio-uiux .btn:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--clay) 70%, #fff);
+  outline-offset: 3px;
+  transform: translateY(-2px);
+}
+
+/**
+ * Active state for all buttons
+ */
+#portfolio-uiux .btn:active {
+  transform: scale(0.97);
+  transition-duration: 0.1s;
+}
+
+/**
+ * Primary button variant
+ * Dark background with arrow icon
+ */
+#portfolio-uiux .btn--primary {
+  background: var(--ink-strong);
+  color: #fff;
+  border-color: var(--ink-strong);
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 8px rgba(var(--shadow-color), 0.15);
+}
+
+/**
+ * Arrow icon after primary button
+ */
+#portfolio-uiux .btn--primary::after {
+  content: '↗';
+  font-size: 1rem;
+  transform: translateY(-1px);
+  transition: transform 0.25s var(--ease);
+}
+
+#portfolio-uiux .btn--primary:hover {
+  background: var(--clay);
+  border-color: var(--clay);
+  box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.3);
+  transform: translateY(-2px);
+}
+
+#portfolio-uiux .btn--primary:hover::after {
+  transform: translate(2px, -3px);
+}
+
+/**
+ * Ghost button variant
+ * Outlined style
+ */
+#portfolio-uiux .btn--ghost {
+  background: var(--card-bg);
+  color: var(--ink-strong);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(var(--shadow-color), 0.04);
+}
+
+#portfolio-uiux .btn--ghost:hover {
+  background: #fff;
+  border-color: rgba(var(--accent-rgb), 0.3);
+  box-shadow: 0 4px 12px rgba(var(--shadow-color), 0.08);
+  transform: translateY(-2px);
+}
+
+/* ============================================================================
+   Project Cards
+   ============================================================================ */
+
+/**
+ * Individual project container
+ * Sets default accent color
+ */
+#portfolio-uiux .project {
+  --accent: var(--clay);
+}
+
+/**
+ * Accent bar (top of card)
+ * Colored gradient line
+ */
+#portfolio-uiux .project__accent {
+  height: 3px;
+  border-radius: 999px;
+  margin-bottom: var(--accent-gap);
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--accent) 92%, #fff),
+    color-mix(in oklab, var(--accent) 60%, #fff)
+  );
+  position: relative;
+  z-index: 0;
+}
+
+/**
+ * Project card container
+ * Main card with border and shadow
+ */
+#portfolio-uiux .project__card {
+  position: relative;
+  z-index: 1;
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  border: 1px solid rgba(var(--shadow-color), 0.06);
+  box-shadow: 
+    0 1px 2px rgba(var(--shadow-color), 0.04),
+    0 4px 16px rgba(var(--shadow-color), 0.06);
+  padding: clamp(18px, 2.1vw, 28px);
+  transition: 
+    transform 0.35s var(--ease),
+    box-shadow 0.35s var(--ease),
+    border-color 0.35s var(--ease);
+  /* Note: no overflow:hidden to allow badge to float above */
+}
+
+/**
+ * Inner glow overlay for hover effect
+ */
+#portfolio-uiux .project__card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.5) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/**
+ * Hover state: lift, enhance shadow with accent tint, show inner glow
+ */
+@media (hover: hover) {
+  #portfolio-uiux .project__card:hover {
+    transform: translate3d(0, -6px, 0);
+    box-shadow: 
+      0 8px 24px rgba(var(--shadow-color), 0.08),
+      0 16px 48px rgba(var(--accent-rgb), 0.12);
+    border-color: rgba(var(--accent-rgb), 0.2);
+  }
+  
+  #portfolio-uiux .project__card:hover::before {
+    opacity: 1;
+  }
+}
+
+/**
+ * Focus-within state for cards (keyboard navigation only)
+ * Uses :has() to only show when a child has focus-visible
+ */
+#portfolio-uiux .project__card:has(:focus-visible) {
+  box-shadow: 
+    0 0 0 3px rgba(var(--accent-rgb), 0.3),
+    0 8px 24px rgba(var(--shadow-color), 0.08);
+  border-color: var(--clay);
+}
+
+/* Fallback for browsers without :has() support */
+@supports not selector(:has(*)) {
+  #portfolio-uiux .project__card:focus-within {
+    box-shadow: 
+      0 0 0 3px rgba(var(--accent-rgb), 0.3),
+      0 8px 24px rgba(var(--shadow-color), 0.08);
+    border-color: var(--clay);
+  }
+}
+
+/**
+ * Subtle scale feedback on card interaction
+ */
+#portfolio-uiux .project__card:active {
+  transform: scale(0.995);
+  transition-duration: 0.1s;
+}
+
+/**
+ * Number badge (floats above card)
+ * Auto-incremented counter
+ */
+#portfolio-uiux .portfolio__wrap {
+  counter-reset: proj; /* Reset counter */
+}
+
+#portfolio-uiux .project {
+  counter-increment: proj; /* Increment for each project */
+}
+
+/**
+ * Badge display using CSS counter
+ * Shows as decimal-leading-zero (01, 02, etc.)
+ */
+#portfolio-uiux .project__card::after {
+  content: counter(proj, decimal-leading-zero);
+  position: absolute;
+  top: var(--badge-top-offset); /* Float above */
+  left: 16px;
+  display: grid;
+  place-items: center;
+  width: var(--badge-size);
+  height: var(--badge-size);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink-strong);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 4px var(--card-bg),
+    0 4px 12px rgba(var(--shadow-color), 0.08);
+  z-index: 3; /* Above card and inner glow */
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+/* ============================================================================
+   Project Content Grid
+   ============================================================================ */
+
+/**
+ * Two-column grid layout
+ * Text on left, Figma frame on right
+ */
+#portfolio-uiux .project__grid {
+  display: grid;
+  grid-template-columns: 1fr 1.12fr; /* Text slightly narrower */
+  gap: 36px;
+  align-items: stretch;
+}
+
+/**
+ * Text content (left column)
+ * Initially hidden, reveals on scroll
+ */
+#portfolio-uiux .project__text {
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  transform: translate3d(0, 16px, 0);
+  transition:
+    opacity 0.6s var(--ease-out),
+    transform 0.6s var(--ease-out);
+  max-width: 65ch; /* Optimal reading width */
+  display: flex;
+  flex-direction: column;
+}
+
+/**
+ * Project title
+ * Large heading with advanced typography
+ */
+#portfolio-uiux .project__title {
+  margin: 0 0 10px;
+  font-family: 'PT Serif', Georgia, serif;
+  font-weight: 400;
+  color: var(--ink-strong);
+  letter-spacing: 0.01em;
+  font-feature-settings:
+    'liga' on,
+    'ss01' on,
+    'cv01' on;
+  font-size: clamp(1.35rem, 1.6vw + 0.8rem, 2.05rem);
+}
+
+/**
+ * Project description
+ */
+#portfolio-uiux .project__sub {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.75;
+  margin: 0 0 16px;
+  max-width: 560px;
+}
+
+/**
+ * Project actions (bottom-pinned)
+ * Flex row that stays anchored at the bottom of the text column
+ */
+#portfolio-uiux .project__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: auto; /* Push actions to bottom */
+  position: relative;
+  padding-top: 0;
+}
+
+/**
+ * Metadata section
+ */
+#portfolio-uiux .project__meta {
+  margin-bottom: 14px;
+}
+
+/**
+ * Badge element
+ * Displays tags/categories
+ */
+#portfolio-uiux .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--ink-strong);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 12px;
+  box-shadow: 0 1px 0 rgba(var(--shadow-color), 0.04);
+}
+
+/**
+ * Badge dot (accent indicator)
+ */
+#portfolio-uiux .badge::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ============================================================================
+   Figma Embed Frame
+   ============================================================================ */
+
+/**
+ * Figma prototype frame container
+ * Maintains 71.1% aspect ratio (1440×1024)
+ * Initially hidden, reveals on scroll
+ */
+#portfolio-uiux .project__frame {
+  position: relative;
+  width: 100%;
+  padding-bottom: 71.1%; /* Aspect ratio */
+  border-radius: 22px;
+  overflow: hidden;
+  background: var(--card-bg); /* Loading background */
+  border: 1px solid rgba(var(--shadow-color), 0.06);
+  box-shadow: 
+    0 4px 16px rgba(var(--shadow-color), 0.06),
+    0 12px 40px rgba(var(--shadow-color), 0.08);
+  opacity: 0;
+  transform: translate3d(0, 24px, 0) scale(0.98);
+  transition:
+    opacity 0.7s var(--ease-out) 0.15s,
+    transform 0.7s var(--ease-out) 0.15s,
+    box-shadow 0.4s var(--ease);
+  align-self: start;
+  justify-self: stretch;
+  min-width: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/**
+ * Loading skeleton shimmer for frame
+ */
+#portfolio-uiux .project__frame.is-loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(var(--shadow-color), 0.03) 0%,
+    rgba(var(--shadow-color), 0.06) 40%,
+    rgba(var(--shadow-color), 0.03) 60%,
+    rgba(var(--shadow-color), 0.02) 100%
+  );
+  background-size: 200% 100%;
+  animation: ux-frame-shimmer 1.5s var(--ease) infinite;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@keyframes ux-frame-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/**
+ * Optional: Iframe loaded state - smooth fade in
+ * Add .is-loading class via JS, then replace with .is-loaded when iframe loads
+ */
+#portfolio-uiux .project__frame.is-loading .project__iframe {
+  opacity: 0;
+}
+
+#portfolio-uiux .project__frame.is-loaded .project__iframe {
+  opacity: 1;
+  transition: opacity 0.4s var(--ease);
+}
+
+#portfolio-uiux .project__frame.is-loaded::after {
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+}
+
+/**
+ * Inner frame border effect and accent overlay
+ */
+#portfolio-uiux .project__frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  box-shadow: inset 0 0 0 1px rgba(var(--shadow-color), 0.06);
+  background: color-mix(in oklab, var(--clay) 5%, transparent);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (hover: hover) {
+  #portfolio-uiux .project__frame:hover::before {
+    opacity: 1;
+  }
+  
+  #portfolio-uiux .project__frame:hover {
+    box-shadow: 
+      0 8px 24px rgba(var(--shadow-color), 0.1),
+      0 20px 60px rgba(var(--accent-rgb), 0.12);
+  }
+}
+
+/**
+ * Overlay chip (clickable hint)
+ * "Open fullscreen" indicator
+ */
+#portfolio-uiux .proto-chip {
+  position: absolute;
+  inset: auto 12px 12px auto; /* Bottom-right */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: #fff;
+  background: rgba(var(--shadow-color), 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 
+    0 4px 16px rgba(var(--shadow-color), 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition:
+    opacity 0.3s var(--ease),
+    transform 0.3s var(--ease),
+    background 0.25s var(--ease),
+    border-color 0.25s var(--ease),
+    box-shadow 0.25s var(--ease);
+}
+
+#portfolio-uiux .proto-chip:hover {
+  background: rgba(var(--accent-rgb), 0.85);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    0 6px 20px rgba(var(--accent-rgb), 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+#portfolio-uiux .proto-chip:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--clay) 70%, #fff);
+  outline-offset: 3px;
+}
+
+#portfolio-uiux .proto-chip:active {
+  transform: scale(0.96);
+  transition-duration: 0.1s;
+}
+
+#portfolio-uiux .proto-chip__icon {
+  display: inline-block;
+  transform: translateY(1px);
+  transition: transform 0.25s var(--ease);
+}
+
+#portfolio-uiux .proto-chip:hover .proto-chip__icon {
+  transform: translateY(1px) scale(1.1);
+}
+
+/**
+ * Subtle pulse animation for proto-chip on idle
+ */
+@keyframes ux-chip-pulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(var(--shadow-color), 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1); }
+  50% { box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15); }
+}
+
+#portfolio-uiux .project.is-inview .proto-chip {
+  animation: ux-chip-pulse 3s var(--ease) 2s infinite;
+}
+
+#portfolio-uiux .proto-chip:hover,
+#portfolio-uiux .proto-chip:focus {
+  animation: none;
+}
+
+/**
+ * Hide chip on hover/focus
+ * Fades out when user interacts with frame
+ */
+@media (hover: hover) {
+  #portfolio-uiux .project__frame:hover .proto-chip {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+#portfolio-uiux .project__frame:focus-within .proto-chip {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/**
+ * Iframe element
+ * Lazy-loaded via data-src attribute
+ */
+#portfolio-uiux .project__iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  transition: transform 0.5s var(--ease);
+  will-change: transform;
+  backface-visibility: hidden; /* Prevent flicker */
+  transform: scale(1.002); /* Slight scale for hover */
+}
+
+/**
+ * Hover micro-interaction
+ */
+@media (hover: hover) {
+  #portfolio-uiux .project__frame:hover .project__iframe {
+    transform: scale(1.015);
+  }
+}
+
+/**
+ * Revealed state (controlled by JavaScript)
+ * Applied when project enters viewport
+ */
+#portfolio-uiux .project.is-inview .project__text,
+#portfolio-uiux .project.is-inview .project__frame {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+/**
+ * Staggered reveal for project cards
+ */
+#portfolio-uiux .project {
+  opacity: 0;
+  transform: translate3d(0, 32px, 0);
+  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+}
+
+#portfolio-uiux .project.is-inview {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Staggered delays for first batch */
+#portfolio-uiux .project:nth-child(1) { transition-delay: 0.1s; }
+#portfolio-uiux .project:nth-child(2) { transition-delay: 0.2s; }
+#portfolio-uiux .project:nth-child(3) { transition-delay: 0.3s; }
+#portfolio-uiux .project:nth-child(4) { transition-delay: 0.4s; }
+#portfolio-uiux .project:nth-child(5) { transition-delay: 0.5s; }
+#portfolio-uiux .project:nth-child(n+6) { transition-delay: 0.6s; }
+
+/* ============================================================================
+   Project Caption
+   ============================================================================ */
+
+/**
+ * Caption below project
+ * Shows project name and year
+ */
+#portfolio-uiux .project__cap {
+  text-align: center;
+  color: var(--cap);
+  font-size: 0.92rem;
+  margin: 12px auto 0;
+  max-width: 80ch;
+}
+
+/* ============================================================================
+   Project Divider
+   ============================================================================ */
+
+/**
+ * Decorative divider between projects
+ * Same style as intro/CTA ornaments
+ */
+#portfolio-uiux .project__divider {
+  position: relative;
+  width: min(1100px, 90vw);
+  height: 18px;
+  margin: 34px auto 0;
+  border: 0;
+  background: none;
+}
+
+#portfolio-uiux .project__divider::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+}
+
+#portfolio-uiux .project__divider::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--clay);
+  box-shadow:
+    0 0 0 6px #fff,
+    0 0 0 1px var(--border-strong),
+    0 6px 18px rgba(var(--shadow-color), 0.08);
+}
+
+/* CTA Card removed */
+
+/* ============================================================================
+   Fullscreen Modal
+   ============================================================================ */
+
+/**
+ * Modal container
+ * Hidden by default, shown via JavaScript
+ */
+#portfolio-uiux .portfolio-modal[hidden] {
+  display: none;
+}
+
+#portfolio-uiux .portfolio-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+/**
+ * Backdrop overlay
+ * Radial gradient with blur
+ */
+#portfolio-uiux .portfolio-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(var(--shadow-color), 0.6), rgba(var(--shadow-color), 0.85));
+  backdrop-filter: blur(12px) saturate(120%);
+  cursor: pointer;
+  animation: ux-backdrop-in 0.3s var(--ease);
+}
+
+@keyframes ux-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ux-backdrop-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/**
+ * Backdrop click feedback
+ */
+#portfolio-uiux .portfolio-modal__backdrop:active {
+  background: radial-gradient(circle at center, rgba(var(--shadow-color), 0.65), rgba(var(--shadow-color), 0.9));
+}
+
+/**
+ * Modal dialog container
+ * White card with rounded corners and scale-in animation
+ */
+#portfolio-uiux .portfolio-modal__dialog {
+  position: relative;
+  width: min(1100px, 92vw);
+  max-height: min(88dvh, 820px);
+  background: var(--card-bg);
+  color: var(--ink-strong);
+  border-radius: 18px;
+  border: 1px solid rgba(var(--shadow-color), 0.08);
+  box-shadow: 
+    0 24px 64px rgba(var(--shadow-color), 0.25),
+    0 8px 24px rgba(var(--shadow-color), 0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: ux-modal-in 0.4s var(--ease-out);
+}
+
+@keyframes ux-modal-in {
+  from { 
+    opacity: 0; 
+    transform: scale(0.92) translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
+}
+
+@keyframes ux-modal-out {
+  from { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
+  to { 
+    opacity: 0; 
+    transform: scale(0.95) translateY(10px); 
+  }
+}
+
+/**
+ * Modal closing state (add via JS)
+ */
+#portfolio-uiux .portfolio-modal.is-closing .portfolio-modal__backdrop {
+  animation: ux-backdrop-out 0.25s var(--ease) forwards;
+}
+
+#portfolio-uiux .portfolio-modal.is-closing .portfolio-modal__dialog {
+  animation: ux-modal-out 0.25s var(--ease) forwards;
+}
+
+/**
+ * Modal header
+ * Title and action buttons
+ */
+#portfolio-uiux .portfolio-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+#portfolio-uiux .portfolio-modal__title {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+#portfolio-uiux .portfolio-modal__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/**
+ * Open in new tab link
+ */
+#portfolio-uiux .portfolio-modal__open {
+  font-size: 0.95rem;
+  text-decoration: underline;
+  color: var(--ink-strong);
+}
+
+/**
+ * Close button with accent hover
+ */
+#portfolio-uiux .portfolio-modal__close {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--ink-strong);
+  border-radius: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 650;
+  min-height: 44px;
+  transition: 
+    background 0.25s var(--ease),
+    color 0.25s var(--ease),
+    border-color 0.25s var(--ease),
+    transform 0.25s var(--ease),
+    box-shadow 0.25s var(--ease);
+}
+
+#portfolio-uiux .portfolio-modal__close:hover {
+  background: var(--clay);
+  color: #fff;
+  border-color: var(--clay);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.3);
+}
+
+#portfolio-uiux .portfolio-modal__close:focus-visible {
+  outline: none;
+  box-shadow: 
+    0 0 0 3px rgba(var(--accent-rgb), 0.4),
+    0 4px 12px rgba(var(--accent-rgb), 0.2);
+  border-color: var(--clay);
+}
+
+#portfolio-uiux .portfolio-modal__close:active {
+  transform: scale(0.95);
+  transition-duration: 0.1s;
+}
+
+/**
+ * Modal iframe container
+ */
+#portfolio-uiux .portfolio-modal__frame {
+  position: relative;
+  width: 100%;
+  padding-bottom: 71.1%; /* Same aspect ratio */
+  background: color-mix(in oklab, #fff 70%, var(--linen));
+  overflow: hidden;
+}
+
+/**
+ * Loading progress indicator in modal
+ */
+#portfolio-uiux .portfolio-modal.is-loading .portfolio-modal__frame::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 30%;
+  background: linear-gradient(90deg, var(--clay), var(--accent-light));
+  border-radius: 0 2px 2px 0;
+  animation: ux-progress 1.5s var(--ease) infinite;
+}
+
+@keyframes ux-progress {
+  0% { width: 0%; left: 0; }
+  50% { width: 60%; left: 20%; }
+  100% { width: 0%; left: 100%; }
+}
+
+/**
+ * Mobile fullscreen modal
+ */
+@media (max-width: 600px) {
+  #portfolio-uiux .portfolio-modal__dialog {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
+  }
+  
+  #portfolio-uiux .portfolio-modal__frame {
+    padding-bottom: 0;
+    flex: 1;
+    height: auto;
+  }
+  
+  #portfolio-uiux .portfolio-modal__iframe {
+    position: relative;
+    height: 100%;
+  }
+  
+  #portfolio-uiux .portfolio-modal__header {
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 12px 16px;
+  }
+  
+  #portfolio-uiux .portfolio-modal__close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+#portfolio-uiux .portfolio-modal__iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/**
+ * Loading shimmer effect
+ * Shown while iframe loads
+ */
+#portfolio-uiux .portfolio-modal__frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(var(--shadow-color), 0.04) 0%,
+    rgba(var(--shadow-color), 0.06) 35%,
+    rgba(var(--shadow-color), 0.04) 65%,
+    rgba(var(--shadow-color), 0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: ux-shimmer 1.4s linear infinite;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#portfolio-uiux .portfolio-modal.is-loading .portfolio-modal__frame::before {
+  opacity: 1;
+}
+
+@keyframes ux-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/**
+ * Loading spinner
+ * Centered spinner while iframe loads
+ */
+#portfolio-uiux .portfolio-modal__spinner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+#portfolio-uiux .portfolio-modal.is-loading .portfolio-modal__spinner {
+  opacity: 1;
+}
+
+/**
+ * Spinner circle
+ */
+#portfolio-uiux .portfolio-modal__spinner::after {
+  content: '';
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid rgba(var(--shadow-color), 0.15);
+  border-top-color: var(--clay);
+  animation: ux-spin 0.9s linear infinite;
+}
+
+@keyframes ux-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/**
+ * Fallback message
+ * Shown if iframe fails to load
+ */
+#portfolio-uiux .portfolio-modal__fallback {
+  padding: 12px 16px;
+  color: var(--muted);
+}
+
+/**
+ * Prevent body scroll when modal is open
+ * Applied by JavaScript
+ */
+#portfolio-uiux.no-scroll,
+html.no-scroll {
+  overflow: hidden;
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+/**
+ * Sticky frame on desktop
+ * Figma frame stays visible while scrolling
+ */
+@media (min-width: 901px) {
+  #portfolio-uiux .project__frame {
+    position: sticky;
+    top: 80px;
+  }
+}
+
+/**
+ * Mobile layout: single column
+ * Stack text above frame
+ */
+@media (max-width: 900px) {
+  #portfolio-uiux .project__grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  #portfolio-uiux .project__text {
+    text-align: left;
+  }
+
+  #portfolio-uiux .project__actions {
+    gap: 10px;
+  }
+
+  #portfolio-uiux .portfolio__wrap {
+    gap: 48px;
+  }
+
+  /* Smaller border radius on mobile */
+  #portfolio-uiux .project__card {
+    border-radius: 20px;
+  }
+
+  /* Full-width buttons on mobile */
+  #portfolio-uiux .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/**
+ * Smaller mobile adjustments
+ */
+@media (max-width: 600px) {
+  /* Smaller badges */
+  #portfolio-uiux {
+    --badge-size: 26px;
+    --badge-top-offset: -10px;
+    --accent-gap: 24px;
+  }
+
+  /* Smaller ornaments */
+  #portfolio-uiux .project__divider {
+    margin-top: 18px;
+    height: 14px;
+  }
+
+  /* Adjusted badge shadow */
+  #portfolio-uiux .project__card::after {
+    box-shadow:
+      0 0 0 3px #fff,
+      0 8px 16px rgba(var(--shadow-color), 0.1);
+  }
+}
+
+/**
+ * Very small screens
+ */
+@media (max-width: 420px) {
+  /* Even smaller border radius */
+  #portfolio-uiux .project__card {
+    border-radius: 16px;
+  }
+
+  /* Smaller titles */
+  #portfolio-uiux .portfolio__title,
+  #portfolio-uiux .project__title {
+    font-size: var(--step-3);
+  }
+
+  /* Smaller chip */
+  #portfolio-uiux .proto-chip {
+    inset: auto 10px 10px auto;
+    font-size: 0.82rem;
+    padding: 7px 10px;
+  }
+}
+
+/* ============================================================================
+   Accessibility & Motion Preferences
+   ============================================================================ */
+
+/**
+ * High contrast mode
+ * Removes effects that may reduce contrast
+ */
+@media (prefers-contrast: more) {
+  #portfolio-uiux .portfolio__header {
+    backdrop-filter: none; /* Remove blur */
+  }
+
+  #portfolio-uiux .project__card {
+    box-shadow: none;
+    border: 2px solid var(--ink-strong); /* Stronger border */
+  }
+  
+  #portfolio-uiux .btn {
+    border-width: 2px;
+  }
+  
+  #portfolio-uiux .btn--primary {
+    background: var(--ink-strong);
+    border-color: var(--ink-strong);
+  }
+  
+  #portfolio-uiux .proto-chip {
+    background: var(--ink-strong);
+    border: 2px solid #fff;
+  }
+  
+  #portfolio-uiux .project__frame {
+    border: 2px solid var(--ink-strong);
+  }
+  
+  /* Stronger focus indicators */
+  #portfolio-uiux *:focus-visible {
+    outline: 3px solid var(--ink-strong) !important;
+    outline-offset: 3px !important;
+  }
+}
+
+/**
+ * Reduced motion preference
+ * Disables all animations and transitions
+ */
+@media (prefers-reduced-motion: reduce) {
+  #portfolio-uiux .ux-section-title__text,
+  #portfolio-uiux .ux-section-title__flourish,
+  #portfolio-uiux .ux-section-title__sub,
+  #portfolio-uiux .project__text,
+  #portfolio-uiux .project__frame,
+  #portfolio-uiux .btn,
+  #portfolio-uiux .project__card {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important; /* Show immediately */
+  }
+}
+
+/**
+ * Touch device adjustments
+ * Prevents hover effects from sticking
+ */
+@media (pointer: coarse) {
+  /* Ensure minimum touch targets (44px) */
+  #portfolio-uiux .btn,
+  #portfolio-uiux .pill,
+  #portfolio-uiux .proto-chip {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Remove tap highlight and use custom feedback */
+  #portfolio-uiux .btn,
+  #portfolio-uiux .pill,
+  #portfolio-uiux .proto-chip,
+  #portfolio-uiux .project__card {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  /* Haptic-style scale feedback on active */
+  #portfolio-uiux .btn:active,
+  #portfolio-uiux .pill:active {
+    transform: scale(0.96);
+    transition-duration: 0.08s;
+  }
+  
+  #portfolio-uiux .proto-chip:active {
+    transform: scale(0.94);
+    transition-duration: 0.08s;
+  }
+
+  /* Disable hover transforms on touch devices */
+  #portfolio-uiux .project__card:hover,
+  #portfolio-uiux .project__frame:hover,
+  #portfolio-uiux .btn:hover {
+    transform: none;
+  }
+  
+  /* Card active state for touch */
+  #portfolio-uiux .project__card:active {
+    transform: scale(0.985);
+    transition-duration: 0.1s;
+  }
+
+  /* Keep chip visible on touch */
+  #portfolio-uiux .proto-chip {
+    opacity: 1 !important;
+  }
+  
+  #portfolio-uiux .project__frame:hover .proto-chip {
+    opacity: 1;
+    transform: none;
+  }
+  
+  /* Larger proto-chip on touch devices */
+  #portfolio-uiux .proto-chip {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+  
+  /* Better tap target for modal close */
+  #portfolio-uiux .portfolio-modal__close {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 12px 20px;
+  }
+}
+
+/* ============================================================================
+   Scroll Behavior
+   ============================================================================ */
+
+/**
+ * Smooth scroll for anchor links
+ */
+#portfolio-uiux {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #portfolio-uiux {
+    scroll-behavior: auto;
+  }
+}
+
+/**
+ * Scroll margin for anchor links
+ * Prevents content from hiding under sticky header
+ */
+#projects-list {
+  scroll-margin-top: 84px;
+}
+
+/**
+ * Scroll-linked section title fade
+ * Fades slightly as user scrolls past
+ */
+#portfolio-uiux .ux-section-title {
+  transition: opacity 0.3s var(--ease);
+}
+
+#portfolio-uiux.is-scrolled .ux-section-title {
+  opacity: 0.6;
+}
+
+/* ============================================================================
+   Text Resilience
+   ============================================================================ */
+
+/**
+ * Prevent long text from breaking layout
+ * Allows text to wrap and truncate gracefully
+ */
+#portfolio-uiux .project__title {
+  overflow-wrap: anywhere; /* Break long words if needed */
+}
+
+#portfolio-uiux .btn,
+#portfolio-uiux .badge {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Truncate with ellipsis */
+}
