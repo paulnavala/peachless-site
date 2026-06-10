@@ -1,0 +1,127 @@
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms/schema/sveltia-cms.json
+backend:
+  name: github
+  repo: paulnavala/peachless-site
+  branch: main
+  # No OAuth proxy configured: sign in with a GitHub personal access token
+  # ("Sign In with Token" on the login screen). To add browser OAuth later,
+  # deploy https://github.com/sveltia/sveltia-cms-auth and set base_url here.
+
+media_folder: /src/assets/uploads
+public_folder: /src/assets/uploads
+
+collections:
+  - name: projects
+    label: UI/UX Projects
+    folder: /src/content/projects
+    create: true
+    format: json
+    extension: json
+    identifier_field: title
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Description, name: description, widget: text }
+      - { label: Figma URL, name: figma, widget: string }
+      - { label: Badges, name: badges, widget: list, default: [] }
+      - { label: Categories, name: categories, widget: list, default: [] }
+      - { label: Year, name: year, widget: number, required: false }
+      - { label: Accent color, name: accent, widget: string, required: false, default: "" }
+      - { label: Order, name: order, widget: number, default: 0 }
+
+  - name: logos
+    label: Logos
+    folder: /src/content/logos
+    create: true
+    format: json
+    extension: json
+    identifier_field: name
+    media_folder: /src/assets/logos
+    public_folder: ../../assets/logos
+    fields:
+      - { label: Name, name: name, widget: string }
+      - { label: Description, name: description, widget: text }
+      - { label: Alt text, name: alt, widget: string }
+      - { label: Grid image, name: grid, widget: image }
+      - { label: Preview image, name: preview, widget: image }
+      - { label: Order, name: order, widget: number, default: 0 }
+
+  - name: photos
+    label: Photography
+    folder: /src/content/photos
+    create: true
+    format: json
+    extension: json
+    identifier_field: title
+    media_folder: /src/assets/photography
+    public_folder: ../../assets/photography
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: After image, name: after, widget: image }
+      - { label: Before image, name: before, widget: image, required: false }
+      - { label: Order, name: order, widget: number, default: 0 }
+
+  - name: brands
+    label: Brand Guidelines
+    folder: /src/content/brands
+    create: true
+    format: json
+    extension: json
+    identifier_field: name
+    fields:
+      - { label: Name, name: name, widget: string }
+      - { label: Description, name: description, widget: text, required: false }
+      - { label: Logo (public path), name: logo, widget: string }
+      - label: Guideline pages
+        name: guidelines
+        widget: list
+        fields:
+          - { label: Name, name: name, widget: string }
+          - { label: Path (public), name: path, widget: string }
+
+  - name: pages
+    label: Page Copy
+    files:
+      - name: home
+        label: Home
+        file: src/content/pages/home.yaml
+        fields:
+          - { label: Heading, name: heading, widget: string }
+          - { label: Lead (HTML), name: lead, widget: text }
+          - { label: Button label, name: buttonLabel, widget: string }
+          - { label: Button link, name: buttonHref, widget: string }
+      - name: about
+        label: About
+        file: src/content/pages/about.md
+        fields:
+          - { label: Heading, name: heading, widget: string }
+          - { label: Body, name: body, widget: markdown }
+      - name: contact
+        label: Contact
+        file: src/content/pages/contact.yaml
+        fields:
+          - { label: Heading, name: heading, widget: string }
+          - label: Emails
+            name: emails
+            widget: list
+            fields:
+              - { label: Label, name: label, widget: string }
+              - { label: Address, name: address, widget: string }
+      - name: site
+        label: Site Settings
+        file: src/content/site/site.yaml
+        fields:
+          - label: Navigation
+            name: nav
+            widget: list
+            fields:
+              - { label: Label, name: label, widget: string }
+              - { label: Href, name: href, widget: string }
+          - { label: Tagline, name: tagline, widget: string }
+          - label: Emails
+            name: emails
+            widget: list
+            fields:
+              - { label: Label, name: label, widget: string }
+              - { label: Address, name: address, widget: string }
+          - { label: Default meta description, name: defaultDescription, widget: string }
+          - { label: Form endpoint URL, name: formEndpoint, widget: string, required: false, default: "" }
