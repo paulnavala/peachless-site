@@ -1,0 +1,669 @@
+/**
+ * Fortune Peach Component Styles
+ * 
+ * Interactive fortune reveal widget with three-state animation system:
+ * - Unopened: Floating peach with glow effect
+ * - Cracking: Logo splits with particle explosion
+ * - Revealed: Fortune card with quote and lucky numbers
+ * 
+ * Features:
+ * - Floating animation for unopened state
+ * - Glowing background effect
+ * - SVG logo split animation
+ * - Particle explosion effects
+ * - Staggered lucky number animations
+ * - Card reveal with gradient effects
+ * 
+ * Color Palette:
+ * - --c1: Light peach (#F4A79D)
+ * - --c2: Medium peach (#E8B4A8)
+ * - --c3: Dark peach (#D4827A)
+ * - --c4: Darker peach (#C17068)
+ * - --ink: Text color (#8B5A54)
+ * - --card: Card background (white with transparency)
+ * 
+ * JavaScript Dependency:
+ * - fortune-peach.js handles state management and animations
+ * 
+ * @module fortune-peach
+ */
+
+/* ============================================================================
+   Container & Base Styles
+   ============================================================================ */
+
+/**
+ * Main widget container
+ * Light background with centered content
+ */
+.fortune-logo-widget {
+  /* Color variables for consistent theming */
+  --c1: #f4a79d; /* Light peach */
+  --c2: #e8b4a8; /* Medium peach */
+  --c3: #d4827a; /* Dark peach */
+  --c4: #c17068; /* Darker peach */
+  --ink: #8b5a54; /* Text color */
+  --card: #ffffffee; /* Card background (white with slight transparency) */
+
+  position: relative;
+  padding: 48px 16px;
+  background: #efe1d4; /* Linen background */
+  overflow: hidden;
+  text-align: center;
+}
+
+/* ============================================================================
+   Title Section
+   ============================================================================ */
+
+/**
+ * Main title
+ * Large, responsive heading in brand color
+ */
+.flw-title h1 {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    'Helvetica Neue',
+    Arial;
+  font-size: clamp(28px, 4vw, 48px);
+  margin: 0 0 40px;
+  color: #d29a84; /* Brand clay color */
+}
+
+/**
+ * Subtitle (optional)
+ * Pulsing animation for attention
+ */
+.flw-title p {
+  color: var(--c4);
+  opacity: 0.9;
+  margin: 0 0 20px;
+  animation: flwPulse 2s ease-in-out infinite;
+}
+
+/* ============================================================================
+   Logo Button (Unopened State)
+   ============================================================================ */
+
+/**
+ * Clickable logo button
+ * Contains floating logo with shadow
+ */
+.flw-logoBtn {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 12px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  outline-offset: 4px; /* Better focus visibility */
+}
+
+/**
+ * Hover and active states
+ * Subtle scale feedback
+ */
+.flw-logoBtn:hover {
+  transform: scale(1.03);
+  transition: transform 0.25s;
+}
+
+.flw-logoBtn:active {
+  transform: scale(0.97);
+}
+
+/* Accessibility: clear focus ring */
+.flw-logoBtn:focus-visible,
+.flw-btn:focus-visible {
+  outline: 3px solid #58433b;
+  outline-offset: 3px;
+}
+
+/**
+ * Drop shadow below logo
+ * Oval shape for realistic shadow effect
+ */
+.flw-shadow {
+  position: absolute;
+  inset: auto 0 0 0; /* Bottom-aligned */
+  width: 200px;
+  height: 30px;
+  transform: translateY(170px);
+  pointer-events: none; /* Doesn't interfere with clicks */
+}
+
+/**
+ * Logo container with glow effect
+ * Floating animation and backdrop glow
+ */
+.flw-logo {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+  filter: drop-shadow(0 10px 30px rgba(212, 130, 122, 0.35));
+  animation: flwFloat 2s ease-in-out infinite;
+}
+
+/**
+ * Glowing backdrop
+ * Pulsing glow effect behind logo
+ */
+.flw-logo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  filter: blur(28px); /* Soft blur for glow */
+  opacity: 0.45;
+  background: #fef0e5; /* Warm glow color */
+  animation: flwGlow 2s ease-in-out infinite;
+  z-index: -1; /* Behind logo */
+}
+
+/**
+ * SVG logo
+ * Full width and height
+ */
+.flw-logo-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* SVG color classes for inline logo (moved from template <style>) */
+.fortune-logo-widget .cls-1 {
+  fill: #f0cfbe;
+}
+.fortune-logo-widget .cls-2 {
+  fill: #010101;
+}
+.fortune-logo-widget .cls-3 {
+  fill: #fef0e5;
+}
+.fortune-logo-widget .cls-4 {
+  fill: #e3aa95;
+}
+
+/* ============================================================================
+   Cracking Animation State
+   ============================================================================ */
+
+/**
+ * Cracking animation container
+ * Holds the split logo animation
+ */
+.flw-crack-wrap {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 8px;
+}
+
+.flw-crack-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/**
+ * Split logo halves
+ * Each half animates independently
+ */
+.flw-half {
+  transform-origin: 50% 50%;
+  shape-rendering: crispEdges; /* Clean edges for seamless split */
+}
+
+/**
+ * Left half: slides left and rotates
+ */
+.flw-left {
+  animation: flwLeft 1.5s ease-out forwards;
+}
+
+/**
+ * Right half: slides right and rotates
+ */
+.flw-right {
+  animation: flwRight 1.5s ease-out forwards;
+}
+
+/* ============================================================================
+   Particle Effects
+   ============================================================================ */
+
+/**
+ * Particles container
+ * Absolutely positioned over cracking logo
+ */
+.flw-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* Don't block interactions */
+}
+
+/**
+ * Individual particle
+ * Small circular element that explodes outward
+ */
+.flw-p {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--c1); /* Light peach color */
+  opacity: 0; /* Hidden initially */
+}
+
+/**
+ * Animated particle
+ * Explodes in random direction (set via CSS custom properties)
+ */
+.flw-p.animate {
+  animation: flwParticle 1s ease-out forwards;
+}
+
+/**
+ * Status text during cracking
+ * "Revealing your fortune..." message
+ */
+.flw-status {
+  color: var(--c4);
+  font-size: 20px;
+  animation: flwPulse 1.2s ease-in-out infinite;
+}
+
+/* ============================================================================
+   Revealed Card State
+   ============================================================================ */
+
+/**
+ * Fortune card container
+ * Appears after cracking animation completes
+ */
+.flw-card {
+  position: relative;
+  width: min(92vw, 560px); /* Responsive width */
+  margin: 0 auto 16px;
+  border-radius: 24px;
+  background: var(--card);
+  border: 2px solid #f4d4cc;
+  box-shadow: 0 20px 50px rgba(212, 130, 122, 0.25);
+  overflow: hidden;
+}
+
+/**
+ * Card glow effect
+ * Animated gradient background for depth
+ */
+.flw-card-glow {
+  position: absolute;
+  inset: -40% -10%; /* Extends beyond card */
+  background:
+    radial-gradient(60% 60% at 50% 30%, rgba(244, 167, 157, 0.35), transparent 70%),
+    radial-gradient(40% 40% at 70% 70%, rgba(232, 180, 168, 0.35), transparent 70%);
+  filter: blur(30px);
+  animation: flwGlow 3s ease-in-out infinite;
+}
+
+/**
+ * Card inner content
+ * Padding for text content
+ */
+.flw-card-inner {
+  position: relative;
+  padding: 32px 24px 28px;
+}
+
+/**
+ * Decorative star icon
+ * Rotating animation for visual interest
+ */
+.flw-star {
+  font-size: 36px;
+  color: var(--c3);
+  animation: flwSpin 3s linear infinite;
+}
+
+/**
+ * Card title
+ * Gradient text effect with sliding animation
+ */
+.flw-card h2 {
+  background: linear-gradient(90deg, var(--c3), var(--c4), var(--c3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent; /* Gradient shows through */
+  margin: 8px 0 12px;
+  font-size: 28px;
+  background-size: 200% 100%; /* Wider for animation */
+  animation: flwSlide 4s linear infinite; /* Sliding gradient */
+}
+
+/**
+ * Fortune quote text
+ * Italic styling with fade-in animation
+ */
+.flw-quote {
+  color: var(--ink);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.6;
+  margin: 0 0 16px;
+  animation: flwFadeIn 0.6s ease-out both 0.4s; /* Delayed fade-in */
+}
+
+/**
+ * Divider line
+ * Grows from left to right
+ */
+.flw-divider {
+  height: 1px;
+  margin: 10px 0 16px;
+  background: linear-gradient(90deg, transparent, var(--c1), transparent);
+  transform-origin: left;
+  animation: flwGrow 0.5s ease-out both 0.6s; /* Delayed growth */
+}
+
+/**
+ * Lucky numbers section
+ */
+.flw-lucky span {
+  display: block;
+  color: var(--c4);
+  margin-bottom: 8px;
+}
+
+/**
+ * Lucky number balls container
+ * Flexbox layout with wrapping
+ */
+.flw-balls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/**
+ * Individual lucky number ball
+ * Circular badge with gradient background
+ * Pops in with staggered delay
+ */
+.flw-ball {
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent text overflow */
+  background: linear-gradient(135deg, var(--c1), var(--c3));
+  box-shadow: 0 10px 20px rgba(212, 130, 122, 0.25);
+  transform: scale(0); /* Start small */
+  animation: flwPop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4) forwards; /* Pop animation */
+}
+
+/* ============================================================================
+   Call-to-Action Button
+   ============================================================================ */
+
+/**
+ * CTA button container
+ */
+.flw-cta {
+  margin-top: 8px;
+}
+
+/**
+ * Primary action button
+ * Brand color with hover effects
+ */
+.flw-btn {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  padding: 12px 22px;
+  border-radius: 9999px;
+  color: #fff;
+  font-weight: 600;
+  background: #d29a84; /* Brand clay color */
+  box-shadow: 0 10px 20px rgba(212, 130, 122, 0.25);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    filter 0.2s;
+}
+
+.flw-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 14px 28px rgba(212, 130, 122, 0.32);
+}
+
+.flw-btn:active {
+  transform: scale(0.97);
+  filter: brightness(0.98);
+}
+
+/* ============================================================================
+   Keyframe Animations
+   ============================================================================ */
+
+/**
+ * Floating animation
+ * Subtle vertical movement for unopened logo
+ */
+@keyframes flwFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px); /* Subtle upward float */
+  }
+}
+
+/**
+ * Glow pulsing animation
+ * Backdrop glow intensity changes
+ */
+@keyframes flwGlow {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.12); /* Slight expansion */
+  }
+}
+
+/**
+ * General pulsing animation
+ * Used for status text and other elements
+ */
+@keyframes flwPulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/**
+ * Left half split animation
+ * Slides left with rotation and fade
+ */
+@keyframes flwLeft {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-40px) rotate(-15deg) translateZ(0); /* Hardware acceleration */
+    opacity: 0.2;
+  }
+}
+
+/**
+ * Right half split animation
+ * Slides right with rotation and fade
+ */
+@keyframes flwRight {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(40px) rotate(15deg) translateZ(0); /* Hardware acceleration */
+    opacity: 0.2;
+  }
+}
+
+/**
+ * Particle explosion animation
+ * Uses CSS custom properties (--dx, --dy) for random directions
+ */
+@keyframes flwParticle {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx, 0), var(--dy, 0)) scale(0);
+  }
+}
+
+/**
+ * Star rotation animation
+ * Continuous spinning for decorative star
+ */
+@keyframes flwSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/**
+ * Gradient slide animation
+ * Creates moving gradient effect on title
+ */
+@keyframes flwSlide {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/**
+ * Divider growth animation
+ * Grows from left to right
+ */
+@keyframes flwGrow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/**
+ * Ball pop animation
+ * Lucky numbers pop in with bounce effect
+ */
+@keyframes flwPop {
+  to {
+    transform: scale(1);
+  }
+}
+
+/**
+ * Fade-in animation
+ * Used for quote text reveal
+ */
+@keyframes flwFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .flw-logo,
+  .flw-logo::before,
+  .flw-left,
+  .flw-right,
+  .flw-p.animate,
+  .flw-star,
+  .flw-card h2,
+  .flw-divider,
+  .flw-ball,
+  .flw-status {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ============================================================================
+   State Management
+   ============================================================================ */
+
+/**
+ * Unopened state: show logo button and CTA
+ */
+.flw-stage--unopened .flw-logoBtn {
+  display: inline-block;
+}
+
+.flw-stage--unopened .flw-cta {
+  display: block;
+}
+
+/**
+ * Cracking state: show split animation
+ */
+.flw-stage--cracking .flw-logoBtn,
+.flw-stage--cracking .flw-cta {
+  display: none;
+}
+
+.flw-stage--cracking .flw-cracking {
+  display: block;
+}
+
+/**
+ * Revealed state: show fortune card
+ */
+.flw-stage--revealed .flw-logoBtn,
+.flw-stage--revealed .flw-cta,
+.flw-stage--revealed .flw-cracking {
+  display: none;
+}
+
+.flw-stage--revealed .flw-revealed {
+  display: block;
+}

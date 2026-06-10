@@ -1,0 +1,51 @@
+---
+import { getEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import ContactForm from '../components/islands/ContactForm.vue';
+import FortunePeach from '../components/static/FortunePeach.astro';
+import '../styles/components/contact-form.css';
+import '../styles/components/contact-form-core.css';
+
+const pageData = await getEntry('pages', 'contact');
+const site = await getEntry('site', 'site');
+const { heading, emails } = pageData!.data;
+const { formEndpoint, formHidden } = site!.data;
+---
+<Base title="Contact" description="Get in touch with peachless. — patricia@peachless.design">
+  <section class="section section--light">
+    <div class="container contact-intro">
+      <h2>{heading}</h2>
+      <div class="contact-emails">
+        {emails!.map((e) => (
+          <p>
+            <strong>{e.label}</strong><br />
+            <a href={`mailto:${e.address}`}>{e.address}</a>
+          </p>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--light">
+    <div class="container">
+      <ContactForm client:visible formAction={formEndpoint} hiddenFields={formHidden} />
+    </div>
+  </section>
+
+  <section class="section section--light">
+    <div class="container">
+      <FortunePeach />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .contact-intro { text-align: center; }
+  .contact-emails {
+    display: flex;
+    gap: 48px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .contact-emails a { color: var(--cacao); }
+</style>

@@ -1,0 +1,488 @@
+/**
+ * Contact Form Component Styles
+ * 
+ * Elegant contact form matching the project cards design system.
+ * Features background gradient reveal on hover with parallax mouse tracking.
+ * 
+ * Features:
+ * - White card with rounded corners
+ * - Background gradient reveal on hover
+ * - Parallax mouse movement effect
+ * - Smooth scale and shadow transitions
+ * - Elegant input fields with focus states
+ * - Responsive design for mobile
+ * 
+ * HTML Structure:
+ * <div class="contact-form-container">
+ *   <div class="contact-form-header">
+ *     <h2 class="contact-form-title">Title</h2>
+ *     <p class="contact-form-subtitle">Subtitle</p>
+ *   </div>
+ *   <form class="contact-form-inner">
+ *     <div class="form-field">
+ *       <label class="form-label">Label</label>
+ *       <input class="form-input" />
+ *     </div>
+ *     <button class="form-submit">Submit</button>
+ *   </form>
+ * </div>
+ * 
+ * CSS Custom Properties:
+ * - --bg-x: Horizontal parallax offset (set by JavaScript)
+ * - --bg-y: Vertical parallax offset (set by JavaScript)
+ * 
+ * @module contact-form
+ */
+
+/* ============================================================================
+   Container
+   ============================================================================ */
+
+/**
+ * Main container for contact form
+ * Matches project card styling with white background and hover effects
+ */
+.contact-form-container {
+    position: relative;
+    box-sizing: border-box;
+    max-width: 700px;
+    margin: 120px auto;
+    padding: 60px 40px;
+    background: #fff;
+    color: #111;
+    border-radius: 20px;
+    overflow: hidden;
+    transition:
+        transform 0.4s cubic-bezier(0.25, 0.85, 0.25, 1),
+        box-shadow 0.3s ease;
+    z-index: 1;
+}
+
+/**
+ * CSS custom properties for parallax effect
+ * Updated by JavaScript based on mouse position
+ */
+.contact-form-container {
+    --bg-x: 0px;
+    --bg-y: 0px;
+}
+
+/* ============================================================================
+   Background Gradient Layer
+   ============================================================================ */
+
+/**
+ * Background gradient (hidden by default)
+ * Reveals on hover with parallax offset
+ * Soft pastel gradient similar to guideline button
+ */
+.contact-form-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #e0f2fe 0%, #e0f1fe 1%, #e0f1fe 2%, #e0f0fe 3%, #e0f0fe 4%, #e0effe 5%, #e0effe 6%, #e0eefe 7%, #e0eefe 8%, #dfedfe 9%, #dfecfe 10%, #dfecfe 11%, #dfebfe 12%, #dfebfe 13%, #dfeafe 14%, #dfeafe 15%, #dfe9fe 16%, #dfe8fe 17%, #dfe8fe 18%, #dfe7fe 19%, #dfe7fe 20%, #dfe6fe 21%, #dfe6fe 22%, #dfe5fe 23%, #dfe5fe 24%, #dfe4fe 25%, #dee3fe 26%, #dee3fe 27%, #dee2fe 28%, #dee2fe 29%, #dee1fe 30%, #dee1fe 31%, #dee0fe 32%, #dee0fe 33%, #dedffe 34%, #dedefe 35%, #dedefe 36%, #deddfe 37%, #deddfe 38%, #dedcfe 39%, #dedcfe 40%, #dedbfe 41%, #dddafe 42%, #dddafe 43%, #ddd9fe 44%, #ddd9fe 45%, #ddd8fe 46%, #ddd8fe 47%, #ddd7fe 48%, #ddd7fe 49%, #ddd6fe 50%, #ded6fd 51%, #ded6fc 52%, #dfd6fc 53%, #e0d6fb 54%, #e0d6fa 55%, #e1d6f9 56%, #e2d6f9 57%, #e2d6f8 58%, #e3d6f7 59%, #e4d6f6 60%, #e4d6f5 61%, #e5d6f5 62%, #e6d6f4 63%, #e6d6f3 64%, #e7d6f2 65%, #e8d6f2 66%, #e8d6f1 67%, #e9d6f0 68%, #ead6ef 69%, #ead6ee 70%, #ebd6ee 71%, #ecd6ed 72%, #ecd6ec 73%, #edd6eb 74%, #eed7eb 75%, #eed7ea 76%, #efd7e9 77%, #efd7e8 78%, #f0d7e7 79%, #f1d7e7 80%, #f1d7e6 81%, #f2d7e5 82%, #f3d7e4 83%, #f3d7e3 84%, #f4d7e3 85%, #f5d7e2 86%, #f5d7e1 87%, #f6d7e0 88%, #f7d7e0 89%, #f7d7df 90%, #f8d7de 91%, #f9d7dd 92%, #f9d7dc 93%, #fad7dc 94%, #fbd7db 95%, #fbd7da 96%, #fcd7d9 97%, #fdd7d9 98%, #fdd7d8 99%, #fed7d7 100%);
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    /* Initial transform with parallax offset */
+    transform: scale(1.05) translateY(6px) translate(var(--bg-x), var(--bg-y));
+    transition:
+        opacity 0.4s ease,
+        transform 0.5s ease;
+    z-index: 0;
+    /* Behind content */
+}
+
+/**
+ * Hover state: reveal and adjust background
+ * Gradient becomes visible with parallax maintained
+ */
+.contact-form-container:hover::before {
+    opacity: 1;
+    transform: scale(1.03) translateY(0) translate(var(--bg-x), var(--bg-y));
+}
+
+/* ============================================================================
+   Overlay Layer
+   ============================================================================ */
+
+/**
+ * Dark overlay for text contrast
+ * Ensures text remains readable over background gradient
+ */
+.contact-form-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+    /* Semi-transparent dark overlay */
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 1;
+    /* Between background and text */
+}
+
+/**
+ * Show overlay on hover
+ * Darkens background gradient for better text visibility
+ */
+.contact-form-container:hover::after {
+    opacity: 1;
+}
+
+/* ============================================================================
+   Content Layer
+   ============================================================================ */
+
+/**
+ * All content above overlay and background
+ * Maintains color contrast in both states
+ */
+.contact-form-container>* {
+    position: relative;
+    z-index: 2;
+    /* Above overlay and background */
+}
+
+/**
+ * Hover state: lift and reveal
+ * Container lifts slightly, shadow increases
+ */
+.contact-form-container:hover {
+    transform: translateY(-6px) scale(1.015);
+    /* Lift and slight scale */
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
+    /* Enhanced shadow */
+}
+
+/* ============================================================================
+   Header Section
+   ============================================================================ */
+
+/**
+ * Form header with title and subtitle
+ */
+.contact-form-header {
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+/**
+ * Form title
+ * Large, bold heading
+ */
+.contact-form-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #111;
+    margin: 0 0 12px 0;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    transition: color 0.3s ease;
+}
+
+/**
+ * Form subtitle
+ * Descriptive text below title
+ */
+.contact-form-subtitle {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #333;
+    margin: 0;
+    transition: color 0.3s ease;
+}
+
+/**
+ * Text color change on hover
+ * White text over dark overlay
+ */
+.contact-form-container:hover .contact-form-title,
+.contact-form-container:hover .contact-form-subtitle {
+    color: #fff;
+}
+
+/* ============================================================================
+   Form Fields
+   ============================================================================ */
+
+/**
+ * Individual form field container
+ */
+.form-field {
+    margin-bottom: 24px;
+}
+
+/**
+ * Form field label
+ * Small, uppercase label above input
+ */
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+}
+
+/**
+ * Label color on container hover
+ */
+.contact-form-container:hover .form-label {
+    color: #fff;
+}
+
+/**
+ * Form inputs (text, email, tel) and textarea
+ * Elegant styling with focus states
+ */
+.form-input {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 1rem;
+    font-family: inherit;
+    color: #111;
+    background: #f8f9fa;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+/**
+ * Input placeholder styling
+ */
+.form-input::placeholder {
+    color: #999;
+}
+
+/**
+ * Input focus state
+ * Highlights with border and background change
+ */
+.form-input:focus {
+    background: #fff;
+    border-color: #111;
+    box-shadow: 0 0 0 4px rgba(17, 17, 17, 0.05);
+}
+
+/**
+ * Input styling when container is hovered
+ * Adjust for better visibility over gradient
+ */
+.contact-form-container:hover .form-input {
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.contact-form-container:hover .form-input:focus {
+    background: #fff;
+    border-color: #fff;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+/**
+ * Textarea specific styling
+ * Minimum height and resize control
+ */
+textarea.form-input {
+    min-height: 140px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* ============================================================================
+   Submit Button
+   ============================================================================ */
+
+/**
+ * Submit button
+ * Full-width button with elegant hover effects
+ */
+.form-submit {
+    width: 100%;
+    padding: 18px 32px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    background: #111;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.25, 0.85, 0.25, 1);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin-top: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+/**
+ * Submit button on container hover
+ * Inverts to white with dark text
+ */
+.contact-form-container:hover .form-submit {
+    background: #fff;
+    color: #111;
+}
+
+/**
+ * Submit button hover state
+ * Lifts and scales slightly
+ */
+.form-submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/**
+ * Submit button on container hover + button hover
+ */
+.contact-form-container:hover .form-submit:hover:not(:disabled) {
+    background: #f8f9fa;
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
+}
+
+/**
+ * Submit button active state
+ * Presses down slightly
+ */
+.form-submit:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/**
+ * Submit button disabled state
+ * Reduced opacity and no pointer events
+ */
+.form-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/**
+ * Animated background effect on hover
+ * Creates a subtle shine effect
+ */
+.form-submit::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent);
+    transition: left 0.5s ease;
+}
+
+.form-submit:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+/**
+ * Mobile layout adjustments
+ * Reduced padding and font sizes
+ */
+@media (max-width: 768px) {
+    .contact-form-container {
+        margin: 60px auto;
+        padding: 40px 24px;
+    }
+
+    .contact-form-title {
+        font-size: 1.75rem;
+    }
+
+    .contact-form-subtitle {
+        font-size: 0.9375rem;
+    }
+
+    .form-input {
+        padding: 14px 16px;
+        font-size: 0.9375rem;
+    }
+
+    .form-submit {
+        padding: 16px 28px;
+        font-size: 0.9375rem;
+    }
+}
+
+/**
+ * Small mobile adjustments
+ * Further reduced spacing
+ */
+@media (max-width: 480px) {
+    .contact-form-container {
+        margin: 40px 20px;
+        padding: 32px 20px;
+    }
+
+    .contact-form-title {
+        font-size: 1.5rem;
+    }
+
+    .contact-form-header {
+        margin-bottom: 32px;
+    }
+}
+
+/* ============================================================================
+   Accessibility
+   ============================================================================ */
+
+/**
+ * Focus visible for keyboard navigation
+ * Enhanced outline for accessibility
+ */
+.form-input:focus-visible,
+.form-submit:focus-visible {
+    outline: 3px solid #111;
+    outline-offset: 2px;
+}
+
+.contact-form-container:hover .form-input:focus-visible,
+.contact-form-container:hover .form-submit:focus-visible {
+    outline-color: #fff;
+}
+
+/**
+ * Reduced motion support
+ * Disables animations for users who prefer reduced motion
+ */
+@media (prefers-reduced-motion: reduce) {
+
+    .contact-form-container,
+    .contact-form-container::before,
+    .contact-form-container::after,
+    .form-input,
+    .form-submit,
+    .form-submit::before,
+    .contact-form-title,
+    .contact-form-subtitle,
+    .form-label {
+        transition: none;
+    }
+}
+
+.contact-form-container .form-status {
+  margin-top: 16px;
+  font-size: 0.95rem;
+  color: #444;
+}
+.contact-form-container .form-status--success { color: #1a7f37; }
+.contact-form-container .form-status--error,
+.contact-form-container .form-status--unconfigured { color: #b35309; }
