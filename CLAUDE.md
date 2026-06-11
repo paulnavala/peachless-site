@@ -2,61 +2,57 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Two-repo architecture (read this first)
+## Project Overview
 
-`peachless.design` is split across two decoupled repos. **This one** is the HTML shell; the other (`sqs-design`) is the component CDN. Treat the CDN as **read-only** from here.
-
-| Repo | Path | Owns | Served at |
-|---|---|---|---|
-| `peachless-site` (this) | `D:\Projects\peachless\peachless-site` | Static HTML pages, `css/shell.css`, migrated images under `/assets/`, `_headers`, `_redirects` | `peachless.design` (Cloudflare Pages, push-to-`main` deploy, no build) |
-| `sqs-design` | `D:\Projects\peachless\sqs-design` | Vue 3 component IIFE bundles, component CSS, shared `core/*.js`/`.css`, data JSON | `assets.peachless.design` (GitHub Pages) |
-
-Page edits, layout/typography/color, new pages, image migrations → here. Component internals, data JSON, footer/mobile-menu logic → `sqs-design`. When you need to know how a component is structured, read from `D:\Projects\peachless\sqs-design\components\<name>\<name>-loader.html` and `core/<name>.js`/`.css` — don't modify it.
+Production site for **https://peachless.design** — a portfolio site built as an Astro 6 static site with Vue 3 islands, hosted on Cloudflare Pages. This repo replaced a Squarespace site + component-CDN setup in June 2026; the old repo (`D:\Projects\peachless\sqs-design`) is **frozen, read-only reference** — its `docs/superpowers/` holds the original design spec and implementation plan, and its components are the source the islands here were ported from.
 
 ## Commands
 
-```powershell
-# Serve locally on :8080
-npm run serve
+- `npm run dev` — Astro dev server
+- `npm run build` — static build to `dist/` (zod-validates all content collections; build fails on schema violations)
+- `npm run preview` — serve `dist/` at `http://localhost:4321`
+- `npm run check` — `astro check` (expect 0 errors; a few known unused-var hints)
+- `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, happy-dom)
+- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, 28 tests, `retries: 1`). **Run `npm run build` first** — the Playwright webServer runs `npm run preview` against whatever is in `dist/`, so a stale build silently tests old code.
 
-# Verify all routes render (Playwright + npx serve on :8789, writes screenshots/)
-npm run verify
-```
+## Architecture
 
-There is no build step — Cloudflare Pages serves the directory as-is. Deploy = push to `main`.
+- `src/pages/*.astro` — one file per route. `projects/[slug].astro` generates the case-study pages from the `projects` collection.
+- `src/components/islands/` — Vue 3 **render-function components** (`defineComponent` + `h()` in plain `.ts`, **not** SFCs), each paired with a 4-line script-only `.vue` wrapper so Astro's Vue renderer picks it up. Hydration: `Tagline` is `client:load` (above the fold); everything else `client:visible`. All data arrives as **build-time props** from content collections — no runtime fetching, no `data-*` scraping.
+- `src/components/static/` — Astro components with scoped client `<script>` (vanilla TS ports: PortfolioUiux, TwinGallery, FortunePeach).
+- `src/components/chrome/` — Header (theme `light`/`bright`; home is bright = clay bg, white text), MobileMenu (`.mmx-*` overlay with `trapFocus`), Footer (elegant-footer design).
+- `src/content.config.ts` — six zod-typed collections (`projects`, `logos`, `photos`, `brands`, `pages`, `site`); entries live in `src/content/`. `logos`/`photos` schemas use `image()` so `astro:assets` optimizes at build time.
+- `src/lib/dom.ts` — shared utilities (`trapFocus`, `isReducedMotion`, `rafThrottle`, `qs`/`qsa`, …). Modal-like components must use `trapFocus`; animation must respect reduced motion.
 
-## Page template pattern
+## Styling rules (critical)
 
-Every `index.html` is self-contained and follows the same shape. When adding a page, copy an existing one and change only the page-specific bits.
+- `src/styles/tokens.css` is the **single source** for palette/type/motion/layout tokens (`--linen #efe1d4`, `--clay #d29a84`, `--cacao #58433b`, fluid `--step-*` scale). Never hardcode brand colors.
+- `src/styles/components/*.css` are **verbatim ports** from the old repo, kept byte-similar on purpose. Do not edit them for cleanup or styling — visual compensations belong in page-level `<style>` blocks (which carry comments citing measured live-site values) or `global.css` helpers.
+- **Visual parity contract:** `docs/reference/screens/local/` (1440/768/390 × 8 pages) are the signed-off screenshots; `screens/live/` are the original Squarespace captures they were matched against. Resting visuals must not drift — when touching styles, recapture (`scripts/capture-screens.mjs <base-url> <out-dir>`) and compare before claiming done.
+- Marcellus ships **weight 400 only**; bold headings are synthetic and used only where the live site did it (home intro heading). Subpage header wordmark is clay on all subpages — intentional unification (live varied by accident).
 
-1. **Head** has identical preconnects (Google Fonts + `assets.peachless.design`) and the same **inline CSS loader IIFE** — a hardcoded list of CDN stylesheet paths under `https://assets.peachless.design`. Notably **`/core/header.css` is deliberately excluded** because `css/shell.css` owns the header (the CDN's `core/header.css` has a hardcoded Squarespace logo background-image).
-2. `<link rel="stylesheet" href="/css/shell.css">` comes last so shell rules win.
-3. `<body data-page="<key>">` — the `data-page` attribute drives the nav active-state CSS in `shell.css` (search for `body[data-page="…"]`). Keys: `home`, `about`, `contact`, `projects`, `logo-design`, `guidelines`, `uiux`, `photography`.
-4. Header / footer markup is identical across pages (duplicated, not templated). Header has a `.header-menu-toggle` hamburger for mobile — the CDN's `core/mobile-menu.js` binds to `.header-menu-toggle` / `button[aria-expanded]`, **not** `.header-menu-cta` (older specs got this wrong).
-5. **Inline JS loader IIFE** at end of `<body>` — sequential `PRIORITY` list (`/core/utilities.js`, `/core/component-loader.js`) then parallel `PARALLEL` list of component bundles. Components mount at `[data-component="name"]` markers, or at component-specific IDs (`#portfolio-uiux`, `#portfolio-photo`).
-6. **Inlined-not-CDN exception:** the home page's twin gallery is **inlined** in `index.html` with local `/assets/images/...` paths and `/projects/logo-design` link — the CDN's `twin-gallery-loader.html` has Squarespace image URLs and the wrong link target. Don't replace it with the CDN version.
+## Deployment
 
-## Routing
+- **Cloudflare Pages**, git-integrated, project `peachless`: push to `main` → CF builds (`npm run build`, Node from `.node-version`) and deploys to peachless.design. Every PR gets a preview at `https://<branch>.peachless.pages.dev` plus a "Cloudflare Pages" commit status.
+- **GitHub Actions (`ci.yml`) is the test gate only** — check → unit → build → e2e. It does not deploy.
+- `public/_redirects` — CF-native 301s for legacy paths (with and without trailing slash). The `astro.config.mjs` `redirects` block stays as a portable meta-refresh fallback; keep the two in sync.
+- `public/_headers` — immutable caching for `/_astro/*` + security headers.
+- The www → apex 301 is a Cloudflare **zone Redirect Rule** (dashboard), not in this repo.
+- `docs/CUTOVER.md` — the (executed) migration runbook; still useful for the post-cutover checklist and DNS facts.
 
-Pretty URLs work because each route is a directory with `index.html` (Cloudflare Pages auto-serves it). Routes: `/`, `/about/`, `/contact/`, `/projects/`, `/projects/logo-design/`, `/projects/guidelines/`, `/uiux/`, `/photography/`.
+## Content & CMS
 
-`_redirects` handles:
-- `/projects/uiux` → `/uiux` (301)
-- `www.peachless.design/*` → `peachless.design/*` (301)
+- Sveltia CMS at `/admin` (GitHub backend, personal-access-token sign-in). The CMS script in `public/admin/index.html` is **version-pinned with an SRI hash** — when bumping the version, recompute sha384 over the new file and update both together; never loosen the pin.
+- `src/content/site/site.yaml` holds nav, emails, and the contact-form config. **Edit `formEndpoint`/`formHidden` directly in git** — saving "Site Settings" through the CMS can strip manually-added `formHidden` keys (the Web3Forms `access_key` lives there; it is public-by-design).
 
-`_headers` sets cache (1-year immutable for `/assets/*`, 1-hour for `/css/*`) and basic security headers.
+## Testing gotchas
 
-## Verification script (scripts/verify-pages.mjs)
+- `tests/e2e/contact.spec.ts` **stubs** `api.web3forms.com` via `page.route`. Never let a test (or any automation) POST to the real endpoint — each submission emails the owner.
+- Playwright uses `waitUntil` defaults; the uiux page embeds Figma iframes whose telemetry never goes network-idle — don't wait on networkidle there.
+- `scripts/capture-screens.mjs` emulates `reducedMotion: 'reduce'`, scrolls the full page, and waits for images — so captures show the tagline fully typed and all reveal-on-scroll content visible.
 
-`npm run verify` spawns `npx serve@14` on :8789, then Playwright loads each route, checks `body[data-page]`, required selectors, and the logo text, and writes a screenshot per route to `screenshots/`. Failures exit non-zero.
+## Hard rules
 
-Two non-obvious things:
-
-- **Wait on the server with `fetch()`, not stdout markers or fixed timeouts.** `npx --yes serve@14` can take 5–15s on a fresh system, and PowerShell buffering through `npm run` makes stdout-marker detection unreliable.
-- **Windows tree-kill is mandatory at end-of-script.** `server.kill()` only signals the `cmd.exe` wrapper when `spawn(..., { shell: true })`; the `node serve@14` grandchild keeps the port bound and pins the event loop open. Use synchronous `spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], ...)` (not async `spawn` — otherwise `process.exit(0)` tears down before taskkill dispatches) then `process.exit(0)` explicitly. The current `killTree()` in `scripts/verify-pages.mjs` does this; preserve it.
-
-Also: use `waitUntil: 'load'`, not `'networkidle'` — the `/uiux/` page embeds Figma prototypes whose analytics never stop polling. Component data fetches settle within a fixed 2.5s wait after `load`.
-
-## Brand tokens (shell.css)
-
-CSS custom properties at `:root` define the palette (`--linen`, `--clay`, `--cacao`, `--black`, plus `--accent-*`) and the fluid `--step-{-1..3}` type scale. Use these instead of literal colors / px sizes when adding shell styles.
+- Never modify `D:\Projects\peachless\sqs-design` (frozen old repo).
+- Pushing `main` deploys to production — keep non-trivial work on a branch + PR (the CF preview + CI gate it).
+- IIFE/loader/registry machinery, `window.init*` globals, and runtime JSON fetching from the old architecture are retired — do not reintroduce them.
