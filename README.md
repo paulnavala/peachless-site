@@ -20,7 +20,9 @@ content edited via Sveltia CMS at `/admin`.
 - **Content**: `src/content/` collections (zod-validated), editable at `/admin`
   (Sveltia CMS, GitHub backend, token sign-in)
 - **Images**: originals in `src/assets/`, responsive WebP generated at build time
-- **Deploy**: GitHub Actions → GitHub Pages (see `docs/CUTOVER.md` for DNS)
+- **Deploy**: Cloudflare Pages, git-integrated — push to `main` and CF builds and
+  deploys; PRs get preview URLs. GitHub Actions remains the test gate
+  (see `docs/CUTOVER.md` for DNS)
 
 ## Editing content
 

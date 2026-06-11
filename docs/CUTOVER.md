@@ -1,44 +1,54 @@
-# Cutover runbook — peachless.design → self-hosted
+# Cutover runbook — peachless.design → Cloudflare Pages
 
-First step — merge to main:
-1. Merge PR #2 (astro-rebuild → main): https://github.com/paulnavala/peachless-site/pull/2
-   This replaces the old static-HTML shell on `main` and triggers the GitHub Pages
-   deploy (Pages is already enabled on the repo with `build_type=workflow`).
+Status:
+- PR #2 (astro-rebuild → main) and PR #3 (polish/components) are already merged.
+- The Cloudflare Pages project **peachless** is connected to `paulnavala/peachless-site`
+  via the Cloudflare GitHub app: it auto-builds `main` and is serving the up-to-date
+  Astro site at https://peachless.pages.dev. PRs get preview deployments (a
+  "Cloudflare Pages" commit status appears on each PR).
 
-Pre-flight (all must be true):
-- [ ] CI green on main; preview URL renders all 9 pages correctly
-      Note: verify rendering locally with `npm run build; npm run preview` — until the
-      custom domain is attached, https://paulnavala.github.io/peachless-site/ serves
-      root-absolute asset paths that 404 (site is built for the apex domain, no base
-      path), so broken styling there is normal, not a broken build.
-- [ ] Visual parity pass complete (Task 23)
-- [ ] Form service configured: create a (free) Formspree or Web3Forms endpoint for
-      patricia@peachless.design, put the URL in `src/content/site/site.yaml` →
-      `formEndpoint` (Web3Forms also needs `formHidden: { access_key: "..." }`),
-      commit, deploy, and send a real test message from /contact.
+Pre-flight (completed):
+
+- [x] Form service wired: endpoint set in `src/content/site/site.yaml` →
+      `formEndpoint` (plus `formHidden` access key where required) and a real test
+      message sent and received from /contact.
       Caveat: write `formEndpoint`/`formHidden` directly in git — editing Site
       Settings via the CMS may strip manually-added `formHidden` keys.
-- [ ] Sveltia CMS login verified at <pages-url>/admin/ (GitHub token)
-- [ ] Cloudflare Pages: check the Cloudflare dashboard for a Pages project connected
-      to `paulnavala/peachless-site` and remove it if present (the old static-shell
-      README configured one with custom domain peachless.design; if left connected
-      it will fight GitHub Pages for the domain)
+- [x] Sveltia CMS sign-in verified at /admin/ (GitHub token)
+- [x] Visual parity pass complete
 
-DNS cutover (requires access to the peachless.design DNS zone):
-1. Add the custom domain to Pages:
-   `gh api -X PUT repos/paulnavala/peachless-site/pages -f "cname=peachless.design"`
-   and commit a `public/CNAME` file containing `peachless.design` so deploys keep it.
-2. At the DNS provider, replace the Squarespace records:
-   - Apex `peachless.design`: A records → 185.199.108.153, 185.199.109.153,
-     185.199.110.153, 185.199.111.153 (remove Squarespace A/CNAME records)
-   - `www` CNAME → `paulnavala.github.io`
-3. Wait for DNS + cert provisioning (minutes to ~1h), then enable
-   "Enforce HTTPS" in the repo's Pages settings.
-4. Verify: https://peachless.design loads the new site; https://www.peachless.design
-   redirects to apex; /uiux, /home, /projects/graphic-design, /projects/ui-ux all land
-   on their new pages; /sitemap-index.xml serves.
+Cutover:
+
+1. In the Cloudflare dashboard, confirm the Pages project **peachless** build
+   settings: production branch `main`, build command `npm run build`, build output
+   directory `dist`. (It is already building correctly — this is a confirmation
+   step, not a change.)
+2. Add the **peachless.design** site (zone) to the Cloudflare account (Free plan)
+   and let Cloudflare import the existing DNS records.
+3. At the domain **registrar**, change the nameservers from
+   `ns-cloud-c1..c4.googledomains.com` (Google Cloud DNS) to the two
+   Cloudflare-assigned nameservers. The registration stays where it is — only DNS
+   moves. This replaces any record edits in Google Cloud DNS: CF Pages apex custom
+   domains need the zone on Cloudflare DNS (CNAME flattening), so the cutover is a
+   nameserver change, not A/CNAME edits at Google.
+4. In the Pages project → **Custom domains**: add `peachless.design` and
+   `www.peachless.design`. Cloudflare DNS auto-creates the records once the zone
+   is active.
+5. Add a redirect rule (zone → Rules → Redirect Rules): requests to
+   `www.peachless.design/*` → 301 `https://peachless.design/$1`.
+6. Verify:
+   - https://peachless.design serves the site with valid TLS
+   - https://www.peachless.design 301s to the apex
+   - `/uiux`, `/home`, `/projects/ui-ux`, `/projects/graphic-design` return 301s
+     straight to their targets (served by `public/_redirects`)
+   - `/sitemap-index.xml` serves
+   - `/admin/` loads and CMS sign-in works on the production URL
+7. Decommission GitHub Pages:
+   `gh api -X DELETE repos/paulnavala/peachless-site/pages`
+   (kills the github.io URL and releases the custom-domain claim).
 
 Post-cutover:
+
 - [ ] Submit the new sitemap in Google Search Console (property: peachless.design)
 - [ ] Keep `assets.peachless.design` (old repo, sqs-design) frozen but DEPLOYED —
       nothing references it anymore, but don't delete until confident
