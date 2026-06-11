@@ -29,13 +29,5 @@ const { title, description, theme = 'light' } = Astro.props;
       <slot />
     </main>
     <Footer />
-    <script>
-      // --vh mobile viewport fix (ported from old core/utilities.js)
-      const setVh = () =>
-        document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
-      setVh();
-      window.addEventListener('resize', setVh);
-      window.addEventListener('orientationchange', setVh);
-    </script>
   </body>
 </html>

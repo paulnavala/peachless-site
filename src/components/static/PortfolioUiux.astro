@@ -131,6 +131,19 @@ const figmaEmbed = (url: string) =>
   </div>
 </section>
 
+<noscript>
+  <style is:inline>
+    /* Projects (and their text/frame children) are hidden (opacity: 0) until the
+       reveal observer runs; without JS they would never appear, so force them visible. */
+    #portfolio-uiux .project,
+    #portfolio-uiux .project__text,
+    #portfolio-uiux .project__frame {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  </style>
+</noscript>
+
 <script>
   import { trapFocus } from '../../lib/dom';
 
@@ -139,7 +152,6 @@ const figmaEmbed = (url: string) =>
   // CERN seed fallback (:292-311), window.initPortfolioUIUX global.
   const root = document.getElementById('portfolio-uiux');
   if (root) {
-    document.documentElement.classList.add('js');
     const projects = [...root.querySelectorAll<HTMLElement>('.project')];
 
     // Filtering
@@ -180,10 +192,14 @@ const figmaEmbed = (url: string) =>
     );
     root.querySelectorAll<HTMLIFrameElement>('iframe[data-src]').forEach((f) => lazyIO.observe(f));
 
-    // Reveal-on-scroll
+    // Reveal-on-scroll (one-shot, like the original entry: reveal then unobserve)
     const revealIO = new IntersectionObserver(
       (entries) =>
-        entries.forEach((e) => e.target.classList.toggle('is-inview', e.isIntersecting)),
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          e.target.classList.add('is-inview');
+          revealIO.unobserve(e.target);
+        }),
       { threshold: 0.12 }
     );
     projects.forEach((p) => revealIO.observe(p));

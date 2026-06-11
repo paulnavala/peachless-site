@@ -1,4 +1,4 @@
-import { defineComponent, h, onMounted, onBeforeUnmount, ref, type PropType } from 'vue';
+import { defineComponent, h, onMounted, onBeforeUnmount, ref } from 'vue';
 
 export default defineComponent({
   name: 'BeforeAfterSlider',

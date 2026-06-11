@@ -47,13 +47,13 @@ export default defineComponent({
       }
     }
 
-    const masonryItems = computed<Array<{ item: GalleryItem; originalIndex: number }>>(() => {
+    const masonryItems = computed<Array<{ item: PhotoItem; originalIndex: number }>>(() => {
       const base = normalizedItems.value.slice(0, masonryLoadedCount.value);
       const cols = Math.max(1, colCount.value || 3);
       if (cols === 1) {
         return base.map((item, idx) => ({ item, originalIndex: idx }));
       }
-      const reordered: Array<{ item: GalleryItem; originalIndex: number }> = [];
+      const reordered: Array<{ item: PhotoItem; originalIndex: number }> = [];
       for (let c = 0; c < cols; c++) {
         for (let i = c; i < base.length; i += cols) {
           reordered.push({ item: base[i], originalIndex: i });
@@ -62,10 +62,7 @@ export default defineComponent({
       return reordered;
     });
 
-    type GalleryItem = PhotoItem;
-
-    // Helper for display title (falls back to id)
-    const displayTitle = (item: GalleryItem) => item.title || item.id;
+    const displayTitle = (item: PhotoItem) => item.title;
 
     const normalizedItems = computed(() =>
       props.items.map((p) => ({ ...p, alt: p.alt ?? p.title }))

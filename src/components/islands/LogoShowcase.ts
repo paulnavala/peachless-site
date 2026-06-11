@@ -35,9 +35,6 @@ export default defineComponent({
         const isHoveringBottom = ref(false);
         const isInitial = ref(true);
         
-        // Loading states
-        const loadedImages = ref<Set<string>>(new Set());
-        
         // History state management for mobile back button
         const historyStatePushed = ref(false);
         const isClosingFromHistory = ref(false);
@@ -233,11 +230,6 @@ export default defineComponent({
             }
         };
 
-        // Image load handler
-        const handleImageLoad = (id: string) => {
-            loadedImages.value.add(id);
-        };
-
         onMounted(() => {
             nextTick(checkScroll);
             setTimeout(checkScroll, 100);
@@ -301,7 +293,6 @@ export default defineComponent({
                                 logoItems.map((logo, index) => {
                                     const isSelected = selectedLogo.value === index;
                                     const isFocused = focusedIndex.value === index;
-                                    const isLoaded = loadedImages.value.has(logo.id);
 
                                     return h('div', {
                                         class: 'logo-item',
@@ -311,8 +302,7 @@ export default defineComponent({
                                         h('div', {
                                             class: ['logo-placeholder', {
                                                 'is-selected': isSelected,
-                                                'is-focused': isFocused,
-                                                'is-loaded': isLoaded
+                                                'is-focused': isFocused
                                             }],
                                             tabindex: isFocused ? 0 : -1,
                                             role: 'button',
@@ -339,8 +329,7 @@ export default defineComponent({
                                                 srcset: logo.gridSrcset,
                                                 sizes: '(max-width: 600px) 45vw, (max-width: 1024px) 30vw, 280px',
                                                 alt: logo.alt,
-                                                loading: 'lazy',
-                                                onLoad: () => handleImageLoad(logo.id)
+                                                loading: 'lazy'
                                             }),
                                             // Preview Image (Hover)
                                             h('img', {

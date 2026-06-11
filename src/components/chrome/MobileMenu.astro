@@ -28,30 +28,36 @@ const { nav } = Astro.props;
     overlay.classList.add('open');
     overlay.setAttribute('aria-hidden', 'false');
     toggle.setAttribute('aria-expanded', 'true');
-    document.documentElement.classList.add('mmx-locked', 'mmx-open');
-    document.body.classList.add('mmx-locked', 'mmx-open');
+    document.documentElement.classList.add('mmx-locked');
+    document.body.classList.add('mmx-locked');
     releaseTrap = trapFocus(overlay, 'a[href], button');
-    (overlay.querySelector<HTMLElement>('.mmx-nav a') ?? closeBtn).focus();
+    // The overlay transitions from visibility: hidden, so its links are not
+    // focusable until styles recalc; defer the initial focus by two frames.
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        if (!overlay.classList.contains('open')) return;
+        (overlay.querySelector<HTMLElement>('.mmx-nav a') ?? closeBtn).focus({
+          preventScroll: true,
+        });
+      })
+    );
   };
 
   const close = () => {
     overlay.classList.remove('open');
     overlay.setAttribute('aria-hidden', 'true');
     toggle.setAttribute('aria-expanded', 'false');
-    document.documentElement.classList.remove('mmx-locked', 'mmx-open');
-    document.body.classList.remove('mmx-locked', 'mmx-open');
+    document.documentElement.classList.remove('mmx-locked');
+    document.body.classList.remove('mmx-locked');
     releaseTrap?.();
     releaseTrap = null;
-    toggle.focus();
+    toggle.focus({ preventScroll: true });
   };
 
   toggle.addEventListener('click', () =>
     overlay.classList.contains('open') ? close() : open()
   );
   closeBtn.addEventListener('click', close);
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) close();
-  });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && overlay.classList.contains('open')) close();
   });
