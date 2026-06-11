@@ -23,7 +23,7 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
       <!-- Live composition: lockup image first in source (stacks first on mobile),
            text column pulled left of it at desktop via order. -->
       <div class="home-intro__media">
-        <Image src={hero} alt="" widths={[480, 1000, hero.width]} sizes="(max-width: 739px) 220px, 480px" />
+        <Image src={hero} alt="" widths={[480, 1000, hero.width]} sizes="(max-width: 739px) 160px, 480px" />
       </div>
       <div class="home-intro__text">
         <h3>{heading}</h3>
@@ -41,8 +41,14 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
 </Base>
 
 <style>
-  /* Live clay band is ~260px tall at 1440: .section padding + the tagline itself.
-     No extra min-height (the old 55vh tripled the band height). */
+  /* Live clay band: header+hero end ~y=338 at 1440 (hero ≈ 250px tall), while at
+     768 the band matches the default .section rhythm (~215px). Negative-slope
+     clamp interpolates: ~61px at 768 → ~24px at 1440. (.section.home-hero: must
+     out-specify global .section — Astro's :where() scoping adds no specificity,
+     so a bare .home-hero would only tie and depend on bundle order.) */
+  .section.home-hero {
+    padding-block: clamp(20px, 103px - 5.5vw, 64px);
+  }
   .home-hero .container {
     min-height: 0;
     display: flex;
@@ -50,9 +56,14 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
     justify-content: center;
   }
   @media (max-width: 480px) {
-    /* Live renders the tagline on a single line (~18-19px) at 390px */
+    /* Live renders the tagline at ~24px at 390 (wraps to 2 lines — same as live) */
     .home-hero :global(.tagline.typewriter) {
-      font-size: 1.2rem;
+      font-size: 1.5rem;
+    }
+    /* Live 390 band is ~205px with ~140px of space BELOW the tagline —
+       bottom-weighted padding reproduces that distribution. */
+    .section.home-hero {
+      padding-block: 32px 96px;
     }
   }
 
@@ -71,7 +82,7 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
   }
   .home-intro__media img {
     width: 100%;
-    max-width: 220px;
+    max-width: 160px; /* live lockup renders ~160px wide at 390 */
     height: auto;
   }
   .home-intro__text {
@@ -87,6 +98,14 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
   }
   .home-intro p {
     margin: 0;
+  }
+  /* Live keeps a clearly narrow intro text column at tablet (large gutters).
+     ~60-90px side padding reads close to live's rhythm without wrapping the
+     heading to 5 lines (live's literal 195px column would). */
+  @media (min-width: 600px) and (max-width: 900px) {
+    .section.home-intro {
+      padding-inline: clamp(60px, 10vw, 90px);
+    }
   }
   @media (min-width: 740px) {
     .home-intro .container {

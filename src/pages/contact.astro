@@ -18,7 +18,7 @@ const { formEndpoint, formHidden } = site!.data;
       <div class="contact-emails">
         {emails!.map((e) => (
           <p>
-            <strong>{e.label}</strong><br />
+            <strong>{e.label}</strong>
             <a href={`mailto:${e.address}`}>{e.address}</a>
           </p>
         ))}
@@ -41,13 +41,20 @@ const { formEndpoint, formHidden } = site!.data;
 
 <style>
   .contact-intro { text-align: center; }
-  /* Live: two wide left-aligned columns spread across the content grid,
-     plain black addresses with no underline. */
+  /* Live: two left-aligned columns in a centered ~700px block (left col x≈336,
+     right x≈836 at 1440), plain black addresses with no underline. */
   .contact-emails {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px 48px;
+    max-width: 700px;
+    margin-inline: auto;
     text-align: left;
+  }
+  /* Live shows ~40px between the label line and the address line */
+  .contact-emails strong {
+    display: block;
+    margin-bottom: 14px;
   }
   .contact-emails a {
     color: #000;
@@ -65,5 +72,22 @@ const { formEndpoint, formHidden } = site!.data;
      padding already provides the rhythm here. */
   .contact-section :global(.contact-form-container) {
     margin-block: 0;
+  }
+  /* Marcellus ships weight 400 only; the ported core CSS's font-weight:600 made
+     the card title render synthetic-bold (a heavy grotesque look at 390). Live's
+     Squarespace heading weight resolved to the real 400 face. */
+  .contact-section :global(.contact-form-title) {
+    font-weight: 400;
+  }
+  /* Live's fortune CTA inherited Squarespace's GLOBAL button typography (bold
+     ~17-18px serif in a ~253×46px pill). The ported fortune-peach.css never
+     declares font-family/size on .flw-btn, so without Squarespace it fell back
+     to the UA default (Arial 13.3px, ~214×36px). Restore the inherited look
+     page-scoped — do not edit fortune-peach.css. */
+  .contact-section :global(.flw-btn) {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1.08rem;
+    padding: 10px 28px;
   }
 </style>

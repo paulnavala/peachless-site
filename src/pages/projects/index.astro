@@ -44,4 +44,20 @@ const guideline = {
   .container .project-cards-container {
     max-width: 1180px;
   }
+  /* Below 900px live is truly full-bleed: only the component's own 20px mobile
+     gutter applies (the .container 92vw cap was adding ~16-31px extra inset). */
+  @media (max-width: 900px) {
+    .projects-section .container {
+      max-width: none;
+    }
+  }
+  /* Live's Squarespace global `h1,h2,h3,h4 { margin: 2rem 0 }` applied INSIDE the
+     ported cards (only margin-bottom was overridden by the component CSS, and live
+     paragraphs carried their own top spacing). Our global.css resets headings to
+     `0 0 .5em`, which compressed the cards ~45px. Restore live's internal rhythm
+     page-scoped — the ported component CSS stays byte-identical. */
+  .projects-section .project-card h2,
+  .projects-section .guideline-button h2 {
+    margin: 2rem 0;
+  }
 </style>

@@ -26,21 +26,33 @@ const { Content } = await render(about!);
 </Base>
 
 <style>
-  /* Live: portrait LEFT, text RIGHT, two columns kept down to tablet width;
-     content spans the full 1200px container (live ~1267px). */
-  .about-grid {
+  /* Live: portrait LEFT, text RIGHT, two columns kept down to tablet width.
+     At 1440 live spans ~1263px: photo col 434px, gap ~67px, text col 762px —
+     wider than the default 1200px container, so this grid carries its own cap. */
+  /* .container.about-grid: the max-width must out-specify global .container —
+     Astro's :where() scoping adds no specificity, so a bare .about-grid would
+     only tie with .container and depend on bundle order. */
+  .container.about-grid {
     display: grid;
-    grid-template-columns: 1fr 1.4fr;
-    gap: clamp(32px, 6vw, 80px);
+    grid-template-columns: 434fr 762fr;
+    gap: 67px;
     align-items: start;
+    max-width: min(1264px, 92vw);
   }
   .about-portrait {
     order: -1; /* markup keeps text first so mobile stacking is text-first like live */
   }
   .about-content :global(h3) {
-    /* Live lead statements: ~30px at 390, ~28px at 768, ~35px at 1440 */
+    /* Live lead statements are non-monotonic across widths: ~35px at 1440,
+       ~22px at 768, ~30px at 390 — clamp for desktop, explicit overrides below. */
     font-size: clamp(1.75rem, 1.1rem + 1.5vw, 2.2rem);
     margin-bottom: 1.2em;
+  }
+  @media (max-width: 900px) {
+    .about-content :global(h3) { font-size: 1.4rem; } /* live ~22px at 768 */
+  }
+  @media (max-width: 480px) {
+    .about-content :global(h3) { font-size: 1.85rem; } /* live ~30px at 390 */
   }
   .about-content :global(h3 + h3) {
     margin-top: 1.6em; /* live has a ~75px gap between the two statement blocks */
@@ -56,8 +68,20 @@ const { Content } = await render(about!);
     aspect-ratio: 435 / 673;
     object-fit: cover;
   }
+  /* Tablet two-column range: live stretches the portrait the full height of the
+     text column (227×720 at 768, ratio ~0.32) instead of keeping a fixed aspect. */
+  @media (min-width: 741px) and (max-width: 900px) {
+    .about-portrait {
+      align-self: stretch;
+    }
+    .about-portrait img {
+      height: 100%;
+      aspect-ratio: auto;
+    }
+  }
   @media (max-width: 740px) {
-    .about-grid { grid-template-columns: 1fr; }
+    /* Must match the base rule's .container.about-grid specificity to win */
+    .container.about-grid { grid-template-columns: 1fr; }
     .about-portrait { order: 0; max-width: 420px; } /* text stacks first (live) */
   }
 </style>

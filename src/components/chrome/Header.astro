@@ -123,6 +123,11 @@ const current = Astro.url.pathname.replace(/\/$/, '') || '/';
     /* Live steps the wordmark down to Squarespace's mobile title size (~16px) */
     .site-header__title { font-size: 1rem; }
   }
+  /* Live tablet header is ~129px tall (logo centered at y≈64) on projects /
+     logo-design / photography at 768; phones stay ~88px and desktop stays 88px. */
+  @media (min-width: 600px) and (max-width: 900px) {
+    .site-header__inner { min-height: 128px; }
+  }
   @media (max-width: 768px) {
     .site-header__logo { width: 120px; height: 50px; }
   }
