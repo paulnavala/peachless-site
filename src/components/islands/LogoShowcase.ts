@@ -329,7 +329,10 @@ export default defineComponent({
                                                 srcset: logo.gridSrcset,
                                                 sizes: '(max-width: 600px) 45vw, (max-width: 1024px) 30vw, 280px',
                                                 alt: logo.alt,
-                                                loading: 'lazy'
+                                                // Original component eager-loaded the first 4 grid images
+                                                // (above the fold) and prioritized the first 2.
+                                                loading: index < 4 ? 'eager' : 'lazy',
+                                                fetchpriority: index < 2 ? 'high' : undefined
                                             }),
                                             // Preview Image (Hover)
                                             h('img', {
@@ -383,6 +386,7 @@ export default defineComponent({
                                     class: 'detail-logo-image',
                                     src: selectedLogoData.previewSrc,
                                     srcset: selectedLogoData.previewSrcset,
+                                    sizes: '(max-width: 900px) 90vw, 540px',
                                     alt: selectedLogoData.alt,
                                     onError: (e: Event) => {
                                         const img = e.target as HTMLImageElement;

@@ -19,6 +19,8 @@ const { Content } = await render(about!);
           alt="Portrait of Patricia, the designer behind peachless."
           widths={[480, 800, portrait.width]}
           sizes="(max-width: 900px) 92vw, 420px"
+          loading="eager"
+          fetchpriority="high"
         />
       </div>
     </div>
