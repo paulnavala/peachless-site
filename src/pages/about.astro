@@ -8,6 +8,7 @@ const about = await getEntry('pages', 'about');
 const { Content } = await render(about!);
 ---
 <Base title="About" description="About peachless. — a visual designer exploring the space between art and functionality.">
+  <h1 class="sr-only">About peachless.</h1>
   <section class="section section--light">
     <div class="container about-grid">
       <div class="about-content">
@@ -19,6 +20,8 @@ const { Content } = await render(about!);
           alt="Portrait of Patricia, the designer behind peachless."
           widths={[480, 800, portrait.width]}
           sizes="(max-width: 900px) 92vw, 420px"
+          loading="eager"
+          fetchpriority="high"
         />
       </div>
     </div>

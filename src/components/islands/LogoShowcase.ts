@@ -1,5 +1,5 @@
 import { defineComponent, h, ref, type PropType, onMounted, onUnmounted, nextTick } from 'vue';
-import { trapFocus } from '../../lib/dom';
+import { trapFocus, isReducedMotion } from '../../lib/dom';
 
 export interface LogoItem {
   id: string;
@@ -34,9 +34,6 @@ export default defineComponent({
         const canScrollDown = ref(false);
         const isHoveringBottom = ref(false);
         const isInitial = ref(true);
-        
-        // Loading states
-        const loadedImages = ref<Set<string>>(new Set());
         
         // History state management for mobile back button
         const historyStatePushed = ref(false);
@@ -75,7 +72,7 @@ export default defineComponent({
         const scrollDown = () => {
             if (!mainContentRef.value) return;
             const el = mainContentRef.value;
-            el.scrollBy({ top: el.clientHeight * 0.7, behavior: 'smooth' });
+            el.scrollBy({ top: el.clientHeight * 0.7, behavior: isReducedMotion() ? 'auto' : 'smooth' });
         };
 
         const scrollToItem = (index: number) => {
@@ -83,7 +80,7 @@ export default defineComponent({
             const items = mainContentRef.value.querySelectorAll('.logo-item');
             const item = items[index] as HTMLElement;
             if (item) {
-                item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                item.scrollIntoView({ behavior: isReducedMotion() ? 'auto' : 'smooth', block: 'nearest' });
             }
         };
 
@@ -164,7 +161,8 @@ export default defineComponent({
             const logos = props.logos;
             if (!logos.length) return;
 
-            // If detail panel is open, only handle Escape
+            // If detail panel is open, only handle Escape (kept global so the
+            // modal can always be dismissed, matching the other modals)
             if (selectedLogo.value !== null) {
                 if (e.key === 'Escape') {
                     e.preventDefault();
@@ -172,6 +170,12 @@ export default defineComponent({
                 }
                 return;
             }
+
+            // Document-level listener: only handle grid navigation when focus
+            // is inside this component, otherwise arrow/Home/End keys are
+            // preventDefault()ed page-wide and keyboard users can't scroll
+            // the page at all.
+            if (!sectionRef.value?.contains(document.activeElement)) return;
 
             const cols = window.innerWidth >= 1024 ? 4 : window.innerWidth >= 768 ? 3 : 2;
             let newIndex = focusedIndex.value;
@@ -231,11 +235,6 @@ export default defineComponent({
             if (!panel && !card) {
                 closeDetail();
             }
-        };
-
-        // Image load handler
-        const handleImageLoad = (id: string) => {
-            loadedImages.value.add(id);
         };
 
         onMounted(() => {
@@ -301,7 +300,6 @@ export default defineComponent({
                                 logoItems.map((logo, index) => {
                                     const isSelected = selectedLogo.value === index;
                                     const isFocused = focusedIndex.value === index;
-                                    const isLoaded = loadedImages.value.has(logo.id);
 
                                     return h('div', {
                                         class: 'logo-item',
@@ -311,8 +309,7 @@ export default defineComponent({
                                         h('div', {
                                             class: ['logo-placeholder', {
                                                 'is-selected': isSelected,
-                                                'is-focused': isFocused,
-                                                'is-loaded': isLoaded
+                                                'is-focused': isFocused
                                             }],
                                             tabindex: isFocused ? 0 : -1,
                                             role: 'button',
@@ -339,8 +336,10 @@ export default defineComponent({
                                                 srcset: logo.gridSrcset,
                                                 sizes: '(max-width: 600px) 45vw, (max-width: 1024px) 30vw, 280px',
                                                 alt: logo.alt,
-                                                loading: 'lazy',
-                                                onLoad: () => handleImageLoad(logo.id)
+                                                // Original component eager-loaded the first 4 grid images
+                                                // (above the fold) and prioritized the first 2.
+                                                loading: index < 4 ? 'eager' : 'lazy',
+                                                fetchpriority: index < 2 ? 'high' : undefined
                                             }),
                                             // Preview Image (Hover)
                                             h('img', {
@@ -394,6 +393,7 @@ export default defineComponent({
                                     class: 'detail-logo-image',
                                     src: selectedLogoData.previewSrc,
                                     srcset: selectedLogoData.previewSrcset,
+                                    sizes: '(max-width: 900px) 90vw, 540px',
                                     alt: selectedLogoData.alt,
                                     onError: (e: Event) => {
                                         const img = e.target as HTMLImageElement;

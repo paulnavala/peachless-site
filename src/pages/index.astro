@@ -12,6 +12,7 @@ const site = await getEntry('site', 'site');
 const { heading, lead, buttonLabel, buttonHref } = home!.data;
 ---
 <Base description={site!.data.defaultDescription} theme="bright">
+  <h1 class="sr-only">peachless. — visual design portfolio</h1>
   <section class="section section--bright home-hero">
     <div class="container">
       <!-- fixedCenter must stay false (live parity): the old Squarespace loader set no
@@ -29,7 +30,7 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
       <!-- Live composition: lockup image first in source (stacks first on mobile),
            text column pulled left of it at desktop via order. -->
       <div class="home-intro__media">
-        <Image src={hero} alt="" widths={[480, 1000, hero.width]} sizes="(max-width: 739px) 160px, 480px" />
+        <Image src={hero} alt="" widths={[480, 1000, hero.width]} sizes="(max-width: 739px) 160px, 480px" loading="eager" fetchpriority="high" />
       </div>
       <div class="home-intro__text">
         <h3>{heading}</h3>

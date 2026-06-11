@@ -10,7 +10,7 @@ const cases = [
 for (const [from, to] of cases) {
   test(`redirects ${from} -> ${to}`, async ({ page }) => {
     await page.goto(from);
-    await page.waitForURL(`**${to === '/' ? '/' : to}`);
+    await page.waitForURL(`**${to}`);
     expect(new URL(page.url()).pathname.replace(/\/$/, '') || '/').toBe(to);
   });
 }

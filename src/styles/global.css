@@ -53,6 +53,60 @@ a {
   color: inherit;
 }
 
+/* Site-wide keyboard focus indicator. Only renders on keyboard focus
+   (:focus-visible), so resting visuals are untouched. Ported components that
+   define their own focus treatment (twin-gallery, portfolio-uiux,
+   portfolio-photo, logo-showcase, fortune-peach, contact-form, mobile-menu,
+   elegant-footer) all use higher-specificity selectors and either the
+   `outline` shorthand or `outline: none` plus their own box-shadow/background
+   affordance, so they win the cascade and nothing doubles up. */
+:focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: 2px;
+}
+/* Clay-on-clay contexts (bright hero section, bright header): a clay outline
+   would vanish against the clay background — use white there. */
+.section--bright :focus-visible,
+.site-header--bright :focus-visible {
+  outline-color: #fff;
+}
+
+/* Brand text selection (pre-approved subtle touch) */
+::selection {
+  background: var(--clay);
+  color: #fff;
+}
+
+/* Visually hidden, accessible to screen readers (page-level h1s, labels) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Skip-to-content link: absolutely positioned off-screen, so it occupies no
+   space and renders no pixels at rest; revealed only on keyboard focus
+   (:focus-visible — a pre-approved delta). */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 12px;
+  z-index: 1000;
+  background: var(--linen);
+  color: #000;
+  padding: 10px 18px;
+  border-radius: 6px;
+  text-decoration: underline;
+}
+.skip-link:focus-visible {
+  left: 12px;
+}
+
 img {
   max-width: 100%;
   height: auto;
@@ -81,25 +135,15 @@ img {
   margin-inline: auto;
 }
 
-/* Screen-reader-only utility (footer + skip links use it) */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
   }
 }

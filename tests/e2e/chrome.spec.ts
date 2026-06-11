@@ -23,14 +23,18 @@ test.describe('site chrome', () => {
     await expect(page.locator('#elegant-footer .footer-legal')).toContainText('peachless.');
   });
 
-  test('mobile menu opens, traps focus, closes on Escape', async ({ page }) => {
+  test('mobile menu opens, moves focus into overlay, closes on Escape and restores focus', async ({ page }) => {
     await page.setViewportSize({ width: 480, height: 800 });
     await page.goto('/');
     await page.locator('.site-header__burger').click();
     await expect(page.locator('.mmx-overlay')).toHaveClass(/open/);
     await expect(page.locator('.mmx-nav a')).toHaveCount(4);
+    // Opening moves focus inside the overlay (first nav link)
+    await expect(page.locator('.mmx-overlay .mmx-nav a').first()).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(page.locator('.mmx-overlay')).not.toHaveClass(/open/);
+    // Closing returns focus to the burger toggle
+    await expect(page.locator('.site-header__burger')).toBeFocused();
   });
 
   test('404 page renders for unknown URLs', async ({ page }) => {

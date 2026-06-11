@@ -18,24 +18,24 @@ const { title, description, theme = 'light' } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icons/icon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <Seo title={title} description={description} />
     <Font cssVariable="--font-marcellus" preload />
-    <Font cssVariable="--font-pt-serif" preload />
+    {/* Preload only the upright faces (400/700) — italics appear in scattered
+        body copy only, and preloading them on every page competes with
+        above-fold images. The italic @font-face still loads on demand. */}
+    <Font cssVariable="--font-pt-serif" preload={[{ style: 'normal' }]} />
     <link rel="sitemap" href="/sitemap-index.xml" />
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <Header theme={theme} />
     <main id="main">
       <slot />
     </main>
     <Footer />
-    <script>
-      // --vh mobile viewport fix (ported from old core/utilities.js)
-      const setVh = () =>
-        document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
-      setVh();
-      window.addEventListener('resize', setVh);
-      window.addEventListener('orientationchange', setVh);
-    </script>
   </body>
 </html>
