@@ -1,4 +1,5 @@
-import { defineComponent, h, ref, type PropType, onMounted, onUnmounted } from 'vue';
+import { defineComponent, h, ref, type PropType, onMounted, onUnmounted, nextTick } from 'vue';
+import { trapFocus } from '../../lib/dom';
 
 export type GuidelineItem = {
     name: string;
@@ -81,19 +82,44 @@ export default defineComponent({
             });
         };
 
+        // Modal a11y/scroll state: the viewer declares role=dialog aria-modal
+        // but (unlike the other modals on the site) shipped without a focus
+        // trap, focus restore, or scroll lock.
+        let releaseFocusTrap: (() => void) | null = null;
+        let lastFocusEl: HTMLElement | null = null;
+        let savedBodyOverflow = '';
+
         const openBrand = (brand: BrandItem) => {
+            lastFocusEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
             selectedBrand.value = brand;
             currentGuidelineIndex.value = 0;
             resetZoom();
             isMenuOpen.value = false;
             preloadImages(0);
+            // Lock page scroll while the fullscreen viewer is open
+            savedBodyOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            void nextTick(() => {
+                const modal = document.querySelector('.svg-viewer-modal') as HTMLElement | null;
+                if (!modal) return;
+                (modal.querySelector('.close-viewer-button') as HTMLElement | null)?.focus();
+                releaseFocusTrap = trapFocus(modal, 'button, [href]');
+            });
         };
 
         const closeBrand = () => {
+            releaseFocusTrap?.();
+            releaseFocusTrap = null;
+            const wasOpen = selectedBrand.value !== null;
             selectedBrand.value = null;
             currentGuidelineIndex.value = 0;
             resetZoom();
             isMenuOpen.value = false;
+            if (wasOpen) {
+                document.body.style.overflow = savedBodyOverflow;
+            }
+            lastFocusEl?.focus();
+            lastFocusEl = null;
         };
 
         const loadGuideline = (index: number) => {
@@ -218,6 +244,12 @@ export default defineComponent({
                 window.removeEventListener('mouseup', endPan);
                 window.removeEventListener('mousemove', doPan);
             }
+            releaseFocusTrap?.();
+            releaseFocusTrap = null;
+            // Release the scroll lock if we unmount with the viewer open
+            if (selectedBrand.value !== null) {
+                document.body.style.overflow = savedBodyOverflow;
+            }
         });
 
         return () => {
@@ -242,7 +274,16 @@ export default defineComponent({
                         h('div', {
                             key: brand.id,
                             class: 'brand-card',
-                            onClick: () => openBrand(brand)
+                            role: 'button',
+                            tabindex: 0,
+                            'aria-label': `View ${brand.name} guidelines`,
+                            onClick: () => openBrand(brand),
+                            onKeydown: (e: KeyboardEvent) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    openBrand(brand);
+                                }
+                            }
                         }, [
                             h('div', { class: 'brand-logo-container' }, [
                                 h('img', {
@@ -285,7 +326,7 @@ export default defineComponent({
                     ]),
 
                     // Toast Notification
-                    h('div', { class: ['toast-notification', { 'is-visible': toastMessage.value }] }, toastMessage.value ?? ''),
+                    h('div', { class: ['toast-notification', { 'is-visible': toastMessage.value }], role: 'status' }, toastMessage.value ?? ''),
 
                     h('div', { class: 'svg-viewer-container' }, [
                         // Close Button (Top Right)
@@ -347,7 +388,8 @@ export default defineComponent({
                                     class: 'dock-button',
                                     onClick: prevGuideline,
                                     disabled: currentGuidelineIndex.value === 0,
-                                    title: 'Previous Page (Left Arrow)'
+                                    title: 'Previous Page (Left Arrow)',
+                                    'aria-label': 'Previous Page (Left Arrow)'
                                 }, h(Icons.ChevronLeft)),
 
                                 // Divider
@@ -357,7 +399,8 @@ export default defineComponent({
                                 h('button', {
                                     class: ['dock-info', { 'is-active': isMenuOpen.value }],
                                     onClick: toggleMenu,
-                                    title: 'Toggle Page Menu (M)'
+                                    title: 'Toggle Page Menu (M)',
+                                    'aria-label': 'Toggle Page Menu (M)'
                                 }, [
                                     h('span', { class: 'dock-page-text' }, `Page ${currentGuidelineIndex.value + 1}`),
                                     h('span', { class: 'dock-page-total' }, `/ ${selectedBrand.value.guidelines.length}`),
@@ -373,21 +416,24 @@ export default defineComponent({
                                         class: 'dock-button small',
                                         onClick: zoomOut,
                                         disabled: zoomLevel.value <= 0.5,
-                                        title: 'Zoom Out (-)'
+                                        title: 'Zoom Out (-)',
+                                        'aria-label': 'Zoom Out (-)'
                                     }, h(Icons.ZoomOut)),
 
                                     h('button', {
                                         class: 'dock-button small',
                                         onClick: resetZoom,
                                         disabled: zoomLevel.value === 1,
-                                        title: 'Reset Zoom (0)'
+                                        title: 'Reset Zoom (0)',
+                                        'aria-label': 'Reset Zoom (0)'
                                     }, h(Icons.Reset)),
 
                                     h('button', {
                                         class: 'dock-button small',
                                         onClick: zoomIn,
                                         disabled: zoomLevel.value >= 3,
-                                        title: 'Zoom In (+)'
+                                        title: 'Zoom In (+)',
+                                        'aria-label': 'Zoom In (+)'
                                     }, h(Icons.ZoomIn))
                                 ]),
 
@@ -399,7 +445,8 @@ export default defineComponent({
                                     class: 'dock-button',
                                     onClick: nextGuideline,
                                     disabled: currentGuidelineIndex.value === selectedBrand.value.guidelines.length - 1,
-                                    title: 'Next Page (Right Arrow)'
+                                    title: 'Next Page (Right Arrow)',
+                                    'aria-label': 'Next Page (Right Arrow)'
                                 }, h(Icons.ChevronRight))
                             ])
                         ])

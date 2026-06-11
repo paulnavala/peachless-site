@@ -12,6 +12,9 @@ const items = await Promise.all(
   entries.map(async (e) => {
     const thumb = await getImage({
       src: e.data.after,
+      // width pins the fallback <img src> to the 1920w variant — without it
+      // Astro emits the full-size original (multi-MB) as the src fallback.
+      width: 1920,
       widths: [640, 1200, 1920],
       sizes: '(max-width: 600px) 92vw, (max-width: 1024px) 46vw, 30vw',
       format: 'webp',
@@ -32,6 +35,7 @@ const items = await Promise.all(
 );
 ---
 <Base title="Photography" description="Photography by peachless. — before/after edits and selected shots.">
+  <h1 class="sr-only">Photography</h1>
   <section id="portfolio-photo" class="pg" aria-label="Photography Gallery">
     <PhotographyGallery client:visible items={items} />
   </section>

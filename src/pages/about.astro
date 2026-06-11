@@ -8,6 +8,7 @@ const about = await getEntry('pages', 'about');
 const { Content } = await render(about!);
 ---
 <Base title="About" description="About peachless. — a visual designer exploring the space between art and functionality.">
+  <h1 class="sr-only">About peachless.</h1>
   <section class="section section--light">
     <div class="container about-grid">
       <div class="about-content">

@@ -235,9 +235,20 @@ const figmaEmbed = (url: string) =>
           proj?.querySelector('.project__title')?.textContent ?? 'Prototype';
         openLink.href = btn.dataset.figma ?? '#';
         modal.classList.add('is-loading');
-        iframe.addEventListener('load', () => modal.classList.remove('is-loading'), {
-          once: true,
-        });
+        iframe.addEventListener(
+          'load',
+          () => {
+            modal.classList.remove('is-loading');
+            // The cross-origin Figma iframe steals focus when it loads, which
+            // routes keydown into the iframe document and breaks the parent's
+            // Escape listener. Re-assert focus once; users who deliberately
+            // click into the prototype keep their focus.
+            if (!modal.hidden && document.activeElement === iframe) {
+              modal.querySelector<HTMLButtonElement>('.portfolio-modal__close')?.focus();
+            }
+          },
+          { once: true }
+        );
         iframe.src = btn.dataset.embed ?? '';
         // Safety net ported from the old entry (:245): clear the loading state even
         // if the iframe never fires `load`.
@@ -248,12 +259,11 @@ const figmaEmbed = (url: string) =>
         release = trapFocus(dialog, 'a[href], button, iframe');
         ac = new AbortController();
         const { signal } = ac;
+        // The backdrop carries data-close in the markup, so the loop above
+        // already binds it — no separate backdrop listener needed.
         modal.querySelectorAll<HTMLElement>('[data-close]').forEach((el) =>
           el.addEventListener('click', closeModal, { signal })
         );
-        modal
-          .querySelector<HTMLElement>('.portfolio-modal__backdrop')
-          ?.addEventListener('click', closeModal, { signal });
         document.addEventListener(
           'keydown',
           (e) => {

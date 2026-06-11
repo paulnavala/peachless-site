@@ -77,6 +77,36 @@ a {
   color: #fff;
 }
 
+/* Visually hidden, accessible to screen readers (page-level h1s, labels) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Skip-to-content link: absolutely positioned off-screen, so it occupies no
+   space and renders no pixels at rest; revealed only on keyboard focus
+   (:focus-visible — a pre-approved delta). */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 12px;
+  z-index: 1000;
+  background: var(--linen);
+  color: #000;
+  padding: 10px 18px;
+  border-radius: 6px;
+  text-decoration: underline;
+}
+.skip-link:focus-visible {
+  left: 12px;
+}
+
 img {
   max-width: 100%;
   height: auto;

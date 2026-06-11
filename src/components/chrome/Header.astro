@@ -16,7 +16,7 @@ const current = Astro.url.pathname.replace(/\/$/, '') || '/';
   <div class="site-header__inner">
     <a class="site-header__title" href="/">peachless.</a>
     <a class="site-header__logo" href="/" aria-label="peachless. — home">
-      <Image src={logo} alt="" width={240} densities={[1, 2]} />
+      <Image src={logo} alt="" width={240} densities={[1, 2]} loading="eager" />
     </a>
     <nav class="site-header__nav" aria-label="Primary">
       {nav.map((item) => (

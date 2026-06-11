@@ -1,5 +1,5 @@
 import { defineComponent, h, ref, type PropType, onMounted, onUnmounted, nextTick } from 'vue';
-import { trapFocus } from '../../lib/dom';
+import { trapFocus, isReducedMotion } from '../../lib/dom';
 
 export interface LogoItem {
   id: string;
@@ -72,7 +72,7 @@ export default defineComponent({
         const scrollDown = () => {
             if (!mainContentRef.value) return;
             const el = mainContentRef.value;
-            el.scrollBy({ top: el.clientHeight * 0.7, behavior: 'smooth' });
+            el.scrollBy({ top: el.clientHeight * 0.7, behavior: isReducedMotion() ? 'auto' : 'smooth' });
         };
 
         const scrollToItem = (index: number) => {
@@ -80,7 +80,7 @@ export default defineComponent({
             const items = mainContentRef.value.querySelectorAll('.logo-item');
             const item = items[index] as HTMLElement;
             if (item) {
-                item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                item.scrollIntoView({ behavior: isReducedMotion() ? 'auto' : 'smooth', block: 'nearest' });
             }
         };
 
@@ -161,7 +161,8 @@ export default defineComponent({
             const logos = props.logos;
             if (!logos.length) return;
 
-            // If detail panel is open, only handle Escape
+            // If detail panel is open, only handle Escape (kept global so the
+            // modal can always be dismissed, matching the other modals)
             if (selectedLogo.value !== null) {
                 if (e.key === 'Escape') {
                     e.preventDefault();
@@ -169,6 +170,12 @@ export default defineComponent({
                 }
                 return;
             }
+
+            // Document-level listener: only handle grid navigation when focus
+            // is inside this component, otherwise arrow/Home/End keys are
+            // preventDefault()ed page-wide and keyboard users can't scroll
+            // the page at all.
+            if (!sectionRef.value?.contains(document.activeElement)) return;
 
             const cols = window.innerWidth >= 1024 ? 4 : window.innerWidth >= 768 ? 3 : 2;
             let newIndex = focusedIndex.value;

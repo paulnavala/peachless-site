@@ -24,10 +24,14 @@ const { title, description, theme = 'light' } = Astro.props;
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <Seo title={title} description={description} />
     <Font cssVariable="--font-marcellus" preload />
-    <Font cssVariable="--font-pt-serif" preload />
+    {/* Preload only the upright faces (400/700) — italics appear in scattered
+        body copy only, and preloading them on every page competes with
+        above-fold images. The italic @font-face still loads on demand. */}
+    <Font cssVariable="--font-pt-serif" preload={[{ style: 'normal' }]} />
     <link rel="sitemap" href="/sitemap-index.xml" />
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <Header theme={theme} />
     <main id="main">
       <slot />

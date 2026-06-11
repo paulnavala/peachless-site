@@ -26,6 +26,13 @@ export default defineComponent({
     let lastScrollY = 0;
     const modalRatio = ref<number>(1);
     let releaseFocusTrap: (() => void) | null = null;
+    // History-entry bookkeeping (mirrors the LogoShowcase pattern): the
+    // watch(modalOpen) below pushes a {pgModal:true} entry on open; closing via
+    // Escape/× must consume it with history.back() or every open/close cycle
+    // leaves a dead entry behind. closingFromPopstate guards against calling
+    // history.back() again when the close itself came from a Back press.
+    let historyStatePushed = false;
+    let closingFromPopstate = false;
 
 
 
@@ -73,8 +80,13 @@ export default defineComponent({
       if (!item) return;
 
       modalRatio.value = 1;
-      lastScrollY = window.scrollY;
-      lastFocusEl.value = (document.activeElement as HTMLElement) || null;
+      // Arrow navigation re-runs openModal while the modal is already open; at
+      // that point activeElement is inside the modal, so only capture the
+      // restore target on the closed→open transition.
+      if (!modalOpen.value) {
+        lastScrollY = window.scrollY;
+        lastFocusEl.value = (document.activeElement as HTMLElement) || null;
+      }
       activeIndex.value = index;
 
       // Preload main image before opening modal to prevent empty flash
@@ -119,6 +131,11 @@ export default defineComponent({
       modalOpen.value = true;
 
       void nextTick(() => {
+        // Arrow navigation re-enters here with a trap already installed on the
+        // long-lived modal element — release it first or keydown listeners
+        // accumulate unboundedly.
+        releaseFocusTrap?.();
+        releaseFocusTrap = null;
         const modalEl = document.querySelector('.pg-modal') as HTMLElement | null;
         const closeBtn = document.querySelector('.pg-modal__close') as HTMLButtonElement | null;
         if (closeBtn) closeBtn.focus();
@@ -159,6 +176,18 @@ export default defineComponent({
       modalRatio.value = 1;
       activeIndex.value = -1;
 
+      // Consume the history entry pushed on open (unless the close itself came
+      // from popstate, where the browser already consumed it). The resulting
+      // popstate fires after modalOpen is false, so onPopState is a no-op.
+      if (historyStatePushed && !closingFromPopstate) {
+        historyStatePushed = false;
+        try {
+          if ((history.state as { pgModal?: boolean } | null)?.pgModal) history.back();
+        } catch { /* ignore */ }
+      } else {
+        historyStatePushed = false;
+      }
+
       // Restore scroll and focus to the element that opened the modal
       requestAnimationFrame(() => {
         window.scrollTo({ top: lastScrollY });
@@ -171,7 +200,9 @@ export default defineComponent({
     // Handle browser back button - only close modal if open
     function onPopState() {
       if (modalOpen.value) {
+        closingFromPopstate = true;
         closeModal();
+        closingFromPopstate = false;
       }
     }
 
@@ -200,6 +231,7 @@ export default defineComponent({
         // Push history state for back button support on mobile
         try {
           history.pushState({ pgModal: true }, '', window.location.href);
+          historyStatePushed = true;
         } catch { /* ignore */ }
       } else if (scrollLockState.applied) {
         if (scrollLockState.overflow) body.style.overflow = scrollLockState.overflow;
@@ -231,7 +263,12 @@ export default defineComponent({
       if (e.key === 'Escape') {
         e.preventDefault();
         closeModal();
-      } else if (e.key === 'ArrowRight') {
+        return;
+      }
+      // The before/after slider owns ArrowLeft/Right (role=slider keyboard
+      // API); don't hijack them to flip photos when focus is on the slider.
+      if ((e.target as HTMLElement)?.closest?.('.image-compare')) return;
+      if (e.key === 'ArrowRight') {
         e.preventDefault();
         nextPhoto();
       } else if (e.key === 'ArrowLeft') {
@@ -503,7 +540,11 @@ export default defineComponent({
               h('button', {
                 class: 'pg-masonry__fs',
                 type: 'button',
-                'aria-label': `Open ${displayTitle(it.item)} fullscreen`,
+                // The parent .pg-masonry__media is already role=button with the
+                // same action; a focusable button inside it violates ARIA
+                // content rules and doubles the tab stop. Keep it mouse-only.
+                tabindex: '-1',
+                'aria-hidden': 'true',
                 onClick: (ev: MouseEvent) => {
                   ev.stopPropagation();
                   openModal(it.originalIndex);

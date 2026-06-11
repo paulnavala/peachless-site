@@ -243,6 +243,8 @@ export default defineComponent({
     });
 
     return () => {
+      const pct = width.value > 0 ? Math.round((posX.value / width.value) * 100) : 25;
+
       const wrapperStyle = {
         width: `${posX.value}px`,
       };
@@ -295,7 +297,10 @@ export default defineComponent({
           'aria-label': 'Compare before and after images',
           'aria-valuemin': '0',
           'aria-valuemax': '100',
-          'aria-valuenow': String(width.value > 0 ? Math.round((posX.value / width.value) * 100) : 25),
+          'aria-valuenow': String(pct),
+          // posX is the width of the BEFORE pane, so the value reads as
+          // "percentage of the before image revealed".
+          'aria-valuetext': `${pct}% before image revealed`,
           onMousemove: (e: MouseEvent) => onMouseMove(e),
           onTouchstart: (e: TouchEvent) => { onMouseMove(e, true); },
           onTouchmove: (e: TouchEvent) => {
@@ -323,7 +328,7 @@ export default defineComponent({
               h('img', {
                 ref: beforeImg,
                 src: props.beforeSrc,
-                alt: props.alt,
+                alt: `${props.alt} (before)`,
                 style: imgStyle,
                 draggable: false,
               }),
@@ -332,7 +337,7 @@ export default defineComponent({
           h('img', {
             ref: afterImg,
             src: props.afterSrc,
-            alt: props.alt,
+            alt: `${props.alt} (after)`,
             style: imgStyle,
             draggable: false,
           }),
