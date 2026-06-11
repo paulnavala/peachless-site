@@ -1,0 +1,41 @@
+---
+import { Font } from 'astro:assets';
+import Seo from '../components/Seo.astro';
+import Header from '../components/chrome/Header.astro';
+import Footer from '../components/chrome/Footer.astro';
+import '../styles/tokens.css';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description: string;
+  theme?: 'light' | 'bright'; // header/first-section theme; home uses 'bright'
+}
+const { title, description, theme = 'light' } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <Seo title={title} description={description} />
+    <Font cssVariable="--font-marcellus" preload />
+    <Font cssVariable="--font-pt-serif" preload />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+  </head>
+  <body>
+    <Header theme={theme} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      // --vh mobile viewport fix (ported from old core/utilities.js)
+      const setVh = () =>
+        document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+      setVh();
+      window.addEventListener('resize', setVh);
+      window.addEventListener('orientationchange', setVh);
+    </script>
+  </body>
+</html>

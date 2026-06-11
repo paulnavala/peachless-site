@@ -1,0 +1,65 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import GuidelinePage from '../../components/islands/GuidelinePage.vue';
+import '../../styles/components/guideline-page.css';
+
+// Live card order (data/brand-guidelines.json in the old repo)
+const LIVE_ORDER = ['peachless', 'blend', 'fish-seafood', 'intouch', 'melody', 'the-world'];
+const brands = (await getCollection('brands'))
+  .sort((a, b) => LIVE_ORDER.indexOf(a.id) - LIVE_ORDER.indexOf(b.id))
+  .map((b) => ({
+    id: b.id,
+    name: b.data.name,
+    description: b.data.description,
+    logo: b.data.logo,
+    guidelines: b.data.guidelines,
+  }));
+---
+<Base title="Guidelines" description="Brand guidelines — explore peachless. brand standards and visual identity.">
+  <section class="section section--light section--flush guidelines-section">
+    <GuidelinePage
+      client:visible
+      title="Brand Guidelines"
+      subtitle="Explore our brand standards and visual identity"
+      brands={brands}
+    />
+  </section>
+</Base>
+
+<style is:global>
+  /* section--flush removed the hero's top spacing along with the gutters, but live
+     keeps a tall gap between the header and the H1 (header-bottom -> H1):
+     measured live H1 top y=287 @1440 (+108px vs local y=179), y=276 @768 (+89px vs
+     y=187), y=230 @390 (+83px vs y=147). One linear vw ramp covers all three:
+     72px + 2.5vw = 81.8 @390 / 91.2 @768 / 108 @1440.
+     (.section.guidelines-section: must out-specify .section--flush { padding: 0 },
+     which ties at one class.) */
+  .section.guidelines-section {
+    padding-top: calc(72px + 2.5vw);
+  }
+  /* Box-model parity: live Squarespace had NO universal border-box reset, so
+     .brand-logo-container { height:200px; padding:2rem; width:100% } computed
+     content-box (264px-tall panel, overflowing width) — our global reset shrank
+     it ~32%. Compensate here instead of editing the byte-identical ported CSS.
+     Verified against docs/reference/snapshots/site.css (no `*` box-sizing rule). */
+  .guideline-page .brand-logo-container {
+    box-sizing: content-box;
+  }
+  /* Live sat .guideline-page in a full-bleed Squarespace section, so its own
+     5rem/2rem (3rem/1.5rem tablet) padding was the only gutter; our .section
+     padding stacked on top of it (72px gutters at 1440 vs live 32px, 55px insets
+     at 768 vs live 24px). section--flush + a wider cap restores live's span:
+     1440 viewport − 2×32px padding = 1376px grid, exactly what live rendered. */
+  .guidelines-section .guideline-page {
+    max-width: 1440px;
+  }
+  /* Live's Squarespace global `h1,h2,h3,h4 { margin: 2rem 0 }` gave .brand-name
+     a 2rem top margin inside the cards (bottom stayed component-controlled, and
+     live paragraphs added their own spacing): logo-panel→title ~64-68px and
+     title→description ~41px on live. Our global heading reset compressed both.
+     Restore page-scoped: +32px above the title, 28px (~+16px) below it. */
+  .guidelines-section .brand-card .brand-name {
+    margin: 2rem 0 1.75rem;
+  }
+</style>

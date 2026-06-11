@@ -1,0 +1,58 @@
+---
+import { getEntry } from 'astro:content';
+import '../../styles/components/elegant-footer.css';
+
+const site = await getEntry('site', 'site');
+const { nav, emails, tagline } = site!.data;
+const year = new Date().getFullYear();
+---
+<footer id="elegant-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <p class="brand-name">peachless.</p>
+      <p class="brand-tagline">{tagline}</p>
+    </div>
+    <nav class="footer-nav" aria-label="Footer">
+      <ul>
+        {nav.map((item) => (
+          <li><a href={item.href}>{item.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+    <div class="footer-contact">
+      {emails.map((e) => (
+        <a href={`mailto:${e.address}`}>
+          <span class="contact-label">{e.label}</span>
+          {e.address}
+        </a>
+      ))}
+    </div>
+    <div class="footer-line"></div>
+    <div class="footer-legal">
+      <span>© {year} peachless. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Reveal-on-scroll (ported from old core/elegant-footer.js): one-shot .is-inview at 12% visibility
+  const footer = document.getElementById('elegant-footer');
+  if (footer) {
+    if (!('IntersectionObserver' in window)) {
+      footer.classList.add('is-inview');
+    } else {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              footer.classList.add('is-inview');
+              io.disconnect();
+            }
+          }
+        },
+        { threshold: 0.12 }
+      );
+      io.observe(footer);
+    }
+  }
+</script>

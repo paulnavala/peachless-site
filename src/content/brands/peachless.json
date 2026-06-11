@@ -1,0 +1,47 @@
+{
+  "name": "Peachless",
+  "description": "Personal brand guidelines and visual identity standards.",
+  "logo": "/guidelines/peachless/01-cover.svg",
+  "guidelines": [
+    {
+      "name": "Cover",
+      "path": "/guidelines/peachless/01-cover.svg"
+    },
+    {
+      "name": "Logo Construction",
+      "path": "/guidelines/peachless/02-logo-construction.svg"
+    },
+    {
+      "name": "Clear Space",
+      "path": "/guidelines/peachless/03-clear-space.svg"
+    },
+    {
+      "name": "Color Palette",
+      "path": "/guidelines/peachless/04-color-palette.svg"
+    },
+    {
+      "name": "Typography",
+      "path": "/guidelines/peachless/05-typography.svg"
+    },
+    {
+      "name": "Iconography",
+      "path": "/guidelines/peachless/06-iconography.svg"
+    },
+    {
+      "name": "Do's and Don'ts",
+      "path": "/guidelines/peachless/07-dos-and-donts.svg"
+    },
+    {
+      "name": "Stationery",
+      "path": "/guidelines/peachless/08-stationery.svg"
+    },
+    {
+      "name": "Social Media",
+      "path": "/guidelines/peachless/09-social-media.svg"
+    },
+    {
+      "name": "Merchandise",
+      "path": "/guidelines/peachless/10-merchandise.svg"
+    }
+  ]
+}

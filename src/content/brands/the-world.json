@@ -1,0 +1,19 @@
+{
+  "name": "The World",
+  "description": "Global news and media organization covering world events.",
+  "logo": "/guidelines/peachless/01-cover.svg",
+  "guidelines": [
+    {
+      "name": "Cover",
+      "path": "/guidelines/peachless/01-cover.svg"
+    },
+    {
+      "name": "Editorial Style",
+      "path": "/guidelines/peachless/02-logo-construction.svg"
+    },
+    {
+      "name": "Layouts",
+      "path": "/guidelines/peachless/03-clear-space.svg"
+    }
+  ]
+}

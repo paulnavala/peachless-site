@@ -1,0 +1,103 @@
+---
+import { Image } from 'astro:assets';
+import imgLeft from '../../assets/home/gallery-logo-design.png';
+import imgRight from '../../assets/home/gallery-uiux.png';
+import imgGuidelines from '../../assets/home/gallery-guidelines.png';
+import '../../styles/components/twin-gallery.css';
+---
+<!-- loading="eager": these are the home page's primary below-fold media; lazy decode
+     left the panels painted as blank beige rects in capture/parity runs. -->
+<div class="twin-gallery">
+  <a class="panel left" href="/projects/logo-design" aria-label="Logo Design">
+    <Image src={imgLeft} alt="Logo Design" loading="eager" widths={[640, 1000, imgLeft.width]} sizes="(max-width: 720px) 92vw, 46vw" />
+  </a>
+  <a class="panel right" href="/projects/uiux" aria-label="UI/UX">
+    <Image src={imgRight} alt="UI/UX" loading="eager" widths={[640, 1000, imgRight.width]} sizes="(max-width: 720px) 92vw, 46vw" />
+  </a>
+</div>
+<div class="guidelines-wrapper">
+  <a class="guidelines-panel" href="/projects/guidelines" aria-label="Guidelines">
+    <Image src={imgGuidelines} alt="Guidelines" loading="eager" widths={[640, 1200, imgGuidelines.width]} sizes="(max-width: 720px) 92vw, 92vw" />
+  </a>
+</div>
+
+<script>
+  import { rafThrottle, isReducedMotion, isTouchDevice } from '../../lib/dom';
+
+  // Ported from old twin-gallery.entry.ts (hover contrast, touch tap-focus),
+  // minus mercury:load/sqs:pageLoaded listeners and window.initTwinGallery global.
+  document.documentElement.classList.add('js');
+
+  // Touch feedback duration (matches original TAP_FOCUS_DURATION)
+  const TAP_FOCUS_DURATION = 900;
+
+  // Track tap timers without expando properties on DOM nodes
+  const tapTimers = new WeakMap<Element, number>();
+
+  const tapFocus = (panel: HTMLElement) => {
+    panel.classList.add('tap-focus');
+    const prev = tapTimers.get(panel);
+    if (prev) clearTimeout(prev);
+    tapTimers.set(
+      panel,
+      window.setTimeout(() => panel.classList.remove('tap-focus'), TAP_FOCUS_DURATION)
+    );
+  };
+
+  const init = () => {
+    if (isReducedMotion()) return;
+
+    document.querySelectorAll<HTMLElement>('.twin-gallery').forEach((gallery) => {
+      if (gallery.dataset.twinInitialized) return;
+      gallery.dataset.twinInitialized = 'true';
+      const left = gallery.querySelector<HTMLElement>('.panel.left');
+      const right = gallery.querySelector<HTMLElement>('.panel.right');
+      if (!left || !right) return;
+      left.addEventListener('mouseenter', () => {
+        gallery.classList.add('hover-left');
+        gallery.classList.remove('hover-right');
+      });
+      right.addEventListener('mouseenter', () => {
+        gallery.classList.add('hover-right');
+        gallery.classList.remove('hover-left');
+      });
+      gallery.addEventListener('mouseleave', () => {
+        gallery.classList.remove('hover-left', 'hover-right');
+      });
+    });
+
+    if (isTouchDevice()) {
+      document.querySelectorAll<HTMLElement>('.twin-gallery').forEach((gallery) => {
+        if (gallery.dataset.twinTouchInitialized) return;
+        gallery.dataset.twinTouchInitialized = 'true';
+        gallery.classList.add('touch-mode');
+        gallery.querySelectorAll<HTMLElement>('.panel').forEach((panel) =>
+          panel.addEventListener('touchstart', () => tapFocus(panel), { passive: true })
+        );
+
+        // Pointer-based direction detection while dragging (from the original)
+        let lastX: number | null = null;
+        const onMove = rafThrottle((ev: PointerEvent) => {
+          if (lastX === null) {
+            lastX = ev.clientX;
+            return;
+          }
+          const dir = ev.clientX > lastX ? 'hover-right' : 'hover-left';
+          gallery.classList.toggle('hover-right', dir === 'hover-right');
+          gallery.classList.toggle('hover-left', dir === 'hover-left');
+          lastX = ev.clientX;
+        });
+        gallery.addEventListener('pointermove', onMove, { passive: true });
+      });
+
+      const gw = document.querySelector<HTMLElement>('.guidelines-wrapper');
+      if (gw && !gw.dataset.guidelinesTouchInitialized) {
+        gw.dataset.guidelinesTouchInitialized = 'true';
+        gw.classList.add('touch-mode');
+        const panel = gw.querySelector<HTMLElement>('.guidelines-panel');
+        if (panel) panel.addEventListener('touchstart', () => tapFocus(panel), { passive: true });
+      }
+    }
+  };
+  init();
+</script>

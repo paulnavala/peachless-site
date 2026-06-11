@@ -1,0 +1,19 @@
+{
+  "name": "Fish & Seafood",
+  "description": "Premium seafood supplier delivering fresh quality daily.",
+  "logo": "/guidelines/peachless/01-cover.svg",
+  "guidelines": [
+    {
+      "name": "Cover",
+      "path": "/guidelines/peachless/01-cover.svg"
+    },
+    {
+      "name": "Logo Usage",
+      "path": "/guidelines/peachless/02-logo-construction.svg"
+    },
+    {
+      "name": "Typography",
+      "path": "/guidelines/peachless/03-clear-space.svg"
+    }
+  ]
+}

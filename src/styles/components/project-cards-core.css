@@ -1,0 +1,399 @@
+/**
+ * Project Cards Component Styles
+ * 
+ * Elegant project cards with background images and parallax hover effects.
+ * Cards reveal background images on hover with smooth transitions.
+ * 
+ * Features:
+ * - Two-column grid layout
+ * - Background image reveal on hover
+ * - Parallax mouse movement effect
+ * - Smooth scale and shadow transitions
+ * - Responsive single-column on mobile
+ * 
+ * HTML Structure:
+ * <div class="projects-text-grid">
+ *   <a href="..." class="project-card [category]">
+ *     <h2>Title</h2>
+ *     <p>Description</p>
+ *   </a>
+ * </div>
+ * 
+ * CSS Custom Properties:
+ * - --bg-x: Horizontal parallax offset (set by JavaScript)
+ * - --bg-y: Vertical parallax offset (set by JavaScript)
+ * 
+ * JavaScript Dependency:
+ * - project-card.js handles parallax mouse tracking
+ * 
+ * @module project-cards
+ */
+
+/* ============================================================================
+   Grid Container
+   ============================================================================ */
+
+/**
+ * Container for project cards and guideline button
+ */
+.project-cards-container {
+  max-width: 1100px;
+  margin: 120px auto;
+  padding: 0 40px;
+}
+
+/**
+ * Main grid container for project cards
+ * Two-column layout on desktop, single column on mobile
+ */
+.projects-text-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+/* ============================================================================
+   Project Card Base
+   ============================================================================ */
+
+/**
+ * Individual project card
+ * Can be styled with category classes (e.g., .graphic-design, .ui-ux)
+ */
+.project-card {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 80px 60px;
+  background: #fff;
+  color: #111;
+  border-radius: 20px;
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    transform 0.4s cubic-bezier(0.25, 0.85, 0.25, 1),
+    box-shadow 0.3s ease;
+  z-index: 1;
+}
+
+/**
+ * CSS custom properties for parallax effect
+ * Updated by JavaScript based on mouse position
+ */
+.project-card {
+  --bg-x: 0px;
+  --bg-y: 0px;
+}
+
+/* ============================================================================
+   Background Image Layer
+   ============================================================================ */
+
+/**
+ * Background image (hidden by default)
+ * Reveals on hover with parallax offset
+ */
+.project-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  /* Initial transform with parallax offset */
+  transform: scale(1.05) translateY(6px) translate(var(--bg-x), var(--bg-y));
+  transition:
+    opacity 0.4s ease,
+    transform 0.5s ease;
+  z-index: 0; /* Behind content */
+}
+
+/**
+ * Hover state: reveal and adjust background
+ * Image becomes visible with parallax maintained
+ */
+.project-card:hover::before {
+  opacity: 1;
+  transform: scale(1.03) translateY(0) translate(var(--bg-x), var(--bg-y));
+}
+
+/* ============================================================================
+   Overlay Layer
+   ============================================================================ */
+
+/**
+ * Dark overlay for text contrast
+ * Ensures text remains readable over background image
+ */
+.project-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25); /* Semi-transparent dark overlay */
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 1; /* Between background and text */
+}
+
+/**
+ * Show overlay on hover
+ * Darkens background image for better text visibility
+ */
+.project-card:hover::after {
+  opacity: 1;
+}
+
+/* ============================================================================
+   Text Content
+   ============================================================================ */
+
+/**
+ * All text content above overlay and background
+ * Maintains color contrast in both states
+ */
+.project-card * {
+  position: relative;
+  z-index: 2; /* Above overlay and background */
+  transition: none; /* No delay on color change */
+}
+
+/**
+ * Card title
+ * Large, bold heading
+ */
+.project-card h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
+/**
+ * Card description
+ * Body text with optimal reading width
+ */
+.project-card p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* ============================================================================
+   Hover Effects
+   ============================================================================ */
+
+/**
+ * Card hover state: lift and reveal
+ * Card lifts slightly, shadow increases, text turns white
+ */
+.project-card:hover {
+  transform: translateY(-6px) scale(1.015); /* Lift and slight scale */
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12); /* Enhanced shadow */
+  color: #fff; /* Text color change (instant, no transition) */
+}
+
+/**
+ * Text color change on hover
+ * Immediate color swap for crisp effect
+ */
+.project-card:hover h2,
+.project-card:hover p {
+  color: #fff; /* White text over dark overlay */
+}
+
+/* ============================================================================
+   Category-Specific Background Images
+   ============================================================================ */
+
+/**
+ * Graphic Design card background
+ * Set background image for this category
+ */
+.project-card.graphic-design::before {
+  background-image: url('/images/cards/graphic.png');
+}
+
+/**
+ * UI/UX card background
+ * Set background image for this category
+ */
+.project-card.ui-ux::before {
+  background-image: url('/images/cards/uiux.png');
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+/**
+ * Mobile layout: single column
+ * Stack cards vertically on smaller screens
+ */
+@media (max-width: 800px) {
+  .project-cards-container {
+    padding: 0 20px;
+  }
+
+  .projects-text-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  /* Reduce padding on mobile */
+  .project-card {
+    padding: 60px 30px;
+  }
+
+  /* Guideline button mobile padding */
+  .guideline-button {
+    padding: 60px 30px;
+  }
+}
+
+/* ============================================================================
+   Guideline Button
+   ============================================================================ */
+
+/**
+ * Guideline button container
+ * Full width button below project cards grid
+ * Same styling and effects as project cards
+ */
+.guideline-button {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 80px 60px;
+  background: #fff;
+  color: #111;
+  border-radius: 20px;
+  text-decoration: none;
+  overflow: hidden;
+  grid-column: 1 / -1;
+  width: 100%;
+  transition:
+    transform 0.4s cubic-bezier(0.25, 0.85, 0.25, 1),
+    box-shadow 0.3s ease;
+  z-index: 1;
+}
+
+/**
+ * CSS custom properties for parallax effect
+ * Updated by JavaScript based on mouse position
+ */
+.guideline-button {
+  --bg-x: 0px;
+  --bg-y: 0px;
+}
+
+/**
+ * Background image (hidden by default)
+ * Reveals on hover with parallax offset
+ * Soft sky/peach pastel gradient
+ */
+.guideline-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-image: linear-gradient(135deg, #e0f2fe 0%, #e0f1fe 1%, #e0f1fe 2%, #e0f0fe 3%, #e0f0fe 4%, #e0effe 5%, #e0effe 6%, #e0eefe 7%, #e0eefe 8%, #dfedfe 9%, #dfecfe 10%, #dfecfe 11%, #dfebfe 12%, #dfebfe 13%, #dfeafe 14%, #dfeafe 15%, #dfe9fe 16%, #dfe8fe 17%, #dfe8fe 18%, #dfe7fe 19%, #dfe7fe 20%, #dfe6fe 21%, #dfe6fe 22%, #dfe5fe 23%, #dfe5fe 24%, #dfe4fe 25%, #dee3fe 26%, #dee3fe 27%, #dee2fe 28%, #dee2fe 29%, #dee1fe 30%, #dee1fe 31%, #dee0fe 32%, #dee0fe 33%, #dedffe 34%, #dedefe 35%, #dedefe 36%, #deddfe 37%, #deddfe 38%, #dedcfe 39%, #dedcfe 40%, #dedbfe 41%, #dddafe 42%, #dddafe 43%, #ddd9fe 44%, #ddd9fe 45%, #ddd8fe 46%, #ddd8fe 47%, #ddd7fe 48%, #ddd7fe 49%, #ddd6fe 50%, #ded6fd 51%, #ded6fc 52%, #dfd6fc 53%, #e0d6fb 54%, #e0d6fa 55%, #e1d6f9 56%, #e2d6f9 57%, #e2d6f8 58%, #e3d6f7 59%, #e4d6f6 60%, #e4d6f5 61%, #e5d6f5 62%, #e6d6f4 63%, #e6d6f3 64%, #e7d6f2 65%, #e8d6f2 66%, #e8d6f1 67%, #e9d6f0 68%, #ead6ef 69%, #ead6ee 70%, #ebd6ee 71%, #ecd6ed 72%, #ecd6ec 73%, #edd6eb 74%, #eed7eb 75%, #eed7ea 76%, #efd7e9 77%, #efd7e8 78%, #f0d7e7 79%, #f1d7e7 80%, #f1d7e6 81%, #f2d7e5 82%, #f3d7e4 83%, #f3d7e3 84%, #f4d7e3 85%, #f5d7e2 86%, #f5d7e1 87%, #f6d7e0 88%, #f7d7e0 89%, #f7d7df 90%, #f8d7de 91%, #f9d7dd 92%, #f9d7dc 93%, #fad7dc 94%, #fbd7db 95%, #fbd7da 96%, #fcd7d9 97%, #fdd7d9 98%, #fdd7d8 99%, #fed7d7 100%);
+  opacity: 0;
+  /* Initial transform with parallax offset */
+  transform: scale(1.05) translateY(6px) translate(var(--bg-x), var(--bg-y));
+  transition:
+    opacity 0.4s ease,
+    transform 0.5s ease;
+  z-index: 0; /* Behind content */
+}
+
+/**
+ * Hover state: reveal and adjust background
+ * Image becomes visible with parallax maintained
+ */
+.guideline-button:hover::before {
+  opacity: 1;
+  transform: scale(1.03) translateY(0) translate(var(--bg-x), var(--bg-y));
+}
+
+/**
+ * Dark overlay for text contrast
+ * Ensures text remains readable over background image
+ */
+.guideline-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25); /* Semi-transparent dark overlay */
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 1; /* Between background and text */
+}
+
+/**
+ * Show overlay on hover
+ * Darkens background image for better text visibility
+ */
+.guideline-button:hover::after {
+  opacity: 1;
+}
+
+/**
+ * All text content above overlay and background
+ * Maintains color contrast in both states
+ */
+.guideline-button * {
+  position: relative;
+  z-index: 2; /* Above overlay and background */
+  transition: none; /* No delay on color change */
+}
+
+/**
+ * Guideline button title
+ * Large, bold heading
+ */
+.guideline-button h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
+/**
+ * Guideline button description
+ * Body text with optimal reading width, centered
+ */
+.guideline-button p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #333;
+  max-width: 100%;
+  text-align: center;
+}
+
+/**
+ * Guideline button hover state: lift and reveal
+ * Button lifts slightly, shadow increases, text turns white
+ */
+.guideline-button:hover {
+  transform: translateY(-6px) scale(1.015); /* Lift and slight scale */
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12); /* Enhanced shadow */
+  color: #fff; /* Text color change (instant, no transition) */
+}
+
+/**
+ * Text color change on hover
+ * Immediate color swap for crisp effect
+ */
+.guideline-button:hover h2,
+.guideline-button:hover p {
+  color: #fff; /* White text over dark overlay */
+}

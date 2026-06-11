@@ -1,0 +1,19 @@
+{
+  "name": "InTouch",
+  "description": "Communication platform connecting people worldwide.",
+  "logo": "/guidelines/peachless/01-cover.svg",
+  "guidelines": [
+    {
+      "name": "Cover",
+      "path": "/guidelines/peachless/01-cover.svg"
+    },
+    {
+      "name": "Brand Voice",
+      "path": "/guidelines/peachless/02-logo-construction.svg"
+    },
+    {
+      "name": "Visuals",
+      "path": "/guidelines/peachless/03-clear-space.svg"
+    }
+  ]
+}

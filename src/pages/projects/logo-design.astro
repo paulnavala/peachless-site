@@ -1,0 +1,43 @@
+---
+import { getCollection } from 'astro:content';
+import { getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import LogoShowcase from '../../components/islands/LogoShowcase.vue';
+import '../../styles/components/logo-showcase.css';
+
+const entries = (await getCollection('logos')).sort((a, b) => a.data.order - b.data.order);
+
+const logos = await Promise.all(
+  entries.map(async (e) => {
+    const grid = await getImage({
+      src: e.data.grid,
+      widths: [320, 640, 1200],
+      sizes: '(max-width: 600px) 45vw, (max-width: 1024px) 30vw, 280px',
+      format: 'webp',
+    });
+    const preview = await getImage({
+      src: e.data.preview,
+      widths: [320, 640, 1200],
+      sizes: '(max-width: 900px) 90vw, 540px',
+      format: 'webp',
+    });
+    return {
+      id: e.id,
+      name: e.data.name,
+      description: e.data.description,
+      alt: e.data.alt,
+      gridSrc: grid.src,
+      gridSrcset: grid.srcSet.attribute,
+      previewSrc: preview.src,
+      previewSrcset: preview.srcSet.attribute,
+    };
+  })
+);
+---
+<Base title="Logo Design" description="Logo design portfolio — brand marks and identity systems by peachless.">
+  <!-- section--flush: .logo-showcase manages its own padding (5rem 2rem 6rem responsive);
+       stacking .section padding on top doubled the insets vs live. -->
+  <section class="section section--flush section--light">
+    <LogoShowcase client:visible logos={logos} />
+  </section>
+</Base>

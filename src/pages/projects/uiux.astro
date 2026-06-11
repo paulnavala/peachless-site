@@ -1,0 +1,22 @@
+---
+import Base from '../../layouts/Base.astro';
+import PortfolioUiux from '../../components/static/PortfolioUiux.astro';
+---
+<Base title="UI/UX" description="UI/UX design portfolio — interactive Figma prototypes and case studies by peachless.">
+  <PortfolioUiux />
+</Base>
+
+<style is:global>
+  /* Live leaves ~56-80px more space between the header band and this section
+     (live header band ~168px at 1440 vs our 88px chrome). */
+  #portfolio-uiux {
+    margin-top: clamp(56px, 8vw, 80px);
+  }
+  /* Count badge: compact centered pill (the old design), not a grid-stretched
+     full-width bar — .portfolio__count is a direct child of the wrap grid here. */
+  #portfolio-uiux .portfolio__count {
+    width: fit-content;
+    justify-self: center;
+    margin-inline: auto;
+  }
+</style>

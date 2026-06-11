@@ -1,42 +1,30 @@
 # peachless-site
 
-Static HTML shell for [peachless.design](https://peachless.design), deployed via Cloudflare Pages.
+Self-hosted rebuild of [peachless.design](https://peachless.design). Astro 6 static site;
+content edited via Sveltia CMS at `/admin`.
 
-## What this repo is
+- `npm run dev` — dev server
+- `npm run build` / `npm run preview` — production build / serve
+- `npm run test` — unit tests · `npm run e2e` — Playwright
+- `npx astro check` — typecheck
 
-The Squarespace replacement for the peachless.design domain. Plain HTML/CSS pages — no build step. UI components are loaded at runtime from the separate `sqs-design` CDN at `https://assets.peachless.design` (do **not** modify that repo as part of this one).
+## Architecture
 
-## Local preview
+- **Pages**: `src/pages/*.astro` — one file per route; case studies generated from
+  `src/content/projects/` via `projects/[slug].astro`
+- **Islands** (`src/components/islands/`): Vue 3 render-function components hydrated
+  with `client:load`/`client:visible`; data arrives as build-time props
+- **Static components** (`src/components/static/`): Astro components with scoped
+  client scripts (no framework runtime)
+- **Design tokens**: `src/styles/tokens.css` — single source for palette/type/motion
+- **Content**: `src/content/` collections (zod-validated), editable at `/admin`
+  (Sveltia CMS, GitHub backend, token sign-in)
+- **Images**: originals in `src/assets/`, responsive WebP generated at build time
+- **Deploy**: GitHub Actions → GitHub Pages (see `docs/CUTOVER.md` for DNS)
 
-```bash
-# Any static server works; e.g.
-npx serve . --listen 8080
-# then open http://localhost:8080
-```
+## Editing content
 
-## Deployment
-
-Cloudflare Pages:
-- Project root: `/`
-- Build command: *(none)*
-- Output directory: `/`
-- Custom domain: `peachless.design`
-
-Push to `main` triggers automatic deploy.
-
-## Component CDN
-
-Components, data JSON, and shared core JS/CSS are served from the `sqs-design` repo (`https://github.com/paulnavala/sqs-design`) at `https://assets.peachless.design`. The new pages load them via `<script>`/`<link>` tags pointing at that CDN.
-
-## Pages
-
-| Route | File |
-|---|---|
-| `/` | `index.html` |
-| `/uiux` | `uiux/index.html` |
-| `/photography` | `photography/index.html` |
-| `/projects` | `projects/index.html` |
-| `/projects/logo-design` | `projects/logo-design/index.html` |
-| `/projects/guidelines` | `projects/guidelines/index.html` |
-| `/about` | `about/index.html` |
-| `/contact` | `contact/index.html` |
+Small edits: GitHub web UI or `/admin`. New UI/UX project: add
+`src/content/projects/<id>.json` (or use the CMS) — the portfolio page, filters, and
+a case-study stub page update automatically. New photo/logo: drop the image in
+`src/assets/photography|logos/` and add a content JSON pointing at it.

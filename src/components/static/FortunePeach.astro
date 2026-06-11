@@ -1,0 +1,330 @@
+---
+import '../../styles/components/fortune-peach.css';
+---
+<div class="fortune-logo-widget" data-theme="peachy">
+  <!-- Stage Container (handles state management) -->
+  <div class="flw-stage flw-stage--unopened" id="flwStage">
+    <!-- Title Section -->
+    <div class="flw-title">
+      <h1>Fortune Peach</h1>
+    </div>
+
+    <!-- ========================================================================
+         UNOPENED STATE
+         ======================================================================== -->
+
+    <!-- Logo Button (clickable peach) -->
+    <button class="flw-logoBtn" id="flwLogoBtn" aria-label="Tap to reveal your fortune">
+      <!-- Drop shadow below logo (oval) -->
+      <svg class="flw-shadow" viewBox="0 0 200 30" aria-hidden="true">
+        <ellipse cx="100" cy="20" rx="60" ry="10" fill="rgba(0,0,0,0.1)"></ellipse>
+      </svg>
+
+      <!-- Full Logo Container -->
+      <div class="flw-logo">
+        <!-- Personal Logo SVG -->
+        <!-- Note: Replace with your actual logo SVG -->
+        <svg class="flw-logo-svg" viewBox="0 0 312.94 435.1" aria-label="Personal Logo">
+          <defs>
+            <style>
+              .cls-1 {
+                fill: #f0cfbe;
+              }
+              .cls-2 {
+                fill: #010101;
+              }
+              .cls-3 {
+                fill: #fef0e5;
+              }
+              .cls-4 {
+                fill: #e3aa95;
+              }
+            </style>
+          </defs>
+          <g id="logo">
+            <path
+              class="cls-2"
+              d="M159.76,126.25c31.06,1.99,60.49,8.68,87.07,24.85,31.86,19.38,54.36,46.35,62.72,83.25,9.39,41.43-.96,78.78-28.07,110.79-33.42,39.45-74.76,68.7-122.12,89.39-1.45.63-3.62.79-5.01.18-47.14-20.87-88.97-49.26-122.72-88.57C11.25,322.39.37,294.46,0,263.1c-.41-35.76,13.43-65.94,38.64-90.97,23.65-23.48,52.5-36.75,85.07-42.46.79-.14,1.57-.38,2.02-.49-11.74-12.49-23.49-24.98-35.49-37.74,3.83-3.47,8.12-7.36,12.64-11.45,11.88,11.13,23.48,22.01,35.6,33.36,1.3-8.14,1.97-15.42,3.66-22.46,8.14-33.97,28.61-58.34,59.46-73.98,12.2-6.19,25.04-11.12,38.22-16.91-1.51,58.82-28.5,100.2-80.06,126.25ZM20.41,253.72c-.38,31.59,9.58,59.11,24.31,76.61,2.88,3.42,4.77,3.24,7.9.13,55.19-55.06,110.49-110.02,165.78-164.99,4.92-4.89,4.95-5.31-1.41-7.77-43.72-16.89-87.37-16.35-129.5,4-41.51,20.05-64.98,53.51-67.07,92.02ZM250.38,349.3c-1.58-1.73-2.53-2.86-3.56-3.89-28.87-28.87-57.81-57.68-86.54-86.68-3.33-3.36-5.05-3.14-8.28.09-28.52,28.5-57.23,56.82-85.89,85.18-4.54,4.49-4.58,4.46.06,8.83,25.15,23.69,53.84,42.16,84.52,57.79,4.55,2.32,8.19,2.12,12.56-.1,22.92-11.62,44.46-25.36,64.43-41.52,7.71-6.24,15.01-12.99,22.71-19.7ZM292.44,261.21c-.31-3.69-.4-8.37-1.13-12.96-4.94-30.9-20.64-55.19-45.33-74.1-3.74-2.86-5.77-2.28-8.74.66-20.97,20.69-42.01,41.31-63.15,61.83-2.87,2.79-2.71,4.48.07,7.24,28.69,28.51,57.25,57.16,85.85,85.76,4.28,4.28,4.88,4.35,8.75-.65,15.2-19.66,23.18-41.92,23.66-67.78Z"
+            />
+            <path
+              class="cls-1"
+              d="M20.41,253.72c2.09-38.51,25.56-71.97,67.07-92.02,42.13-20.35,85.78-20.89,129.5-4,6.36,2.46,6.33,2.88,1.41,7.77-55.28,54.97-110.58,109.93-165.78,164.99-3.12,3.12-5.02,3.3-7.9-.13-14.73-17.5-24.69-45.02-24.31-76.61Z"
+            />
+            <path
+              class="cls-4"
+              d="M250.38,349.3c-7.7,6.71-15,13.46-22.71,19.7-19.97,16.16-41.51,29.9-64.43,41.52-4.37,2.22-8.01,2.42-12.56.1-30.68-15.63-59.37-34.1-84.52-57.79-4.64-4.37-4.6-4.34-.06-8.83,28.67-28.36,57.37-56.68,85.89-85.18,3.23-3.23,4.95-3.45,8.28-.09,28.74,29,57.68,57.8,86.54,86.68,1.03,1.03,1.98,2.16,3.56,3.89Z"
+            />
+            <path
+              class="cls-3"
+              d="M292.44,261.21c-.48,25.86-8.46,48.12-23.66,67.78-3.87,5-4.47,4.93-8.75.65-28.6-28.6-57.16-57.25-85.85-85.76-2.78-2.76-2.95-4.45-.07-7.24,21.14-20.52,42.18-41.13,63.15-61.83,2.97-2.93,5-3.52,8.74-.66,24.69,18.91,40.39,43.2,45.33,74.1.73,4.58.82,9.27,1.13,12.96Z"
+            />
+          </g>
+        </svg>
+      </div>
+    </button>
+
+    <!-- Main CTA Button (alternative trigger) -->
+    <div class="flw-cta">
+      <button class="flw-btn" id="flwTap">Tap to Reveal Your Fortune</button>
+    </div>
+
+    <!-- ========================================================================
+         CRACKING STATE
+         ======================================================================== -->
+
+    <!-- Cracking Animation (logo split) -->
+    <div class="flw-cracking" id="flwCracking" hidden aria-hidden="true">
+      <div class="flw-crack-wrap">
+        <!-- Split Logo SVG -->
+        <svg
+          class="flw-crack-svg"
+          viewBox="0 0 312.94 435.1"
+          preserveAspectRatio="xMidYMid meet"
+          aria-hidden="true"
+        >
+          <defs>
+            <!-- Left half clip path -->
+            <clipPath id="flwLeft" clipPathUnits="userSpaceOnUse">
+              <rect x="0" y="0" width="156.47" height="435.1"></rect>
+            </clipPath>
+            <!-- Right half clip path -->
+            <clipPath id="flwRight" clipPathUnits="userSpaceOnUse">
+              <rect x="156.47" y="0" width="156.47" height="435.1"></rect>
+            </clipPath>
+          </defs>
+
+          <!-- Left Half (slides left) -->
+          <g class="flw-half flw-left" clip-path="url(#flwLeft)">
+            <use href="#flw-logo-def"></use>
+          </g>
+
+          <!-- Right Half (slides right) -->
+          <g class="flw-half flw-right" clip-path="url(#flwRight)">
+            <use href="#flw-logo-def"></use>
+          </g>
+
+          <!-- Logo Definition (reused by both halves) -->
+          <symbol id="flw-logo-def" viewBox="0 0 312.94 435.1">
+            <g>
+              <path
+                class="cls-2"
+                d="M159.76,126.25c31.06,1.99,60.49,8.68,87.07,24.85,31.86,19.38,54.36,46.35,62.72,83.25,9.39,41.43-.96,78.78-28.07,110.79-33.42,39.45-74.76,68.7-122.12,89.39-1.45.63-3.62.79-5.01.18-47.14-20.87-88.97-49.26-122.72-88.57C11.25,322.39.37,294.46,0,263.1c-.41-35.76,13.43-65.94,38.64-90.97,23.65-23.48,52.5-36.75,85.07-42.46.79-.14,1.57-.38,2.02-.49-11.74-12.49-23.49-24.98-35.49-37.74,3.83-3.47,8.12-7.36,12.64-11.45,11.88,11.13,23.48,22.01,35.6,33.36,1.3-8.14,1.97-15.42,3.66-22.46,8.14-33.97,28.61-58.34,59.46-73.98,12.2-6.19,25.04-11.12,38.22-16.91-1.51,58.82-28.5,100.2-80.06,126.25ZM20.41,253.72c-.38,31.59,9.58,59.11,24.31,76.61,2.88,3.42,4.77,3.24,7.9.13,55.19-55.06,110.49-110.02,165.78-164.99,4.92-4.89,4.95-5.31-1.41-7.77-43.72-16.89-87.37-16.35-129.5,4-41.51,20.05-64.98,53.51-67.07,92.02ZM250.38,349.3c-1.58-1.73-2.53-2.86-3.56-3.89-28.87-28.87-57.81-57.68-86.54-86.68-3.33-3.36-5.05-3.14-8.28.09-28.52,28.5-57.23,56.82-85.89,85.18-4.54,4.49-4.58,4.46.06,8.83,25.15,23.69,53.84,42.16,84.52,57.79,4.55,2.32,8.19,2.12,12.56-.1,22.92-11.62,44.46-25.36,64.43-41.52,7.71-6.24,15.01-12.99,22.71-19.7ZM292.44,261.21c-.31-3.69-.4-8.37-1.13-12.96-4.94-30.9-20.64-55.19-45.33-74.1-3.74-2.86-5.77-2.28-8.74.66-20.97,20.69-42.01,41.31-63.15,61.83-2.87,2.79-2.71,4.48.07,7.24,28.69,28.51,57.25,57.16,85.85,85.76,4.28,4.28,4.88,4.35,8.75-.65,15.2-19.66,23.18-41.92,23.66-67.78Z"
+              />
+              <path
+                class="cls-1"
+                d="M20.41,253.72c2.09-38.51,25.56-71.97,67.07-92.02,42.13-20.35,85.78-20.89,129.5-4,6.36,2.46,6.33,2.88,1.41,7.77-55.28,54.97-110.58,109.93-165.78,164.99-3.12,3.12-5.02,3.3-7.9-.13-14.73-17.5-24.69-45.02-24.31-76.61Z"
+              />
+              <path
+                class="cls-4"
+                d="M250.38,349.3c-7.7,6.71-15,13.46-22.71,19.7-19.97,16.16-41.51,29.9-64.43,41.52-4.37,2.22-8.01,2.42-12.56.1-30.68-15.63-59.37-34.1-84.52-57.79-4.64-4.37-4.6-4.34-.06-8.83,28.67-28.36,57.37-56.68,85.89-85.18,3.23-3.23,4.95-3.45,8.28-.09,28.74,29,57.68,57.8,86.54,86.68,1.03,1.03,1.98,2.16,3.56,3.89Z"
+              />
+              <path
+                class="cls-3"
+                d="M292.44,261.21c-.48,25.86-8.46,48.12-23.66,67.78-3.87,5-4.47,4.93-8.75.65-28.6-28.6-57.16-57.25-85.85-85.76-2.78-2.76-2.95-4.45-.07-7.24,21.14-20.52,42.18-41.13,63.15-61.83,2.97-2.93,5-3.52,8.74-.66,24.69,18.91,40.39,43.2,45.33,74.1.73,4.58.82,9.27,1.13,12.96Z"
+              />
+            </g>
+          </symbol>
+        </svg>
+
+        <!-- Particle Container (dynamically populated by JavaScript) -->
+        <div class="flw-particles" id="flwParticles"></div>
+      </div>
+
+      <!-- Status Text -->
+      <p class="flw-status" role="status">Revealing your fortune...</p>
+    </div>
+
+    <!-- ========================================================================
+         REVEALED STATE
+         ======================================================================== -->
+
+    <!-- Revealed Fortune Card -->
+    <div class="flw-revealed" id="flwRevealed" hidden aria-hidden="true">
+      <!-- Fortune Card Container -->
+      <div class="flw-card">
+        <!-- Animated Glow Background -->
+        <div class="flw-card-glow" aria-hidden="true"></div>
+
+        <!-- Card Content -->
+        <div class="flw-card-inner">
+          <!-- Decorative Star Icon -->
+          <div class="flw-star" aria-hidden="true">✦</div>
+
+          <!-- Card Title -->
+          <h2>Your Fortune</h2>
+
+          <!-- Fortune Quote (populated by JavaScript) -->
+          <p class="flw-quote" id="flwQuote" aria-live="polite">"…"</p>
+
+          <!-- Decorative Divider -->
+          <div class="flw-divider" aria-hidden="true"></div>
+
+          <!-- Lucky Numbers Section -->
+          <div class="flw-lucky">
+            <span>Your Lucky Numbers</span>
+            <!-- Lucky Number Balls (dynamically populated by JavaScript) -->
+            <div class="flw-balls" id="flwBalls"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Try Again Button -->
+      <button class="flw-btn" id="flwAgain">Try Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Ported from old fortune-peach.entry.ts, minus the window.initFortuneLogoWidget/
+  // window.initFortunePeach globals, the MutationObserver bootstrap, and the
+  // DOMContentLoaded gate. The markup above is server-rendered, so init runs directly.
+  import { isReducedMotion } from '../../lib/dom';
+  
+  type Elements = {
+    stage: HTMLElement;
+    cracking: HTMLElement;
+    revealed: HTMLElement;
+    quoteEl: HTMLElement;
+    ballsEl: HTMLElement;
+    particles: HTMLElement;
+  };
+  
+  const FORTUNES: string[] = [
+    'The best time to plant a tree was 20 years ago. The second best time is now.',
+    "Your limitation—it's only your imagination.",
+    'Great things never come from comfort zones.',
+    "Success doesn't just find you. You have to go out and get it.",
+    'Dream bigger. Do bigger.',
+    "Don't stop when you're tired. Stop when you're done.",
+    'Wake up with determination. Go to bed with satisfaction.',
+    'Little by little, a little becomes a lot.',
+    'The secret of getting ahead is getting started.',
+    "Believe you can and you're halfway there.",
+    "Opportunities don't happen. You create them.",
+    "Everything you've ever wanted is on the other side of fear.",
+  ];
+  
+  const LUCKY_NUMBERS = { count: 6, min: 1, max: 70 } as const;
+  const TIMING = { crackingDuration: 1500, particleCleanup: 1500 } as const;
+  
+  function randomFortune() {
+    const quote = FORTUNES[Math.floor(Math.random() * FORTUNES.length)];
+    const nums = new Set<number>();
+    while (nums.size < LUCKY_NUMBERS.count) {
+      nums.add(
+        LUCKY_NUMBERS.min + Math.floor(Math.random() * (LUCKY_NUMBERS.max - LUCKY_NUMBERS.min + 1))
+      );
+    }
+    return { quote, lucky: Array.from(nums).sort((a, b) => a - b) };
+  }
+  
+  function setStage(
+    name: 'unopened' | 'cracking' | 'revealed',
+    stage: HTMLElement,
+    cracking: HTMLElement,
+    revealed: HTMLElement
+  ) {
+    stage.classList.remove('flw-stage--unopened', 'flw-stage--cracking', 'flw-stage--revealed');
+    stage.classList.add('flw-stage--' + name);
+    const showCracking = name === 'cracking';
+    const showRevealed = name === 'revealed';
+    cracking.hidden = !showCracking;
+    revealed.hidden = !showRevealed;
+    cracking.setAttribute('aria-hidden', String(!showCracking));
+    revealed.setAttribute('aria-hidden', String(!showRevealed));
+  }
+  
+  /** Emit particle bursts from the cookie center; respects reduced motion. */
+  function spawnParticles(particles: HTMLElement) {
+    particles.innerHTML = '';
+    if (isReducedMotion()) return;
+    const count = 20;
+    const box = particles.getBoundingClientRect();
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < count; i++) {
+      const particle = document.createElement('span');
+      particle.className = 'flw-p animate';
+      particle.style.left = box.width / 2 + 'px';
+      particle.style.top = box.height / 2 + 'px';
+      const dx = (Math.random() - 0.5) * 220;
+      const dy = (Math.random() - 0.5) * 220;
+      particle.style.setProperty('--dx', dx + 'px');
+      particle.style.setProperty('--dy', dy + 'px');
+      particle.style.animationDelay = 0.3 + Math.random() * 0.3 + 's';
+      frag.appendChild(particle);
+    }
+    requestAnimationFrame(() => {
+      particles.appendChild(frag);
+      setTimeout(() => (particles.innerHTML = ''), TIMING.particleCleanup);
+    });
+  }
+  
+  function createLuckyBall(n: number, index: number, ballsEl: HTMLElement) {
+    const ball = document.createElement('span');
+    ball.className = 'flw-ball';
+    ball.style.animationDelay = 0.1 * index + 0.2 + 's';
+    ball.textContent = String(n);
+    ball.style.margin = '0';
+    ball.style.padding = '0';
+    ballsEl.appendChild(ball);
+  }
+  
+  function crack(elements: Elements) {
+    const { stage, cracking, revealed, quoteEl, ballsEl, particles } = elements;
+    const pick = randomFortune();
+    setStage('cracking', stage, cracking, revealed);
+    spawnParticles(particles);
+    let delay: number = TIMING.crackingDuration;
+    if (isReducedMotion()) delay = 0;
+    setTimeout(() => {
+      quoteEl.textContent = '"' + pick.quote + '"';
+      ballsEl.innerHTML = '';
+      pick.lucky.forEach((n, idx) => createLuckyBall(n, idx, ballsEl));
+      setStage('revealed', stage, cracking, revealed);
+    }, delay);
+  }
+  
+  function reset(elements: Elements) {
+    const { stage, cracking, revealed } = elements;
+    setStage('unopened', stage, cracking, revealed);
+  }
+  
+  function initFortuneLogoWidget(): void {
+    const stage = document.getElementById('flwStage') as HTMLElement | null;
+    if (!stage) return;
+    if (stage.hasAttribute('data-fortune-initialized')) return;
+    stage.setAttribute('data-fortune-initialized', 'true');
+    const logoBtn = document.getElementById('flwLogoBtn') as HTMLElement | null;
+    const tapBtn = document.getElementById('flwTap') as HTMLElement | null;
+    const cracking = document.getElementById('flwCracking') as HTMLElement | null;
+    const revealed = document.getElementById('flwRevealed') as HTMLElement | null;
+    const again = document.getElementById('flwAgain') as HTMLElement | null;
+    const quoteEl = document.getElementById('flwQuote') as HTMLElement | null;
+    const ballsEl = document.getElementById('flwBalls') as HTMLElement | null;
+    const particles = document.getElementById('flwParticles') as HTMLElement | null;
+    if (!logoBtn || !tapBtn || !cracking || !revealed || !again || !quoteEl || !ballsEl || !particles)
+      return;
+  
+    const elements = { stage, cracking, revealed, quoteEl, ballsEl, particles } as Elements;
+    logoBtn.addEventListener('click', () => crack(elements));
+    tapBtn.addEventListener('click', () => crack(elements));
+    again.addEventListener('click', () => reset(elements));
+    logoBtn.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        crack(elements);
+      }
+    });
+    // Defect fix vs the old entry: the listener used to sit on `stage`, but once the
+    // logo button goes display:none focus falls back to <body>, so Escape never
+    // bubbled through the stage. Listen on document with the same guard instead.
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && stage.classList.contains('flw-stage--revealed')) {
+        e.preventDefault();
+        reset(elements);
+      }
+    });
+  }
+
+  initFortuneLogoWidget();
+</script>

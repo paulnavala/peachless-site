@@ -1,0 +1,93 @@
+---
+import { getEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import ContactForm from '../components/islands/ContactForm.vue';
+import FortunePeach from '../components/static/FortunePeach.astro';
+import '../styles/components/contact-form.css';
+import '../styles/components/contact-form-core.css';
+
+const pageData = await getEntry('pages', 'contact');
+const site = await getEntry('site', 'site');
+const { heading, emails } = pageData!.data;
+const { formEndpoint, formHidden } = site!.data;
+---
+<Base title="Contact" description="Get in touch with peachless. — patricia@peachless.design">
+  <section class="section section--light contact-section">
+    <div class="container contact-intro">
+      <h2>{heading}</h2>
+      <div class="contact-emails">
+        {emails!.map((e) => (
+          <p>
+            <strong>{e.label}</strong>
+            <a href={`mailto:${e.address}`}>{e.address}</a>
+          </p>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--light contact-section">
+    <div class="container">
+      <ContactForm client:visible formAction={formEndpoint} hiddenFields={formHidden} />
+    </div>
+  </section>
+
+  <section class="section section--light contact-section">
+    <div class="container">
+      <FortunePeach />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .contact-intro { text-align: center; }
+  /* Live: two left-aligned columns in a centered ~700px block (left col x≈336,
+     right x≈836 at 1440), plain black addresses with no underline. */
+  .contact-emails {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px 48px;
+    max-width: 700px;
+    margin-inline: auto;
+    text-align: left;
+  }
+  /* Live shows ~40px between the label line and the address line */
+  .contact-emails strong {
+    display: block;
+    margin-bottom: 14px;
+  }
+  .contact-emails a {
+    color: #000;
+    text-decoration: none;
+  }
+  @media (max-width: 600px) {
+    .contact-emails { grid-template-columns: 1fr; }
+  }
+  /* Collapse the doubled section padding between stacked blocks —
+     live shows ~105px between sections, not 220px+. */
+  .contact-section + .contact-section {
+    padding-top: 0;
+  }
+  /* The ported form card carries its own 120px outer margin; the section
+     padding already provides the rhythm here. */
+  .contact-section :global(.contact-form-container) {
+    margin-block: 0;
+  }
+  /* Marcellus ships weight 400 only; the ported core CSS's font-weight:600 made
+     the card title render synthetic-bold (a heavy grotesque look at 390). Live's
+     Squarespace heading weight resolved to the real 400 face. */
+  .contact-section :global(.contact-form-title) {
+    font-weight: 400;
+  }
+  /* Live's fortune CTA inherited Squarespace's GLOBAL button typography (bold
+     ~17-18px serif in a ~253×46px pill). The ported fortune-peach.css never
+     declares font-family/size on .flw-btn, so without Squarespace it fell back
+     to the UA default (Arial 13.3px, ~214×36px). Restore the inherited look
+     page-scoped — do not edit fortune-peach.css. */
+  .contact-section :global(.flw-btn) {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1.08rem;
+    padding: 10px 28px;
+  }
+</style>

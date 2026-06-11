@@ -1,0 +1,39 @@
+/**
+ * Project Cards Component - Minimal Layout Styles Only
+ * 
+ * This file contains only basic layout structure (flex, grid, gap).
+ * All visual styling (padding, fonts, colors, hover effects) is handled
+ * by core/project-cards.css which loads after this file.
+ * 
+ * DO NOT add padding, font-size, colors, or other visual styles here
+ * as they will conflict with and override the comprehensive styles in core.
+ */
+
+/* Container layout - flex column with gap */
+.project-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Grid layout for project cards */
+.projects-text-grid {
+  display: grid;
+  gap: 20px;
+}
+
+/* Guideline button should span across both columns of the grid */
+.guideline-button {
+  box-sizing: border-box;
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+/* Responsive grid columns */
+@media (min-width: 720px) {
+  .projects-text-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+

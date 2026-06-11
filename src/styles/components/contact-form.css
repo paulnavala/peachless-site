@@ -1,0 +1,54 @@
+/**
+ * Contact Form Component - Minimal Layout Styles Only
+ * 
+ * This file contains only basic layout structure (flex, grid, gap).
+ * All visual styling (padding, fonts, colors, hover effects) is handled
+ * by core/contact-form.css which loads after this file.
+ * 
+ * DO NOT add padding, font-size, colors, or other visual styles here
+ * as they will conflict with and override the comprehensive styles in core.
+ */
+
+/* Container layout - centered with max width */
+.contact-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Header section */
+.contact-form-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+}
+
+/* Form layout */
+.contact-form-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+}
+
+/* Individual form field */
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Form inputs and textarea */
+.form-input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Submit button */
+.form-submit {
+    width: 100%;
+    box-sizing: border-box;
+}

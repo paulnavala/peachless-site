@@ -1,11 +1,5 @@
-.DS_Store
-Thumbs.db
 node_modules/
-.vscode/
-.idea/
-*.log
-.env
-.env.local
+dist/
+.astro/
 test-results/
 playwright-report/
-screenshots/

@@ -1,0 +1,417 @@
+/**
+ * Elegant Footer Component
+ * 
+ * Light footer with white background and black text. Features animated
+ * gradient border, grid-based layout, and scroll reveal animation.
+ * 
+ * Features:
+ * - Animated top gradient accent border
+ * - Responsive grid layout
+ * - Newsletter signup form
+ * - Social media links
+ * - Staggered reveal animation
+ * - Accessibility support
+ * 
+ * @module elegant-footer
+ */
+
+/* ============================================================================
+   Container & Base Styles
+   ============================================================================ */
+
+#elegant-footer {
+  background: #ffffff;
+  color: #111111;
+  padding: 100px 40px 60px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* ============================================================================
+   Animated Gradient Border
+   ============================================================================ */
+
+/**
+ * Animated top border with flowing gradient
+ * Creates a dynamic accent line at the top of the footer
+ */
+#elegant-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #ff8a42, #ffcd94, #ff8a42);
+  background-size: 200% 100%; /* Wider than 100% for animation */
+  animation: border-flow 8s linear infinite;
+}
+
+/**
+ * Border flow animation
+ * Creates continuous left-to-right gradient movement
+ */
+@keyframes border-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* ============================================================================
+   Grid Layout
+   ============================================================================ */
+
+/**
+ * Footer inner container with grid layout
+ * 
+ * Grid Areas:
+ * - brand: Logo and tagline
+ * - nav: Navigation links
+ * - social: Social media icons
+ * - newsletter: Newsletter signup
+ * - line: Divider line
+ * - legal: Copyright and legal links
+ */
+#elegant-footer .footer-inner {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  grid-template-areas:
+    'brand nav contact'
+    'line line line'
+    'legal legal legal';
+  gap: 40px 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+#elegant-footer .footer-brand { grid-area: brand; }
+#elegant-footer .footer-nav { grid-area: nav; }
+#elegant-footer .footer-contact { grid-area: contact; }
+#elegant-footer .footer-contact a {
+  display: block;
+  color: #444;
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color 0.3s ease;
+}
+#elegant-footer .footer-contact a:hover { color: #ff8a42; }
+#elegant-footer .footer-contact .contact-label {
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 2px;
+}
+
+/* ============================================================================
+   Brand Section
+   ============================================================================ */
+
+#elegant-footer .brand-name {
+  grid-area: brand;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
+}
+
+#elegant-footer .brand-tagline {
+  color: #444;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* ============================================================================
+   Navigation Section
+   ============================================================================ */
+
+#elegant-footer .footer-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+#elegant-footer .footer-nav li a {
+  color: #111;
+  text-decoration: none;
+  font-weight: 500;
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease;
+}
+
+#elegant-footer .footer-nav li a:hover {
+  color: #ff8a42;
+  transform: translateX(3px); /* Subtle slide effect */
+}
+
+/* ============================================================================
+   Social Media Section
+   ============================================================================ */
+
+#elegant-footer .footer-social {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+}
+
+#elegant-footer .footer-social a {
+  color: #111;
+  font-size: 1.3rem;
+  transition:
+    transform 0.3s ease,
+    color 0.3s ease;
+}
+
+#elegant-footer .footer-social a:hover {
+  color: #ff8a42;
+  transform: scale(1.2); /* Slight zoom on hover */
+}
+
+/* ============================================================================
+   Newsletter Section
+   ============================================================================ */
+
+#elegant-footer .footer-newsletter {
+  grid-area: newsletter;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+#elegant-footer .footer-newsletter input {
+  flex: 1;
+  max-width: 260px;
+  background: #f4f4f4;
+  border: 1px solid #ddd;
+  color: #111;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.3s ease;
+}
+
+#elegant-footer .footer-newsletter input:focus {
+  outline: none;
+  border-color: #ff8a42; /* Brand color focus */
+}
+
+#elegant-footer .footer-newsletter button {
+  background: #111;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background 0.3s ease,
+    transform 0.3s ease;
+}
+
+#elegant-footer .footer-newsletter button:hover {
+  background: #ff8a42;
+  transform: translateY(-2px); /* Lift effect */
+}
+
+/* ============================================================================
+   Divider Line
+   ============================================================================ */
+
+#elegant-footer .footer-line {
+  grid-area: line;
+  width: 100%;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+  animation: fadein 1s ease both;
+}
+
+/* ============================================================================
+   Legal Section
+   ============================================================================ */
+
+#elegant-footer .footer-legal {
+  grid-area: legal;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#elegant-footer .footer-legal a {
+  color: #444;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+#elegant-footer .footer-legal a:hover {
+  color: #ff8a42;
+}
+
+/* ============================================================================
+   Animations
+   ============================================================================ */
+
+/**
+ * Fade-in animation for divider
+ * Creates subtle entrance effect
+ */
+@keyframes fadein {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   Screen Reader Utilities
+   ============================================================================ */
+
+/**
+ * Hide element visually but keep accessible to screen readers
+ * Useful for accessibility labels and descriptions
+ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* ============================================================================
+   Scroll Reveal Animation
+   ============================================================================ */
+
+/**
+ * Initial state: hidden and slightly offset
+ * Controlled by JavaScript via .is-inview class
+ */
+#elegant-footer {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 700ms ease,
+    transform 700ms ease;
+}
+
+/**
+ * Revealed state: fully visible
+ * Applied when footer enters viewport (via utilities.js)
+ */
+#elegant-footer.is-inview {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/**
+ * Staggered reveal for inner elements
+ * Each child fades in with a slight delay for polished entrance
+ */
+#elegant-footer .footer-inner > * {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 600ms ease,
+    transform 600ms ease;
+}
+
+#elegant-footer.is-inview .footer-inner > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays for sequential appearance */
+#elegant-footer.is-inview .footer-brand {
+  transition-delay: 80ms;
+}
+
+#elegant-footer.is-inview .footer-nav {
+  transition-delay: 140ms;
+}
+
+#elegant-footer.is-inview .footer-contact {
+  transition-delay: 200ms;
+}
+
+#elegant-footer.is-inview .footer-line {
+  transition-delay: 320ms;
+}
+
+#elegant-footer.is-inview .footer-legal {
+  transition-delay: 380ms;
+}
+
+/* ============================================================================
+   Accessibility & Motion Preferences
+   ============================================================================ */
+
+/**
+ * Respect user's reduced motion preference
+ * Disables animations for users who prefer reduced motion
+ */
+@media (prefers-reduced-motion: reduce) {
+  #elegant-footer,
+  #elegant-footer .footer-inner > * {
+    transition: none;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+/**
+ * Mobile layout: single column
+ * Stack all sections vertically on smaller screens
+ */
+@media (max-width: 900px) {
+  #elegant-footer .footer-inner {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'brand'
+      'nav'
+      'contact'
+      'line'
+      'legal';
+    text-align: center;
+    gap: 24px;
+  }
+
+  /* Center social icons on mobile */
+  #elegant-footer .footer-contact {
+    justify-content: center;
+  }
+
+  /* Horizontal navigation on mobile */
+  #elegant-footer .footer-nav ul {
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+  }
+}

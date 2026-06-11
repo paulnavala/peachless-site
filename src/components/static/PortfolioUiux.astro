@@ -1,0 +1,253 @@
+---
+import { getCollection } from 'astro:content';
+import '../../styles/components/portfolio-uiux.css';
+import '../../styles/components/portfolio-uiux-core.css';
+
+const projects = (await getCollection('projects')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+const cats = [...new Set(projects.flatMap((p) => p.data.categories))];
+const figmaEmbed = (url: string) =>
+  `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(url)}`;
+---
+<section id="portfolio-uiux" class="portfolio" aria-label="UI/UX Projects">
+  <div class="portfolio__wrap">
+    <a class="portfolio__skip" href="#projects-list">Skip to projects</a>
+
+    <header class="ux-section-title">
+      <h2 class="ux-section-title__text">UI/UX Design</h2>
+      <div class="ux-section-title__flourish" aria-hidden="true">
+        <span class="ux-section-title__flourish-icon"></span>
+      </div>
+      <span class="ux-section-title__sub">Interactive prototypes</span>
+    </header>
+
+    <p class="portfolio__count"><span data-count>{projects.length}</span> projects</p>
+    <div class="portfolio__filters" role="group" aria-label="Filter projects">
+      <button class="pill is-active" data-filter="all" type="button" aria-pressed="true">All</button>
+      {cats.map((c) => (
+        <button class="pill" data-filter={c} type="button" aria-pressed="false">{c}</button>
+      ))}
+    </div>
+
+    <div class="portfolio__wrap" id="projects-list">
+      {projects.map((p) => (
+        <article
+          class="project"
+          data-cats={p.data.categories.join(',')}
+          style={p.data.accent ? `--accent: ${p.data.accent}` : undefined}
+        >
+          <div class="project__card">
+            <div class="project__grid">
+              <div class="project__text">
+                <h3 class="project__title">{p.data.title}</h3>
+                <p class="project__sub">{p.data.description}</p>
+                <div class="project__meta">
+                  {p.data.badges.map((b) => (
+                    <span class="badge">{b}</span>
+                  ))}
+                </div>
+                <div class="project__actions">
+                  <button
+                    class="btn btn--primary"
+                    data-action="open-modal"
+                    aria-haspopup="dialog"
+                    aria-controls="portfolio-modal"
+                    data-embed={figmaEmbed(p.data.figma)}
+                    data-figma={p.data.figma}
+                  >
+                    Open fullscreen prototype
+                  </button>
+                  <a class="btn btn--ghost" data-internal-link target="_self" href={`/projects/${p.id}`}
+                    >View case study</a
+                  >
+                </div>
+              </div>
+
+              <div class="project__frame">
+                <iframe
+                  class="project__iframe"
+                  title={`${p.data.title} prototype`}
+                  data-src={figmaEmbed(p.data.figma)}
+                  allow="fullscreen; clipboard-write"
+                  allowfullscreen
+                ></iframe>
+
+                <button
+                  class="proto-chip"
+                  type="button"
+                  data-action="open-modal"
+                  aria-label="Open prototype in fullscreen"
+                  data-embed={figmaEmbed(p.data.figma)}
+                  data-figma={p.data.figma}
+                >
+                  <span class="proto-chip__icon" aria-hidden="true">▶︎</span>
+                  <span class="proto-chip__label">Try the prototype</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <p class="project__cap">
+            <span class="project__cap-prefix">Prototype</span>:
+            <span class="project__cap-name">{p.data.title}</span> — designed in Figma. ©
+            <span class="project__year">{p.data.year}</span> peachless.
+          </p>
+
+          <hr class="project__divider" aria-hidden="true" />
+        </article>
+      ))}
+    </div>
+
+    <div
+      class="portfolio-modal"
+      id="portfolio-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="portfolio-modal-title"
+      hidden
+    >
+      <div class="portfolio-modal__backdrop" data-close></div>
+      <div class="portfolio-modal__dialog" role="document">
+        <header class="portfolio-modal__header">
+          <h3 id="portfolio-modal-title" class="portfolio-modal__title"></h3>
+          <div class="portfolio-modal__actions">
+            <a class="portfolio-modal__open" href="#" target="_blank" rel="noopener">Open in new tab</a>
+            <button class="portfolio-modal__close" type="button" aria-label="Close fullscreen" data-close>✕</button>
+          </div>
+        </header>
+        <div class="portfolio-modal__body">
+          <div class="portfolio-modal__frame">
+            <div class="portfolio-modal__spinner" aria-hidden="true"></div>
+            <iframe class="portfolio-modal__iframe" title="Project (fullscreen)" loading="lazy" allow="fullscreen; clipboard-write" allowfullscreen></iframe>
+          </div>
+        </div>
+        <p class="portfolio-modal__fallback" hidden>
+          Couldn't load the embedded prototype.
+          <a class="portfolio-modal__open" href="#" target="_blank" rel="noopener">Open in a new tab</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { trapFocus } from '../../lib/dom';
+
+  // Ported from old portfolio.entry.ts, minus: waitFor bootstrap, Squarespace lifecycle
+  // listeners (:36-39), #projects-data scraping (:93-107), template render() (:136-170),
+  // CERN seed fallback (:292-311), window.initPortfolioUIUX global.
+  const root = document.getElementById('portfolio-uiux');
+  if (root) {
+    document.documentElement.classList.add('js');
+    const projects = [...root.querySelectorAll<HTMLElement>('.project')];
+
+    // Filtering
+    const pills = [...root.querySelectorAll<HTMLButtonElement>('.pill')];
+    const count = root.querySelector<HTMLElement>('[data-count]');
+    pills.forEach((pill) =>
+      pill.addEventListener('click', () => {
+        pills.forEach((p) => {
+          const isActive = p === pill;
+          p.classList.toggle('is-active', isActive);
+          p.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+        const f = pill.dataset.filter ?? 'all';
+        let visible = 0;
+        projects.forEach((proj) => {
+          const show = f === 'all' || (proj.dataset.cats ?? '').split(',').includes(f);
+          proj.style.display = show ? '' : 'none';
+          if (show) visible++;
+        });
+        if (count) count.textContent = String(visible);
+      })
+    );
+
+    // Lazy-load Figma iframes (300px rootMargin, ported behavior)
+    const lazyIO = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          const iframe = e.target as HTMLIFrameElement;
+          if (iframe.dataset.src) {
+            iframe.src = iframe.dataset.src;
+            delete iframe.dataset.src;
+          }
+          lazyIO.unobserve(iframe);
+        }
+      },
+      { rootMargin: '300px' }
+    );
+    root.querySelectorAll<HTMLIFrameElement>('iframe[data-src]').forEach((f) => lazyIO.observe(f));
+
+    // Reveal-on-scroll
+    const revealIO = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => e.target.classList.toggle('is-inview', e.isIntersecting)),
+      { threshold: 0.12 }
+    );
+    projects.forEach((p) => revealIO.observe(p));
+
+    // Modal
+    const modal = document.getElementById('portfolio-modal')!;
+    const dialog = modal.querySelector<HTMLElement>('.portfolio-modal__dialog')!;
+    const iframe = modal.querySelector<HTMLIFrameElement>('.portfolio-modal__iframe')!;
+    const title = modal.querySelector<HTMLElement>('.portfolio-modal__title')!;
+    const openLink = modal.querySelector<HTMLAnchorElement>('.portfolio-modal__open')!;
+    let release: (() => void) | null = null;
+    let lastFocus: HTMLElement | null = null;
+    let ac: AbortController | null = null;
+
+    const closeModal = () => {
+      modal.hidden = true;
+      modal.classList.remove('is-loading');
+      iframe.src = 'about:blank';
+      document.documentElement.classList.remove('no-scroll');
+      root.classList.remove('no-scroll');
+      release?.();
+      release = null;
+      ac?.abort();
+      ac = null;
+      lastFocus?.focus();
+    };
+
+    root.querySelectorAll<HTMLButtonElement>('[data-action="open-modal"]').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        lastFocus = btn;
+        const proj = btn.closest<HTMLElement>('.project');
+        title.textContent =
+          proj?.querySelector('.project__title')?.textContent ?? 'Prototype';
+        openLink.href = btn.dataset.figma ?? '#';
+        modal.classList.add('is-loading');
+        iframe.addEventListener('load', () => modal.classList.remove('is-loading'), {
+          once: true,
+        });
+        iframe.src = btn.dataset.embed ?? '';
+        // Safety net ported from the old entry (:245): clear the loading state even
+        // if the iframe never fires `load`.
+        setTimeout(() => modal.classList.remove('is-loading'), 6000);
+        modal.hidden = false;
+        document.documentElement.classList.add('no-scroll');
+        root.classList.add('no-scroll');
+        release = trapFocus(dialog, 'a[href], button, iframe');
+        ac = new AbortController();
+        const { signal } = ac;
+        modal.querySelectorAll<HTMLElement>('[data-close]').forEach((el) =>
+          el.addEventListener('click', closeModal, { signal })
+        );
+        modal
+          .querySelector<HTMLElement>('.portfolio-modal__backdrop')
+          ?.addEventListener('click', closeModal, { signal });
+        document.addEventListener(
+          'keydown',
+          (e) => {
+            if (e.key === 'Escape') closeModal();
+          },
+          { signal }
+        );
+        modal.querySelector<HTMLButtonElement>('.portfolio-modal__close')?.focus();
+      })
+    );
+    modal.hidden = true;
+  }
+</script>

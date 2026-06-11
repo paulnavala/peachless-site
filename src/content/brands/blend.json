@@ -1,0 +1,19 @@
+{
+  "name": "Blend",
+  "description": "Creative design studio blending artistry with technology.",
+  "logo": "/guidelines/peachless/01-cover.svg",
+  "guidelines": [
+    {
+      "name": "Cover",
+      "path": "/guidelines/peachless/01-cover.svg"
+    },
+    {
+      "name": "Overview",
+      "path": "/guidelines/peachless/02-logo-construction.svg"
+    },
+    {
+      "name": "Colors",
+      "path": "/guidelines/peachless/03-clear-space.svg"
+    }
+  ]
+}
