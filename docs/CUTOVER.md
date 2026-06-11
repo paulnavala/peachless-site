@@ -33,9 +33,14 @@ Cutover:
    nameserver change, not A/CNAME edits at Google.
 4. In the Pages project → **Custom domains**: add `peachless.design` and
    `www.peachless.design`. Cloudflare DNS auto-creates the records once the zone
-   is active.
-5. Add a redirect rule (zone → Rules → Redirect Rules): requests to
-   `www.peachless.design/*` → 301 `https://peachless.design/$1`.
+   is active. Note: the zone import in step 2 carries over the old Squarespace
+   apex A records (198.185.159.x / 198.49.23.x) and the `www` CNAME to
+   `ext-sq.squarespace.com` — accept Cloudflare's prompt to replace the
+   conflicting records (or delete them manually) so the Pages records win.
+5. Add a redirect rule (zone → Rules → Redirect Rules): match host
+   `www.peachless.design`, redirect with a dynamic expression
+   `concat("https://peachless.design", http.request.uri.path)`, status 301
+   (the dashboard wizard's "wildcard pattern" variant uses `${1}`, not `$1`).
 6. Verify:
    - https://peachless.design serves the site with valid TLS
    - https://www.peachless.design 301s to the apex
