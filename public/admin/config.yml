@@ -7,8 +7,8 @@ backend:
   # ("Sign In with Token" on the login screen). To add browser OAuth later,
   # deploy https://github.com/sveltia/sveltia-cms-auth and set base_url here.
 
-media_folder: /src/assets/uploads
-public_folder: /src/assets/uploads
+media_folder: 'public/uploads'
+public_folder: '/uploads'
 
 collections:
   - name: projects
@@ -21,7 +21,7 @@ collections:
     fields:
       - { label: Title, name: title, widget: string }
       - { label: Description, name: description, widget: text }
-      - { label: Figma URL, name: figma, widget: string }
+      - { label: Figma URL, name: figma, widget: string, pattern: ['^https://', 'Must be an https URL'] }
       - { label: Badges, name: badges, widget: list, default: [] }
       - { label: Categories, name: categories, widget: list, default: [] }
       - { label: Year, name: year, widget: number, required: false }
@@ -93,7 +93,6 @@ collections:
         label: About
         file: src/content/pages/about.md
         fields:
-          - { label: Heading, name: heading, widget: string }
           - { label: Body, name: body, widget: markdown }
       - name: contact
         label: Contact
@@ -105,7 +104,7 @@ collections:
             widget: list
             fields:
               - { label: Label, name: label, widget: string }
-              - { label: Address, name: address, widget: string }
+              - { label: Address, name: address, widget: string, pattern: ['^[^@\s]+@[^@\s]+\.[^@\s]+$', 'Must be an email address'] }
       - name: site
         label: Site Settings
         file: src/content/site/site.yaml
@@ -122,6 +121,6 @@ collections:
             widget: list
             fields:
               - { label: Label, name: label, widget: string }
-              - { label: Address, name: address, widget: string }
+              - { label: Address, name: address, widget: string, pattern: ['^[^@\s]+@[^@\s]+\.[^@\s]+$', 'Must be an email address'] }
           - { label: Default meta description, name: defaultDescription, widget: string }
           - { label: Form endpoint URL, name: formEndpoint, widget: string, required: false, default: "" }

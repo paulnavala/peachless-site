@@ -1,5 +1,4 @@
 ---
-heading: "About"
 ---
 ### **I’m a visual designer driven by the belief that design is more than what we see - it’s what we feel.**
 

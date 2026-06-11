@@ -7,7 +7,7 @@ const projects = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    figma: z.string().url(),
+    figma: z.url(),
     badges: z.array(z.string()).default([]),
     categories: z.array(z.string()).default([]),
     year: z.number().nullable().optional(),
@@ -57,7 +57,7 @@ const pages = defineCollection({
     lead: z.string().optional(),
     buttonLabel: z.string().optional(),
     buttonHref: z.string().optional(),
-    emails: z.array(z.object({ label: z.string(), address: z.string().email() })).optional(),
+    emails: z.array(z.object({ label: z.string(), address: z.email() })).optional(),
   }),
 });
 
@@ -66,7 +66,7 @@ const site = defineCollection({
   schema: z.object({
     nav: z.array(z.object({ label: z.string(), href: z.string() })),
     tagline: z.string(),
-    emails: z.array(z.object({ label: z.string(), address: z.string().email() })),
+    emails: z.array(z.object({ label: z.string(), address: z.email() })),
     defaultDescription: z.string(),
     formEndpoint: z.string().default(''),
     formHidden: z.record(z.string(), z.string()).default({}),
