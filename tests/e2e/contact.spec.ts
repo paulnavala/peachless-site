@@ -14,15 +14,30 @@ test.describe('/contact', () => {
     ).toBeVisible();
   });
 
-  test('contact form validates required fields and shows unconfigured notice', async ({ page }) => {
+  test('contact form validates required fields and submits to the configured endpoint', async ({ page }) => {
+    // Stub the form service so test runs never create real submissions/emails.
+    let posted = false;
+    await page.route('https://api.web3forms.com/**', async (route) => {
+      posted = true;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+    });
     await page.goto('/contact');
     const form = page.locator('.contact-form-container form');
     await expect(form.locator('input[name="name"]')).toHaveAttribute('required', '');
+    // formHidden from site.yaml must render as a hidden input inside the form
+    await expect(form.locator('input[type="hidden"][name="access_key"]')).toHaveValue(/.+/);
     await form.locator('input[name="name"]').fill('Test');
     await form.locator('input[name="email"]').fill('test@example.com');
     await form.locator('textarea[name="message"]').fill('Hello');
     await form.locator('button[type="submit"]').click();
-    await expect(page.locator('.form-status')).toContainText('isn’t configured');
+    await expect(page.locator('.form-status')).toContainText('Message sent');
+    expect(posted).toBe(true);
+    // successful submission resets the form
+    await expect(form.locator('input[name="name"]')).toHaveValue('');
   });
 
   test('fortune peach cracks open and resets on Escape', async ({ page }) => {

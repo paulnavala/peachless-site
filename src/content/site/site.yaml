@@ -8,5 +8,5 @@ emails:
   - { label: "personal", address: "patricia@peachless.design" }
   - { label: "contact", address: "i.am.peachless@gmail.com" }
 defaultDescription: "Every pixel tells a story. Let the world know yours."
-formEndpoint: ""
-formHidden: {}
+formEndpoint: "https://api.web3forms.com/submit"
+formHidden: { access_key: "a3568119-cc5b-457d-b146-be4bf375fcde" }
