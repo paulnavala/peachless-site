@@ -5,8 +5,17 @@ import Base from '../layouts/Base.astro';
   <section class="section section--light">
     <div class="container" style="text-align: center; padding-block: 10vh;">
       <h1>404</h1>
-      <h3>Every pixel tells a story — this one got lost.</h3>
+      <h2 class="subtitle">Every pixel tells a story — this one got lost.</h2>
       <p><a href="/">Back to the homepage</a></p>
     </div>
   </section>
 </Base>
+
+<style>
+  /* h2 for heading hierarchy (h1 -> h2), but locked to the previous h3 rendering:
+     global h2 on .section--light would be clay at clamp(2rem, 4vw, 3rem). */
+  .subtitle {
+    font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+    color: #000;
+  }
+</style>
