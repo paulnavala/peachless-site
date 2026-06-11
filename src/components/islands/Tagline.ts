@@ -170,6 +170,14 @@ export default defineComponent({
       const tag = root.value as HTMLElement | null;
       const l1 = line1Ref.value as HTMLElement | null;
       if (!tag || !l1) return;
+      // Reduced motion: skip the typewriter loop entirely — render both lines
+      // instantly as plain text (no glow spans, no fade/restart cycle). The
+      // component has no separate cursor element, so plain text means no caret.
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        l1.textContent = String(props.line1);
+        if (line2Ref.value) line2Ref.value.textContent = String(props.line2);
+        return;
+      }
       void runSequence(tag, l1);
     });
 

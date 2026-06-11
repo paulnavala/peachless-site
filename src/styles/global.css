@@ -53,6 +53,30 @@ a {
   color: inherit;
 }
 
+/* Site-wide keyboard focus indicator. Only renders on keyboard focus
+   (:focus-visible), so resting visuals are untouched. Ported components that
+   define their own focus treatment (twin-gallery, portfolio-uiux,
+   portfolio-photo, logo-showcase, fortune-peach, contact-form, mobile-menu,
+   elegant-footer) all use higher-specificity selectors and either the
+   `outline` shorthand or `outline: none` plus their own box-shadow/background
+   affordance, so they win the cascade and nothing doubles up. */
+:focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: 2px;
+}
+/* Clay-on-clay contexts (bright hero section, bright header): a clay outline
+   would vanish against the clay background — use white there. */
+.section--bright :focus-visible,
+.site-header--bright :focus-visible {
+  outline-color: #fff;
+}
+
+/* Brand text selection (pre-approved subtle touch) */
+::selection {
+  background: var(--clay);
+  color: #fff;
+}
+
 img {
   max-width: 100%;
   height: auto;
@@ -86,7 +110,10 @@ img {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
   }
 }
