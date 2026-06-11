@@ -7,6 +7,10 @@ First step — merge to main:
 
 Pre-flight (all must be true):
 - [ ] CI green on main; preview URL renders all 9 pages correctly
+      Note: verify rendering locally with `npm run build; npm run preview` — until the
+      custom domain is attached, https://paulnavala.github.io/peachless-site/ serves
+      root-absolute asset paths that 404 (site is built for the apex domain, no base
+      path), so broken styling there is normal, not a broken build.
 - [ ] Visual parity pass complete (Task 23)
 - [ ] Form service configured: create a (free) Formspree or Web3Forms endpoint for
       patricia@peachless.design, put the URL in `src/content/site/site.yaml` →
