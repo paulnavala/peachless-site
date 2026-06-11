@@ -43,6 +43,7 @@ export default defineComponent({
                 return;
             }
             status.value = 'sending';
+            isSubmitting.value = true;
             try {
                 const res = await fetch(props.formAction, {
                     method: props.formMethod || 'POST',
@@ -53,6 +54,8 @@ export default defineComponent({
                 if (res.ok) formRef.value.reset();
             } catch {
                 status.value = 'error';
+            } finally {
+                isSubmitting.value = false;
             }
         }
 
