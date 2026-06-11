@@ -49,7 +49,20 @@ const { Content } = await render(about!);
     margin-bottom: 1.2em;
   }
   @media (max-width: 900px) {
-    .about-content :global(h3) { font-size: 1.4rem; } /* live ~22px at 768 */
+    /* Ground-truthed against live @768 (screens-cmp/live/768/about.png): statement 1
+       wraps 3 lines ('I'm a visual designer driven by the' = 393px ink / 'belief
+       that design is more than' / 'what we see - it's what we feel.'), statement 2
+       wraps 7 lines, line ink 27px, baseline pitch 31px. That is exactly
+       Squarespace's h3 formula (2.2 - 1) * 1.2vw + 1rem = 27.06px @768 with
+       line-height 1.2em * (1 + (1 - 2.2)/25) = 1.1424em -> 30.9px pitch and
+       --heading-font-letter-spacing: -0.02em (without the tracking, local text runs
+       ~2% wider and pushes 'the' off line 1). The earlier 1.4rem (22.4px) was too
+       small. */
+    .about-content :global(h3) {
+      font-size: calc(1.44vw + 1rem);
+      line-height: 1.1424;
+      letter-spacing: -0.02em;
+    }
   }
   @media (max-width: 480px) {
     .about-content :global(h3) { font-size: 1.85rem; } /* live ~30px at 390 */

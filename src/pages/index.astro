@@ -14,7 +14,13 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
 <Base description={site!.data.defaultDescription} theme="bright">
   <section class="section section--bright home-hero">
     <div class="container">
-      <Tagline client:load fixedCenter={true} />
+      <!-- fixedCenter must stay false (live parity): the old Squarespace loader set no
+           data-fixed-center, so live typed chars as normal inline spans in a width-auto,
+           centered box — text re-centers as it grows. fixedCenter=true pre-builds hidden
+           per-char inline-block slots in a fixed-width box, which (a) starts typing
+           left-offset and (b) loses kerning, overflowing the measured width at 390 and
+           wrapping line 1 to two lines. -->
+      <Tagline client:load fixedCenter={false} />
     </div>
   </section>
 
@@ -33,7 +39,7 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
     </div>
   </section>
 
-  <section class="section section--light">
+  <section class="section section--light home-gallery">
     <div class="container">
       <TwinGallery />
     </div>
@@ -94,6 +100,10 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
   .home-intro h3 {
     /* Live: ~30px at 390, ~35px at 1440 */
     font-size: clamp(1.8rem, 1.2rem + 1.6vw, 2.2rem);
+    /* Deliberate live-match: live's Squarespace markup wraps the heading in
+       <strong> (verified in docs/reference/snapshots/home.html), so it renders
+       as synthetic-bold Marcellus at every width. */
+    font-weight: 700;
     margin: 0;
   }
   .home-intro p {
@@ -115,10 +125,39 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
     }
     .home-intro__text {
       order: -1; /* text column left, lockup right (live composition) */
+      /* Live constrains the intro text block to ~375px at 1440 (measured: widest
+         heading line 353px, widest lead line 370px), so the heading wraps 3 lines:
+         'Design isn't just / something you see, it's / something you feel.' */
+      max-width: 375px;
+    }
+    .home-intro h3 {
+      /* Live Squarespace h3 formula for >=768px viewports:
+         (2.2 - 1) * 1.2vw + 1rem -> 27.06px @768, 36.7px @1440 (verified in
+         docs/reference/snapshots/site.css; pitch matches measured 31px/42px). */
+      font-size: calc(1.44vw + 1rem);
+      line-height: 1.1424; /* live: 1.2em * (1 + (1 - 2.2)/25) */
     }
     .home-intro__media img {
       /* Live lockup: ~230px at 768, ~450-500px at 1440 */
       max-width: clamp(240px, 32vw, 480px);
+    }
+  }
+  @media (min-width: 740px) and (max-width: 900px) {
+    /* Live @768 keeps a ~200px-wide intro text block (heading x91-266, lead ~190px):
+       the heading wraps 5 lines ('Design isn't just / something you / see, it's /
+       something you / feel.'). The CTA button stays wider on live (~409px), so cap
+       only the heading and lead, not the whole column. */
+    .home-intro h3,
+    .home-intro p {
+      max-width: 200px;
+    }
+  }
+  /* Live @768 twin gallery: ~586px panels with ~91px symmetric gutters
+     (768 - 2*91 = 586) and ~415px panel height (586 * 0.707). The gallery is
+     single-column up to 768px (twin-gallery.css), so cap the container there. */
+  @media (min-width: 600px) and (max-width: 768px) {
+    .section.home-gallery .container {
+      max-width: 586px;
     }
   }
   .btn-primary {

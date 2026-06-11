@@ -28,6 +28,16 @@ const brands = (await getCollection('brands'))
 </Base>
 
 <style is:global>
+  /* section--flush removed the hero's top spacing along with the gutters, but live
+     keeps a tall gap between the header and the H1 (header-bottom -> H1):
+     measured live H1 top y=287 @1440 (+108px vs local y=179), y=276 @768 (+89px vs
+     y=187), y=230 @390 (+83px vs y=147). One linear vw ramp covers all three:
+     72px + 2.5vw = 81.8 @390 / 91.2 @768 / 108 @1440.
+     (.section.guidelines-section: must out-specify .section--flush { padding: 0 },
+     which ties at one class.) */
+  .section.guidelines-section {
+    padding-top: calc(72px + 2.5vw);
+  }
   /* Box-model parity: live Squarespace had NO universal border-box reset, so
      .brand-logo-container { height:200px; padding:2rem; width:100% } computed
      content-box (264px-tall panel, overflowing width) — our global reset shrank
