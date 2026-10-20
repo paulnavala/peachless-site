@@ -1,6 +1,7 @@
 import { computed, defineComponent, h, nextTick, onBeforeUnmount, onMounted, ref, type PropType } from 'vue';
 import BeforeAfterSlider from './BeforeAfterSlider';
 import { lockScroll, trapFocus } from '../../lib/dom';
+import { dealColumns } from '../../lib/masonry';
 import '../../styles/components/photo-gallery.css';
 
 export interface PhotoItem {
@@ -16,6 +17,9 @@ export interface PhotoItem {
   modalAfter: string; // large image for the lightbox
   modalBefore?: string;
 }
+
+// A caption line plus the gap below a photo, as a fraction of the column width.
+const CAPTION_ALLOWANCE = 0.18;
 
 const icon = (d: string) =>
   h(
@@ -61,13 +65,15 @@ export default defineComponent({
     const items = computed(() => props.items);
     const count = computed(() => items.value.length);
 
-    // CSS columns fill top-to-bottom; reorder so visual rows read left-to-right.
+    // Left alone, CSS columns balance by height and reshuffle the order. Deal
+    // the photos into columns here instead (their heights are known from the
+    // aspect ratios) and force a break before each column's first photo, so
+    // the first row reads in order and the columns end level.
     const ordered = computed(() => {
-      const cols = Math.max(1, colCount.value);
-      if (cols === 1) return items.value.map((item, i) => ({ item, index: i }));
-      const out: { item: PhotoItem; index: number }[] = [];
-      for (let c = 0; c < cols; c++) for (let i = c; i < items.value.length; i += cols) out.push({ item: items.value[i], index: i });
-      return out;
+      const heights = items.value.map((item) => item.height / item.width + CAPTION_ALLOWANCE);
+      return dealColumns(heights, colCount.value).flatMap((column, c) =>
+        column.map((index, i) => ({ item: items.value[index], index, columnStart: c > 0 && i === 0 }))
+      );
     });
 
     const readColumns = () => {
@@ -287,8 +293,8 @@ export default defineComponent({
       const grid = h(
         'ul',
         { ref: listRef, class: 'pg-masonry', role: 'list' },
-        ordered.value.map(({ item, index }, position) =>
-          h('li', { key: item.id, class: 'pg-masonry__item' }, [
+        ordered.value.map(({ item, index, columnStart }, position) =>
+          h('li', { key: item.id, class: ['pg-masonry__item', columnStart && 'pg-masonry__item--column-start'] }, [
             h('figure', { class: 'pg-masonry__figure' }, [
               h(
                 'button',

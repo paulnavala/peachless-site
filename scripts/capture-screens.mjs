@@ -1,61 +1,65 @@
+// Full-page reference screenshots of every page type at three widths.
+//
+//   node scripts/capture-screens.mjs <base-url> <out-dir>
+//   node scripts/capture-screens.mjs http://localhost:4321 docs/reference/screens/v2
+//
+// docs/reference/screens/v2/ is the signed-off look of the v2 redesign; recapture
+// and compare after visual changes. v1-parity/ holds the retired v1 contract.
 import { chromium } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 
-const base = process.argv[2]; // e.g. https://www.peachless.design or http://localhost:4321
-const outDir = process.argv[3]; // e.g. docs/reference/screens/live
+const base = process.argv[2]?.replace(/\/$/, '');
+const outDir = process.argv[3];
+if (!base || !outDir) {
+  console.error('usage: node scripts/capture-screens.mjs <base-url> <out-dir>');
+  process.exit(1);
+}
+
 const pages = [
   ['home', '/'],
-  ['about', '/about'],
-  ['contact', '/contact'],
-  ['projects', '/projects'],
-  ['uiux', '/projects/uiux'],
-  ['logo-design', '/projects/logo-design'],
-  ['guidelines', '/projects/guidelines'],
-  ['photography', '/photography'],
+  ['work', '/projects/'],
+  ['work-graphic-design', '/projects/graphic-design/'],
+  ['work-uiux', '/projects/uiux/'],
+  ['project-peachless', '/projects/peachless/'], // logo, palette and brand-book blocks
+  ['project-ton', '/projects/ton/'], // prototype block
+  ['photography', '/photography/'],
+  ['about', '/about/'],
+  ['contact', '/contact/'],
+  ['404', '/this-page-does-not-exist/'],
 ];
 const widths = [1440, 768, 390];
 
 const browser = await chromium.launch();
 for (const width of widths) {
-  // reducedMotion: the site CSS forces reveal-on-scroll elements (elegant-footer,
-  // portfolio cards, masonry items) to opacity:1 under prefers-reduced-motion, so
-  // full-page captures no longer photograph them in their hidden pre-reveal state.
-  const page = await browser.newPage({
-    viewport: { width, height: 900 },
-    reducedMotion: 'reduce',
-  });
+  // Reduced motion: base styles are the final state, so every reveal is
+  // already in place and the tagline is fully typed.
+  const page = await browser.newPage({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
   for (const [name, path] of pages) {
-    await page.goto(base + path, { waitUntil: 'networkidle' });
-    // Scroll through the page so IntersectionObserver reveals + lazy media fire.
+    await page.goto(base + path, { waitUntil: 'load' });
+    // Headless Chromium hides scrollbars but would still reserve the stable
+    // gutter, leaving a blank strip down the right edge of every capture.
+    await page.addStyleTag({ content: 'html { scrollbar-gutter: auto; }' });
+    // Scroll through the page so lazy images load.
     await page.evaluate(async () => {
-      const step = 600;
-      const height = document.body.scrollHeight;
-      for (let y = 0; y <= height; y += step) {
+      for (let y = 0; y <= document.body.scrollHeight; y += 600) {
         window.scrollTo(0, y);
-        await new Promise((r) => setTimeout(r, 80));
+        await new Promise((r) => setTimeout(r, 60));
       }
-      window.scrollTo(0, document.body.scrollHeight);
-      await new Promise((r) => setTimeout(r, 900)); // footer reveal transition is 700ms
       window.scrollTo(0, 0);
     });
-    // Wait for every <img> currently in the DOM to finish loading/decoding.
     await page.evaluate(() =>
-      Promise.all(
-        Array.from(document.images)
+      Promise.all([
+        document.fonts.ready,
+        ...Array.from(document.images)
           .filter((img) => !img.complete)
-          .map(
-            (img) =>
-              new Promise((resolve) => {
-                img.addEventListener('load', resolve, { once: true });
-                img.addEventListener('error', resolve, { once: true });
-              })
-          )
-      )
+          .map((img) => new Promise((resolve) => {
+            img.addEventListener('load', resolve, { once: true });
+            img.addEventListener('error', resolve, { once: true });
+          })),
+      ])
     );
-    // Best-effort settle: scroll-triggered embeds (Figma iframes) may keep the
-    // network busy indefinitely, so don't fail the capture on this.
-    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-    await page.waitForTimeout(2500); // let reveal animations + tagline settle
+    await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});
+    await page.waitForTimeout(400); // header condense + island hydration settle
     mkdirSync(`${outDir}/${width}`, { recursive: true });
     await page.screenshot({ path: `${outDir}/${width}/${name}.png`, fullPage: true });
   }

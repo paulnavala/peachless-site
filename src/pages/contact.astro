@@ -9,6 +9,8 @@ import { getSingleton } from '../lib/content';
 
 const contact = (await getSingleton('contact')).data;
 const { emails, socials } = (await getSingleton('site')).data;
+// Long addresses may wrap; offer the break before the @ ("name / @domain").
+const splitAt = (address: string) => [address.slice(0, address.indexOf('@')), address.slice(address.indexOf('@'))];
 const form = (await getSingleton('form')).data;
 ---
 <Base title="Contact" description={contact.seo.description ?? contact.lede ?? contact.heading} footerCta={false}>
@@ -24,7 +26,7 @@ const form = (await getSingleton('form')).data;
               <li>
                 <span class="contact-emails__label">{e.label}</span>
                 <a class="contact-emails__link" href={`mailto:${e.address}`}>
-                  {e.address}
+                  <span>{splitAt(e.address)[0]}<wbr />{splitAt(e.address)[1]}</span>
                   <Icon name="arrow-up-right" />
                 </a>
               </li>
@@ -90,6 +92,7 @@ const form = (await getSingleton('form')).data;
   }
 
   .contact-emails {
+    container-type: inline-size;
     display: grid;
     gap: var(--space-s);
     margin-top: var(--space-xs);
@@ -114,7 +117,8 @@ const form = (await getSingleton('form')).data;
     gap: 0.35em;
     width: fit-content;
     font-family: var(--font-display);
-    font-size: var(--step-3);
+    /* A typical address plus the arrow is ~12.5em: shrink to fit narrow columns. */
+    font-size: min(var(--step-3), 7.5cqi);
     font-weight: var(--weight-display);
     color: var(--color-heading);
     text-decoration: none;

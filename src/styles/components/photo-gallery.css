@@ -27,6 +27,11 @@
   margin-bottom: var(--space-l);
 }
 
+/* The island deals photos into columns itself (see `ordered`). */
+.pg-masonry__item--column-start {
+  break-before: column;
+}
+
 .pg-masonry__figure {
   display: grid;
   gap: var(--space-2xs);
