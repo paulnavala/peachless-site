@@ -37,13 +37,13 @@ blocks:
     swatches:
       - name: Peach
         hex: "#E1A892"
-      - name: Blush
+      - name: Soft peach
         hex: "#F1CFBE"
       - name: Cream
         hex: "#FEF0E4"
-      - name: Porcelain
+      - name: Light cream
         hex: "#FDF6F0"
-      - name: Ink
+      - name: Muted black
         hex: "#030303"
   - type: image
     image: brand-book-overview.svg

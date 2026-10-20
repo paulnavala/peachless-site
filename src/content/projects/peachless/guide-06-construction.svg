@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg id="personal_brand_guidelines_peachless" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
   <defs>
-    <style>
+    <style>@font-face{font-family:'PL Crimson Pro';font-weight:600;font-style:normal;src:url(data:font/woff2;base64,d09GMgABAAAAAAVkABAAAAAACjQAAAUKAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGhYbgXQcKAZgP1NUQVREAHQRCAqHQIYQCxYAATYCJAMoBCAFhDAHIAwHG1oIyB6FcbNzxEGlie9Uywp1EU+/H7899+k3zJJb8qQ6na6RejOSaCTNmqjaiR4qif5++G79n2k9wVPriV6hWrK697naFkZdQ7XP/pL6HyAd9sQ1ddGemA34wLuBNGCWVWNEn498NsBoehpNJ9Q8swHopoDbqOrR6vF4FcE8oIgYRDBrMz3CyezCSqDcsXc2A0ULv4qu2672ZghGJ2sVzhgVlcJzeDg7MGSbfiGP6W++6b+WBnd0TG+HEB3x4U1vq1V0+hLO6BUNlHvAxW8lRjLiQIbC+ja7CAsggPKMUA3gEm2LrV0fAoARuJzT93PtcA3W62jW/C8EzT9EggPyFJA3hAIA6/nJ8YVZoUI2dzyoqe1EgP94OhA6IFbwbxUvYcwBzSnSERYAoKDBCsWptfOW76ThLl9Pzc7JpVajVh1gE0s+071vm6222GS9NVYVhlRk+j8q3CzXivDNHAfIEwDaZwaJmQRrzxxfkBgupsrJFrfvBjJ2Nd6GjB25gLrXcfFTD9Lgnz6UeLyWytHNbAvkvt6FuqOiRIce2Tx7OUjlrn1QL/eB+Jrn54ke72Wo+/jte8TW2DP3XkH1Ej0PFbJjr2pfy/J6wXyIXGTsBuo+dwzYo4lROWt3ziPImM+3A7NG2UTrtr16hbOPjtjqBXU7OysClbEbt1aduIC670kLdJ0AbLZNTBPcrF62JcLSFjJWvBOxje0Iy3a9sqFstTqFus+IO+v0wGuepwrInb4nqPucFFaftrh9YivRcp7ouYiMXcn3vUDGbvYovS2yoNY1exo0Q72c530O9VUr2xPtpzp6keh5DPXRxSCVUcQOFVz5b6NGhp2eD2d+yo29vy+SEWs/O17pKAFzWRmKJxqJ4n2BZ0hC7w+CL/8gltB/elJVTu/MYXFd8N+Q6ohNshuNqfWNxmylGbNxsb1sxuFoU/L7gT9LchKKC0sT8bot759/Own+HdIc8fEOY3ZqrTNp1Aqv3bZhUv3zV1H6+9KwyxtVjPxCm5Ffe+T++XcSAdv5CZeJ5MuG+JDDvIKcF4IdUi2lyCErC0j4rzlCmcwslZQk1fLl3E/k38uXciKD2G9IRru54cGcVVKp5KkcmLuMlAG4hwWQy7QMcuQvCSGUgvMsrDUTHFwjJRyYv+WfBERSoyWIN8qQ/a9sh7y1Dp/Ikkn1FXr9myZzcmODKZe5BssQyILKKAqEJcAjzXokykyPDj0T8O1fh+BTkLSEfsS/LZmVE6fAkzlcXVVu+GaN5O9KXkL093loSxKWtfoMBW/khF5fZwpvUKbU5sF0iIDC51RaOAKKgE8BEMS3ecvhmrepKb8G+/kD/Ai51A/A3+g8KwROwqIhnAN6BYQfxMLlBASaK5oPbvlsAYfyDezONdicF7Cl1VmJhsAiB3LWw86Q4JCbQDDr8KgTjE1zHkIjbQjwAf7HjFjlY0axyHdG44g1jNZWrYzOOlZ6bzO9AALmbWUEwBIYgw4ks98ZA1Bc16KJXbM8newa1XGq4NKkjlmLRlVsXOrUqNUpQ7s6TTq0aFaqXQuVci41ujSya2fl0q5DnRbNcDpqWlqGnm6cB8Ktbe9esmwtctklzzqammamwQwtWvVpxwni9ORt6CTAVarlgvez+pl6Lk7FbqIznWq1wIZx0tGCnVrpziQaGjXqanVtMg5qzsN2apCczWV2Oz9/B5dmGry0jB9D0bSpg8o/Iv9PzX8x) format('woff2');}@font-face{font-family:'PL Inter';font-weight:300;font-style:normal;src:url(data:font/woff2;base64,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) format('woff2');}
       .cls-1 {
-        font-family: MinionConceptRoman-Semibold, 'Minion Variable Concept';
+        font-family: 'PL Crimson Pro';
         font-size: 62.87px;
-        font-variation-settings: 'wght' 600, 'opsz' 11;
+        
         font-weight: 600;
       }
 
@@ -27,9 +27,9 @@
       }
 
       .cls-5, .cls-6 {
-        font-family: NeueHaasGroteskTextPro-Thin, 'Neue Haas Grotesk Text Pro';
-        font-variation-settings: 'wght' 100;
-        font-weight: 200;
+        font-family: 'PL Inter';
+        
+        font-weight: 300;
       }
 
       .cls-6 {
@@ -83,9 +83,9 @@
   <g id="info_logo">
     <polygon id="background_6" class="cls-9" points="1920 1084 0 1084 0 4 1919 4 1920 1084"/>
     <g id="construction">
-      <text class="cls-6" transform="translate(1845.01 1031.14)"><tspan x="0" y="0">6</tspan></text>
-      <text id="peachless._logo" class="cls-1" transform="translate(125.06 306.64)"><tspan class="cls-4" x="0" y="0">p</tspan><tspan class="cls-13" x="34.58" y="0">e</tspan><tspan class="cls-10" x="62.61" y="0">a</tspan><tspan x="91.78" y="0">ch</tspan><tspan class="cls-3" x="153.58" y="0">l</tspan><tspan class="cls-7" x="171.12" y="0">e</tspan><tspan x="199.28" y="0">s</tspan><tspan class="cls-14" x="223.55" y="0">s</tspan><tspan x="248.25" y="0">.</tspan></text>
-      <text class="cls-5" transform="translate(120.14 246.5)"><tspan x="0" y="0">Con</tspan><tspan class="cls-16" x="178.88" y="0">s</tspan><tspan x="225.36" y="0">truction</tspan></text>
+      <text class="cls-6" transform="translate(1845.01 1031.14)"><tspan x="0" y="0" style="letter-spacing:-0.64px">6</tspan></text>
+      <text id="peachless._logo" class="cls-1" transform="translate(125.06 306.64)"><tspan class="cls-4" x="0" y="0" style="letter-spacing:-0.34px">p</tspan><tspan class="cls-13" style="letter-spacing:-0.34px">e</tspan><tspan class="cls-10" style="letter-spacing:-0.34px">a</tspan><tspan style="letter-spacing:-0.34px">ch</tspan><tspan class="cls-3" style="letter-spacing:-0.34px">l</tspan><tspan class="cls-7" style="letter-spacing:-0.34px">e</tspan><tspan style="letter-spacing:-0.34px">s</tspan><tspan class="cls-14" style="letter-spacing:-0.34px">s</tspan><tspan style="letter-spacing:-0.34px">.</tspan></text>
+      <text class="cls-5" transform="translate(120.14 246.5)"><tspan x="0" y="0" style="letter-spacing:-1.17px">Con</tspan><tspan class="cls-16" style="letter-spacing:-2.13px">s</tspan><tspan style="letter-spacing:-1.17px">truction</tspan></text>
     </g>
   </g>
   <ellipse id="elipse" class="cls-2" cx="286.65" cy="496.5" rx="114.65" ry="109.5"/>
