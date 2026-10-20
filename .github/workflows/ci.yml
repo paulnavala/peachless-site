@@ -9,6 +9,11 @@ on:
 permissions:
   contents: read
 
+# CMS saves push many small commits to the same draft PR; only the newest run matters.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 

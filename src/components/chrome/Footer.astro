@@ -1,58 +1,212 @@
 ---
 import { getEntry } from 'astro:content';
-import '../../styles/components/elegant-footer.css';
+import PeachMark from '../ui/PeachMark.astro';
+import Icon from '../ui/Icon.astro';
 
+interface Props {
+  /** The "Let's create together" invitation; off on the contact page itself. */
+  showCta?: boolean;
+}
+const { showCta = true } = Astro.props;
 const site = await getEntry('site', 'site');
-const { nav, emails, tagline } = site!.data;
+const { nav, emails, tagline, socials, cta, siteName } = site!.data;
 const year = new Date().getFullYear();
 ---
-<footer id="elegant-footer">
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <p class="brand-name">peachless.</p>
-      <p class="brand-tagline">{tagline}</p>
+<footer class="site-footer" data-surface="inverse">
+  {showCta && cta && (
+    <section class="site-footer__cta container" aria-labelledby="footer-cta-title">
+      {cta.eyebrow && <p class="eyebrow eyebrow--rule">{cta.eyebrow}</p>}
+      <h2 id="footer-cta-title" class="site-footer__cta-title t-display-2">{cta.heading}</h2>
+      <div class="cluster site-footer__cta-actions">
+        <a class="btn btn--accent btn--lg" href={cta.buttonLink}>
+          {cta.buttonLabel}
+          <Icon name="arrow-right" />
+        </a>
+        {emails[0] && (
+          <a class="link-arrow" href={`mailto:${emails[0].address}`}>
+            {emails[0].address}
+            <Icon name="arrow-up-right" />
+          </a>
+        )}
+      </div>
+    </section>
+  )}
+
+  <div class="site-footer__main container">
+    <div class="site-footer__brand">
+      <a class="site-footer__wordmark" href="/">
+        <PeachMark class="site-footer__mark" />
+        <span>{siteName}</span>
+      </a>
+      <p class="site-footer__tagline">{tagline}</p>
     </div>
-    <nav class="footer-nav" aria-label="Footer">
-      <ul>
+
+    <nav class="site-footer__col" aria-labelledby="footer-explore">
+      <h2 id="footer-explore" class="site-footer__heading">Explore</h2>
+      <ul role="list">
         {nav.map((item) => (
-          <li><a href={item.href}>{item.label}</a></li>
+          <li><a class="link-quiet" href={item.href}>{item.label}</a></li>
         ))}
       </ul>
     </nav>
-    <div class="footer-contact">
-      {emails.map((e) => (
-        <a href={`mailto:${e.address}`}>
-          <span class="contact-label">{e.label}</span>
-          {e.address}
-        </a>
-      ))}
+
+    <div class="site-footer__col">
+      <h2 class="site-footer__heading">Say hello</h2>
+      <ul role="list">
+        {emails.map((e) => (
+          <li>
+            <a class="link-quiet site-footer__email" href={`mailto:${e.address}`}>
+              <span class="site-footer__email-label">{e.label}</span>
+              {e.address}
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
-    <div class="footer-line"></div>
-    <div class="footer-legal">
-      <span>© {year} peachless. All rights reserved.</span>
-    </div>
+
+    {socials.length > 0 && (
+      <div class="site-footer__col">
+        <h2 class="site-footer__heading">Elsewhere</h2>
+        <ul role="list">
+          {socials.map((s) => (
+            <li><a class="link-quiet" href={s.url} rel="me noopener" target="_blank">{s.label}</a></li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+
+  <div class="site-footer__legal container">
+    <p>© {year} {siteName} All rights reserved.</p>
+    <a class="link-quiet site-footer__top" href="#top">
+      Back to top
+      <Icon name="arrow-up" />
+    </a>
   </div>
 </footer>
 
-<script>
-  // Reveal-on-scroll (ported from old core/elegant-footer.js): one-shot .is-inview at 12% visibility
-  const footer = document.getElementById('elegant-footer');
-  if (footer) {
-    if (!('IntersectionObserver' in window)) {
-      footer.classList.add('is-inview');
-    } else {
-      const io = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (entry.isIntersecting) {
-              footer.classList.add('is-inview');
-              io.disconnect();
-            }
-          }
-        },
-        { threshold: 0.12 }
-      );
-      io.observe(footer);
+<style>
+  .site-footer {
+    container-type: inline-size;
+    padding-block: var(--space-xl-3xl) var(--space-l);
+  }
+
+  .site-footer__cta {
+    display: grid;
+    gap: var(--space-m);
+    padding-block-end: var(--space-xl-3xl);
+    margin-block-end: var(--space-xl);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .site-footer__cta-title {
+    max-width: 16ch;
+  }
+
+  .site-footer__cta-actions {
+    --cluster-gap: var(--space-s) var(--space-l);
+  }
+
+  .site-footer__main {
+    display: grid;
+    gap: var(--space-l) var(--space-xl);
+    grid-template-columns: 1fr;
+  }
+
+  @container (min-width: 40rem) {
+    .site-footer__main {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .site-footer__brand {
+      grid-column: 1 / -1;
     }
   }
-</script>
+
+  @container (min-width: 64rem) {
+    .site-footer__main {
+      grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+    }
+
+    .site-footer__brand {
+      grid-column: auto;
+    }
+  }
+
+  .site-footer__wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    font-weight: var(--weight-display);
+    text-decoration: none;
+  }
+
+  .site-footer__wordmark :global(.peach-mark) {
+    width: 1.8rem;
+  }
+
+  .site-footer__tagline {
+    margin-top: var(--space-xs);
+    max-width: 28ch;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-1);
+    color: var(--color-text-muted);
+  }
+
+  .site-footer__heading {
+    margin-bottom: var(--space-xs);
+    font-family: var(--font-body);
+    font-size: var(--text-micro);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .site-footer__col ul {
+    display: grid;
+    gap: var(--space-2xs);
+  }
+
+  .site-footer__col a {
+    display: inline-block;
+  }
+
+  .site-footer__email {
+    display: inline-grid;
+  }
+
+  .site-footer__email-label {
+    font-size: var(--text-micro);
+    color: var(--color-text-muted);
+    text-transform: capitalize;
+  }
+
+  .site-footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-s);
+    margin-top: var(--space-xl);
+    padding-top: var(--space-m);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--text-small);
+    color: var(--color-text-muted);
+  }
+
+  .site-footer__top {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+
+  .site-footer__top :global(svg) {
+    width: 1em;
+    height: 1em;
+  }
+</style>

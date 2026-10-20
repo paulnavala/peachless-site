@@ -1,134 +1,165 @@
 ---
-import { Image } from 'astro:assets';
 import { getEntry } from 'astro:content';
-import logo from '../../assets/logo/peachless-logo.png';
+import { navCurrent } from '../../lib/nav';
+import PeachMark from '../ui/PeachMark.astro';
+import Icon from '../ui/Icon.astro';
 import MobileMenu from './MobileMenu.astro';
 
-interface Props {
-  theme?: 'light' | 'bright';
-}
-const { theme = 'light' } = Astro.props;
 const site = await getEntry('site', 'site');
-const nav = site!.data.nav;
-const current = Astro.url.pathname.replace(/\/$/, '') || '/';
+const { nav, siteName } = site!.data;
+const path = Astro.url.pathname;
 ---
-<header class={`site-header site-header--${theme}`}>
-  <div class="site-header__inner">
-    <a class="site-header__title" href="/">peachless.</a>
-    <a class="site-header__logo" href="/" aria-label="peachless. — home">
-      <Image src={logo} alt="" width={240} densities={[1, 2]} loading="eager" />
+<div class="header-sentinel" aria-hidden="true" data-header-sentinel></div>
+<header class="site-header" data-site-header>
+  <div class="site-header__inner container container--wide">
+    <a class="site-header__brand" href="/">
+      <PeachMark class="site-header__mark" />
+      <span class="site-header__wordmark">{siteName}</span>
     </a>
+
     <nav class="site-header__nav" aria-label="Primary">
-      {nav.map((item) => (
-        <a href={item.href} aria-current={current === item.href ? 'page' : undefined}>
-          {item.label}
-        </a>
-      ))}
+      <ul class="site-header__list" role="list">
+        {nav.map((item) => (
+          <li>
+            <a
+              class={item.cta ? 'btn btn--accent btn--sm' : 'link-quiet site-header__link'}
+              href={item.href}
+              aria-current={navCurrent(item.href, path)}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
     </nav>
-    <button class="site-header__burger" type="button" aria-label="Open menu" aria-expanded="false">
-      <span></span><span></span>
+
+    <button
+      class="site-header__menu btn btn--secondary btn--sm"
+      type="button"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      data-menu-open
+    >
+      Menu
+      <Icon name="menu" />
     </button>
   </div>
 </header>
-<MobileMenu nav={nav} />
+<MobileMenu />
+
+<script>
+  // Condense the header once the page scrolls past the sentinel. An observer
+  // rather than a scroll listener: correct on load, even at a restored scroll
+  // position, and no work per scroll frame.
+  const header = document.querySelector<HTMLElement>('[data-site-header]');
+  const sentinel = document.querySelector<HTMLElement>('[data-header-sentinel]');
+  if (header && sentinel && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([entry]) => {
+      header.toggleAttribute('data-condensed', !entry.isIntersecting);
+    }).observe(sentinel);
+  }
+</script>
 
 <style>
+  .header-sentinel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 4.5rem;
+    pointer-events: none;
+  }
+
   .site-header {
-    position: relative;
-    z-index: 10;
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    background: transparent;
   }
-  .site-header--light {
-    background: var(--linen);
-    color: #000;
+
+  .site-header[data-condensed] {
+    background: var(--color-header-bg);
+    box-shadow: 0 1px 0 var(--color-border);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    backdrop-filter: saturate(1.4) blur(14px);
   }
-  .site-header--bright {
-    background: var(--clay);
-    color: #fff;
-  }
+
   .site-header__inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
-    position: relative;
-    /* Live header is near full-bleed (~57-60px insets at 1440), not container-capped */
-    max-width: none;
-    margin-inline: auto;
-    padding: 24px clamp(16px, 4vw, 60px);
-    min-height: var(--header-height);
-    box-sizing: border-box;
+    gap: var(--space-m);
+    min-height: var(--header-h);
   }
-  .site-header__title {
-    font-family: var(--font-heading);
-    font-size: 1.35rem;
+
+  .site-header[data-condensed] .site-header__inner {
+    min-height: var(--header-h-condensed);
+  }
+
+  .site-header__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.75rem;
+    color: var(--color-heading);
     text-decoration: none;
-    margin-right: auto;
   }
-  /* Live renders the wordmark in the clay accent on linen subpages
-     (Squarespace siteTitleColor -> accent #d29a84); nav links stay black. */
-  .site-header--light .site-header__title {
-    color: var(--clay);
+
+  .site-header__brand :global(.peach-mark) {
+    width: 1.55rem;
   }
-  /* Logo PNG absolutely centered — ported intent of old core/header.css (100×40, 120×50 mobile) */
-  .site-header__logo {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 100px;
-    height: 40px;
+
+  .site-header__wordmark {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    font-weight: var(--weight-display);
+    letter-spacing: var(--tracking-heading);
+    line-height: 1;
+  }
+
+  .site-header__nav {
+    display: none;
+  }
+
+  .site-header__list {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: clamp(1.25rem, 2.5vw, 2.25rem);
+    margin: 0;
   }
-  .site-header__logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+
+  .site-header__link {
+    font-size: var(--text-ui);
+    font-weight: var(--weight-medium);
   }
-  .site-header__nav {
-    display: flex;
-    gap: 28px;
-    margin-left: auto;
+
+  @media (min-width: 48em) {
+    .site-header__nav {
+      display: block;
+    }
+
+    .site-header__menu {
+      display: none;
+    }
   }
-  .site-header__nav a {
-    text-decoration: none;
-    font-size: 0.95rem;
+
+  @media (prefers-reduced-motion: no-preference) {
+    .site-header {
+      transition:
+        background-color var(--duration-base) var(--ease-standard),
+        box-shadow var(--duration-base) var(--ease-standard);
+    }
+
+    .site-header__inner {
+      transition: min-height var(--duration-base) var(--ease-standard);
+    }
   }
-  .site-header__nav a:hover,
-  .site-header__nav a[aria-current='page'] {
-    text-decoration: underline;
-    text-underline-offset: 4px;
-  }
-  .site-header__burger {
-    display: none;
-    background: none;
-    border: 0;
-    /* <button> does not inherit color — without this the icon is always UA black */
-    color: inherit;
-    cursor: pointer;
-    padding: 8px;
-    flex-direction: column;
-    gap: 5px;
-  }
-  .site-header__burger span {
-    display: block;
-    width: 22px;
-    height: 2px;
-    background: currentColor;
-  }
-  @media (max-width: 900px) {
-    .site-header__nav { display: none; }
-    .site-header__burger { display: flex; }
-    /* Live steps the wordmark down to Squarespace's mobile title size (~16px) */
-    .site-header__title { font-size: 1rem; }
-  }
-  /* Live tablet header is ~129px tall (logo centered at y≈64) on projects /
-     logo-design / photography at 768; phones stay ~88px and desktop stays 88px. */
-  @media (min-width: 600px) and (max-width: 900px) {
-    .site-header__inner { min-height: 128px; }
-  }
-  @media (max-width: 768px) {
-    .site-header__logo { width: 120px; height: 50px; }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .site-header[data-condensed] {
+      background: var(--color-bg);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
   }
 </style>

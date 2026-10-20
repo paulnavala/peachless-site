@@ -1,0 +1,110 @@
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  * {
+    margin: 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+    /* The scrollbar keeps its gutter while a dialog locks scrolling, so the
+       page never shifts sideways. */
+    scrollbar-gutter: stable;
+    /* Anchored and focused targets clear the sticky header (WCAG 2.4.11). */
+    scroll-padding-top: calc(var(--header-h-condensed) + var(--space-s));
+  }
+
+  html[data-scroll-locked] {
+    overflow: hidden;
+  }
+
+  body {
+    min-height: 100dvh;
+  }
+
+  img,
+  picture,
+  video,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  img,
+  video {
+    height: auto;
+  }
+
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+  }
+
+  button {
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  textarea {
+    field-sizing: content;
+    min-height: 8lh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-wrap: balance;
+    overflow-wrap: break-word;
+  }
+
+  p,
+  li,
+  figcaption,
+  blockquote {
+    text-wrap: pretty;
+    overflow-wrap: break-word;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  ul[role='list'],
+  ol[role='list'] {
+    list-style: none;
+    padding: 0;
+  }
+
+  dialog {
+    padding: 0;
+    border: 0;
+    max-width: none;
+    max-height: none;
+    color: inherit;
+    background: transparent;
+  }
+
+  dialog::backdrop {
+    background: var(--color-backdrop);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html:focus-within {
+      scroll-behavior: smooth;
+    }
+  }
+}

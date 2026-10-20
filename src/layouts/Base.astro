@@ -9,33 +9,60 @@ import '../styles/global.css';
 interface Props {
   title?: string;
   description: string;
-  theme?: 'light' | 'bright'; // header/first-section theme; home uses 'bright'
+  /** Absolute or root-relative share image; defaults to the site image. */
+  ogImage?: string;
+  noindex?: boolean;
+  /** Which Crimson Pro face the page's h1 uses; preloaded to avoid a swap. */
+  preloadSerif?: 'normal' | 'italic';
+  /** Show the "Let's create together" invitation in the footer. */
+  footerCta?: boolean;
 }
-const { title, description, theme = 'light' } = Astro.props;
+const { title, description, ogImage, noindex = false, preloadSerif = 'normal', footerCta = true } = Astro.props;
+
+// Prefetch same-site pages on hover/press (Chromium); the admin is excluded.
+const speculationRules = JSON.stringify({
+  prefetch: [
+    {
+      source: 'document',
+      where: { and: [{ href_matches: '/*' }, { not: { href_matches: '/admin/*' } }] },
+      eagerness: 'moderate',
+    },
+  ],
+});
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#efe1d4" /><!-- style-guard-ignore: mirrors --linen -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/icons/icon-32.png" type="image/png" sizes="32x32" />
     <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-    <Seo title={title} description={description} />
-    <Font cssVariable="--font-marcellus" preload />
-    {/* Preload only the upright faces (400/700) — italics appear in scattered
-        body copy only, and preloading them on every page competes with
-        above-fold images. The italic @font-face still loads on demand. */}
-    <Font cssVariable="--font-pt-serif" preload={[{ style: 'normal' }]} />
+    <Seo title={title} description={description} image={ogImage} noindex={noindex} />
+    <Font cssVariable="--font-inter" preload={[{ style: 'normal' }]} />
+    <Font cssVariable="--font-crimson-pro" preload={[{ style: preloadSerif }]} />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <script is:inline type="speculationrules" set:html={speculationRules} />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <Header theme={theme} />
-    <main id="main">
+    <Header />
+    <main id="main" tabindex="-1">
       <slot />
     </main>
-    <Footer />
+    <Footer showCta={footerCta} />
+    <script>
+      import { initReveal } from '../lib/reveal';
+      initReveal();
+    </script>
   </body>
 </html>
+
+<style>
+  main:focus {
+    outline: none;
+  }
+</style>

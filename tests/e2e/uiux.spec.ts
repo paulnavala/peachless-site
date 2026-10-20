@@ -42,7 +42,7 @@ test.describe('/projects/uiux', () => {
     await expect(modal.locator('.portfolio-modal__close')).toBeFocused();
     // Tabbing out of the cross-origin iframe moves focus to the page behind with no
     // keydown this page can see; focusing a footer link stands in for that here
-    await page.locator('#elegant-footer .footer-nav a').first().focus();
+    await page.locator('.site-footer nav a').first().focus();
     await expect(modal.locator(':focus')).toHaveCount(1);
   });
 });

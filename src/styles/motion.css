@@ -1,0 +1,61 @@
+/* Motion: page transitions and scroll reveal. Everything here is progressive
+   enhancement — base styles are always the final state, and movement is only
+   authored inside prefers-reduced-motion: no-preference. */
+
+/* Cross-document View Transitions (Chrome/Edge 126+, Safari 18.2+). Other
+   browsers simply navigate. The root cross-fade is motion-safe; the shared
+   card ↔ hero morph is switched off under reduced motion. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-group(root) {
+  animation-duration: var(--duration-base);
+}
+
+.site-header {
+  view-transition-name: site-header;
+}
+
+.work-media {
+  view-transition-name: var(--vt, none);
+  view-transition-class: work-media;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(*.work-media) {
+    animation-duration: var(--duration-slower);
+    animation-timing-function: var(--ease-out);
+  }
+
+  ::view-transition-old(*.work-media),
+  ::view-transition-new(*.work-media) {
+    height: 100%;
+    object-fit: cover;
+    overflow: clip;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-media {
+    view-transition-name: none;
+  }
+}
+
+/* Scroll reveal (src/lib/reveal.ts). Elements stay visible unless the script
+   has run (html.reveal-on) and the visitor allows motion. */
+@layer ui {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal-on [data-reveal]:not([data-revealed]) {
+      opacity: 0;
+      translate: 0 var(--reveal-shift);
+    }
+
+    .reveal-on [data-reveal] {
+      transition:
+        opacity var(--duration-slower) var(--ease-out),
+        translate var(--duration-slower) var(--ease-out);
+      transition-delay: calc(var(--reveal-index, 0) * var(--stagger));
+    }
+  }
+}

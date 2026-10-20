@@ -1,31 +1,7 @@
 /**
- * Lightweight DOM helpers shared across components.
- * These are intentionally framework-agnostic and safe for IIFE bundling.
+ * Lightweight DOM helpers shared across components. Framework-agnostic: used by
+ * Vue islands and by Astro components' scoped scripts alike.
  */
-
-export const DEFAULT_TIMEOUT = 8000;
-
-/** Wait for an element to appear in the DOM (rAF loop with timeout). */
-export function waitFor(selector: string, timeoutMs: number = DEFAULT_TIMEOUT): Promise<Element> {
-  return new Promise((resolve, reject) => {
-    const start = performance.now();
-    (function check() {
-      const el = document.querySelector(selector);
-      if (el) return resolve(el);
-      if (performance.now() - start > timeoutMs)
-        return reject(new Error('Timeout waiting for: ' + selector));
-      requestAnimationFrame(check);
-    })();
-  });
-}
-
-/** Query a single element with optional scoping element. */
-export const qs = (sel: string, el: Document | Element = document) =>
-  el.querySelector(sel) as HTMLElement | null;
-
-/** Query all elements with optional scoping element. */
-export const qsa = (sel: string, el: Document | Element = document) =>
-  Array.from(el.querySelectorAll(sel)) as HTMLElement[];
 
 /**
  * Throttle a handler to the next animation frame.
@@ -53,6 +29,17 @@ export function isReducedMotion(): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Call `cb` whenever the reduced-motion preference changes (e.g. the visitor
+ * flips the OS setting mid-animation). Returns an unsubscribe function.
+ */
+export function onReducedMotionChange(cb: (reduced: boolean) => void): () => void {
+  const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const handler = (e: MediaQueryListEvent) => cb(e.matches);
+  mql.addEventListener('change', handler);
+  return () => mql.removeEventListener('change', handler);
 }
 
 /** Best-effort touch-capable device detection. */
@@ -143,4 +130,23 @@ export function trapFocus(container: HTMLElement, focusableSelector: string): ()
   };
   activeTraps.set(container, release);
   return release;
+}
+
+let scrollLocks = 0;
+
+/**
+ * Lock page scrolling while a dialog, menu or lightbox is open. Ref-counted, so
+ * nested overlays release correctly; the returned function is idempotent.
+ * `scrollbar-gutter: stable` on <html> keeps the layout from shifting.
+ */
+export function lockScroll(): () => void {
+  scrollLocks += 1;
+  document.documentElement.dataset.scrollLocked = '';
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    scrollLocks = Math.max(0, scrollLocks - 1);
+    if (scrollLocks === 0) delete document.documentElement.dataset.scrollLocked;
+  };
 }

@@ -65,8 +65,19 @@ const site = defineCollection({
   loader: glob({ base: './src/content/site', pattern: '**/*.yaml' }),
   schema: z
     .object({
-      nav: z.array(z.object({ label: z.string(), href: z.string() })),
+      siteName: z.string().default('peachless.'),
+      ownerName: z.string().optional(),
+      nav: z.array(z.object({ label: z.string(), href: z.string(), cta: z.boolean().optional() })),
       tagline: z.string(),
+      socials: z.array(z.object({ label: z.string(), url: z.url() })).default([]),
+      cta: z
+        .object({
+          eyebrow: z.string().optional(),
+          heading: z.string(),
+          buttonLabel: z.string(),
+          buttonLink: z.string(),
+        })
+        .optional(),
       emails: z.array(z.object({ label: z.string(), address: z.email() })),
       defaultDescription: z.string(),
       formEndpoint: z.string().default(''),
