@@ -183,30 +183,55 @@ Change the order with **Reorder Entries** on the Photos list.
 
 ---
 
-## For the site administrator: one-time setup
+## For the site administrator
 
-These steps make **Sign In with GitHub** work and give Patricia access. They only need doing once.
+### How "Sign In with GitHub" works
 
-1. **Deploy the sign-in helper.**
-   - Open https://github.com/sveltia/sveltia-cms-auth and click **Deploy to Cloudflare Workers**.
-   - Note the worker's URL, e.g. `https://sveltia-cms-auth.<your-subdomain>.workers.dev`.
-2. **Create a GitHub OAuth app.**
-   - Go to GitHub → **Settings → Developer settings → OAuth Apps → New OAuth App**:
-     - Application name: `peachless. admin`
-     - Homepage URL: `https://peachless.design`
-     - Authorization callback URL: `<worker URL>/callback`
-   - Click **Generate a new client secret**.
-3. **Configure the worker.** In Cloudflare → **Workers & Pages →** the worker **→ Settings → Variables and Secrets**, add:
-   - `GITHUB_CLIENT_ID`: from the OAuth app
-   - `GITHUB_CLIENT_SECRET`: from the OAuth app, as an **encrypted secret**
-   - `ALLOWED_DOMAINS`: `peachless.design`. Don't add `*.pages.dev`: previews are for viewing, not signing in.
-4. **Point the editor at the worker.** In `public/admin/config.yml`, uncomment `base_url` under `backend` and set it to the worker URL. Merge that through a pull request.
-5. **Invite Patricia.** In the GitHub repository go to **Settings → Collaborators → Add people**, enter their GitHub username and choose the **Write** role.
-6. **Tidy branches automatically.** Go to repository **Settings → General → Pull Requests** and tick **Automatically delete head branches**. Each saved draft creates a branch, and this removes it once the draft is published.
-7. **Test it.**
-   - Sign in at https://peachless.design/admin/.
-   - Make a small change: **Save** → **View Preview** → **Publish**.
-   - Try **Reorder Entries**.
-8. **Clean up.** Revoke any personal access token that was used for the editor before (GitHub → **Settings → Developer settings → Personal access tokens**).
+The button opens `https://auth.peachless.design`, a small Cloudflare Worker called `sveltia-cms-auth`. It was deployed from [sveltia/sveltia-cms-auth](https://github.com/sveltia/sveltia-cms-auth) at commit `95733a9811`, and its source was reviewed first. It exchanges GitHub's one-time code for a sign-in token, and hands that token only to pages on `peachless.design`.
 
-`backend.auth_scope` is `public_repo` because the repository is public. If GitHub refuses to create preview pull requests under that scope, change it to `repo`.
+| Piece | Where it lives |
+|---|---|
+| Worker `sveltia-cms-auth`, custom domain `auth.peachless.design` | Cloudflare → **Workers & Pages** |
+| `ALLOWED_DOMAINS` = `peachless.design` | the worker → **Settings → Variables and Secrets** |
+| `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` (both as secrets) | the same place; values come from the GitHub OAuth app |
+| GitHub OAuth app **peachless. admin**: homepage `https://peachless.design`, callback `https://auth.peachless.design/callback` | GitHub → **Settings → Developer settings → OAuth Apps** |
+| `base_url: https://auth.peachless.design` | `public/admin/config.yml` (a unit test requires it) |
+
+Without `base_url`, the editor falls back to Netlify's sign-in service, and the popup says "Not Found".
+
+### Giving someone access
+
+1. In the GitHub repository go to **Settings → Collaborators → Add people**. Enter their GitHub username and choose the **Write** role.
+2. They accept the emailed invitation, then sign in at https://peachless.design/admin/ with their own GitHub account.
+
+Removing a collaborator removes their access.
+
+### Housekeeping
+
+- **Automatically delete head branches:** turn this on in repository **Settings → General → Pull Requests**. Each saved draft creates a branch, and this removes it once the draft is published.
+- **Access tokens:** once GitHub sign-in works, revoke any personal access token that was used for the editor before (GitHub → **Settings → Developer settings → Personal access tokens**). "Sign In Using Access Token" still works as a fallback for developers.
+- **Scope:** `backend.auth_scope` is `public_repo` because the repository is public. If the repository ever becomes private, change it to `repo`.
+
+### Rotating the client secret
+
+1. In the GitHub OAuth app, click **Generate a new client secret**.
+2. Paste it into the worker's `GITHUB_CLIENT_SECRET` and deploy.
+3. Delete the old secret on GitHub.
+
+### Redeploying the worker
+
+This is rarely needed: secrets and variables survive redeploys. Download `src/index.js` from the pinned commit (or a newer one you've reviewed) and put this `wrangler.toml` next to its `src` folder:
+
+```toml
+name = "sveltia-cms-auth"
+main = "src/index.js"
+compatibility_date = "2023-03-24"
+workers_dev = false
+keep_vars = true
+routes = [{ pattern = "auth.peachless.design", custom_domain = true }]
+
+[vars]
+ALLOWED_DOMAINS = "peachless.design"
+```
+
+Then run `npx wrangler login` and `npx wrangler deploy`.
