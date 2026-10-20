@@ -63,14 +63,21 @@ const pages = defineCollection({
 
 const site = defineCollection({
   loader: glob({ base: './src/content/site', pattern: '**/*.yaml' }),
-  schema: z.object({
-    nav: z.array(z.object({ label: z.string(), href: z.string() })),
-    tagline: z.string(),
-    emails: z.array(z.object({ label: z.string(), address: z.email() })),
-    defaultDescription: z.string(),
-    formEndpoint: z.string().default(''),
-    formHidden: z.record(z.string(), z.string()).default({}),
-  }),
+  schema: z
+    .object({
+      nav: z.array(z.object({ label: z.string(), href: z.string() })),
+      tagline: z.string(),
+      emails: z.array(z.object({ label: z.string(), address: z.email() })),
+      defaultDescription: z.string(),
+      formEndpoint: z.string().default(''),
+      formHidden: z.record(z.string(), z.string()).default({}),
+    })
+    // Web3Forms rejects every submission without its access_key: fail the build
+    // rather than deploy a contact form that can't send.
+    .refine((s) => !s.formEndpoint.includes('web3forms.com') || !!s.formHidden.access_key, {
+      message: 'access_key is required when formEndpoint is Web3Forms',
+      path: ['formHidden'],
+    }),
 });
 
 export const collections = { projects, logos, photos, brands, pages, site };

@@ -26,14 +26,13 @@ export default defineComponent({
       const el = root.value;
       if (!el) return;
 
+      // Keep the handle at the same relative position across resizes; only the
+      // first measurement (width still 0) places it at the 25% start.
+      const fraction = width.value > 0 ? posX.value / width.value : 0.25;
       width.value = el.clientWidth;
       height.value = el.clientHeight;
       cachedRect = el.getBoundingClientRect();
-      setInitialPosX();
-    }
-
-    function setInitialPosX() {
-      posX.value = width.value * 0.25; // Start at 25%
+      posX.value = width.value * fraction;
     }
 
     function onMouseDown(e: MouseEvent | TouchEvent) {

@@ -349,7 +349,9 @@ export default defineComponent({
                             currentGuideline ? h('div', {
                                 class: 'svg-wrapper',
                                 style: {
-                                    transform: `scale(${zoomLevel.value}) translate(${panX.value}px, ${panY.value}px)`,
+                                    // Translate before scaling so a drag moves the page 1:1 with
+                                    // the cursor (scale-then-translate multiplied the pan by zoom).
+                                    transform: `translate(${panX.value}px, ${panY.value}px) scale(${zoomLevel.value})`,
                                     cursor: zoomLevel.value > 1 ? (isDragging.value ? 'grabbing' : 'grab') : 'default'
                                 }
                             }, [

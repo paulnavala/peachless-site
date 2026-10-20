@@ -13,7 +13,7 @@ Production site for **https://peachless.design** — a portfolio site built as a
 - `npm run preview` — serve `dist/` at `http://localhost:4321`
 - `npm run check` — `astro check` (expect 0 errors; a few known unused-var hints)
 - `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, happy-dom)
-- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, 28 tests, `retries: 1`). **Run `npm run build` first** — the Playwright webServer runs `npm run preview` against whatever is in `dist/`, so a stale build silently tests old code.
+- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, 34 tests, `retries: 1`). **Run `npm run build` first** — the Playwright webServer runs `npm run preview` against whatever is in `dist/`, so a stale build silently tests old code.
 
 ## Architecture
 
@@ -43,12 +43,13 @@ Production site for **https://peachless.design** — a portfolio site built as a
 ## Content & CMS
 
 - Sveltia CMS at `/admin` (GitHub backend, personal-access-token sign-in). The CMS script in `public/admin/index.html` is **version-pinned with an SRI hash** — when bumping the version, recompute sha384 over the new file and update both together; never loosen the pin.
-- `src/content/site/site.yaml` holds nav, emails, and the contact-form config. **Edit `formEndpoint`/`formHidden` directly in git** — saving "Site Settings" through the CMS can strip manually-added `formHidden` keys (the Web3Forms `access_key` lives there; it is public-by-design).
+- `src/content/site/site.yaml` holds nav, emails, and the contact-form config. `formHidden` carries the Web3Forms `access_key` (public-by-design); it is declared in the CMS as a `keyvalue` field so "Site Settings" saves keep it, and the `site` schema fails the build if a Web3Forms `formEndpoint` has no `access_key`.
 
 ## Testing gotchas
 
 - `tests/e2e/contact.spec.ts` **stubs** `api.web3forms.com` via `page.route`. Never let a test (or any automation) POST to the real endpoint — each submission emails the owner.
 - Playwright uses `waitUntil` defaults; the uiux page embeds Figma iframes whose telemetry never goes network-idle — don't wait on networkidle there.
+- Specs that drive an island with the keyboard or mouse should first `await waitForIsland(page, selector)` (`tests/e2e/utils.ts`): `client:visible` islands ignore input until hydrated.
 - `scripts/capture-screens.mjs` emulates `reducedMotion: 'reduce'`, scrolls the full page, and waits for images — so captures show the tagline fully typed and all reveal-on-scroll content visible.
 
 ## Hard rules

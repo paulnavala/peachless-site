@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { isReducedMotion, isVisible, trapFocus, rafThrottle } from '../../src/lib/dom';
 
 describe('dom utilities', () => {
@@ -43,42 +43,103 @@ describe('dom utilities', () => {
   });
 
   describe('trapFocus', () => {
-    it('returns a cleanup function', () => {
-      const container = document.createElement('div');
-      const btn1 = document.createElement('button');
-      const btn2 = document.createElement('button');
-      container.appendChild(btn1);
-      container.appendChild(btn2);
-      document.body.appendChild(container);
-
-      const cleanup = trapFocus(container, 'button');
-      expect(typeof cleanup).toBe('function');
-
-      cleanup();
-      document.body.removeChild(container);
+    const releases: Array<() => void> = [];
+    afterEach(() => {
+      // Traps listen on document, so one left installed would intercept Tab in later tests.
+      releases.splice(0).forEach((release) => release());
+      vi.restoreAllMocks();
+      document.body.replaceChildren();
     });
 
-    it('cycles focus on Tab at last element', () => {
+    function setup(count = 2) {
       const container = document.createElement('div');
-      const btn1 = document.createElement('button');
-      btn1.textContent = 'First';
-      const btn2 = document.createElement('button');
-      btn2.textContent = 'Last';
-      container.appendChild(btn1);
-      container.appendChild(btn2);
+      const buttons = Array.from({ length: count }, (_, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = `Button ${i + 1}`;
+        container.appendChild(btn);
+        return btn;
+      });
       document.body.appendChild(container);
+      return { container, buttons };
+    }
 
-      const cleanup = trapFocus(container, 'button');
+    function trap(container: HTMLElement) {
+      const release = trapFocus(container, 'button');
+      releases.push(release);
+      return release;
+    }
 
-      // Focus on last button, then press Tab — should wrap to first
-      btn2.focus();
-      const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
-      const prevented = !container.dispatchEvent(event);
-      // In happy-dom, focus management is limited, but we verify the handler runs
-      expect(typeof cleanup).toBe('function');
+    function pressTab(target: Element, shiftKey = false) {
+      const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true, cancelable: true });
+      target.dispatchEvent(event);
+      return event;
+    }
 
-      cleanup();
-      document.body.removeChild(container);
+    it('returns a cleanup function', () => {
+      const { container } = setup();
+      expect(typeof trap(container)).toBe('function');
+    });
+
+    it('cycles focus on Tab at the last element', () => {
+      const { container, buttons: [first, last] } = setup();
+      trap(container);
+      last.focus();
+      expect(pressTab(last).defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(first);
+    });
+
+    it('cycles focus on Shift+Tab at the first element', () => {
+      const { container, buttons: [first, last] } = setup();
+      trap(container);
+      first.focus();
+      expect(pressTab(first, true).defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(last);
+    });
+
+    it('skips disabled controls when wrapping', () => {
+      const { container, buttons: [first, middle, last] } = setup(3);
+      last.disabled = true;
+      trap(container);
+      middle.focus();
+      expect(pressTab(middle).defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(first);
+    });
+
+    it('pulls focus back in when it is outside the container', () => {
+      const { container, buttons: [first, last] } = setup();
+      const outside = document.createElement('button');
+      document.body.appendChild(outside);
+      trap(container);
+
+      outside.focus();
+      expect(pressTab(outside).defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(first);
+
+      outside.focus();
+      expect(pressTab(outside, true).defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(last);
+    });
+
+    it('replaces the existing trap when the same container is trapped again', () => {
+      const { container, buttons: [first, last] } = setup();
+      const removeListener = vi.spyOn(document, 'removeEventListener');
+      const staleRelease = trap(container);
+      trap(container);
+      expect(removeListener).toHaveBeenCalledTimes(1);
+
+      // The replaced trap's release must not disable its replacement
+      staleRelease();
+      last.focus();
+      pressTab(last);
+      expect(document.activeElement).toBe(first);
+    });
+
+    it('stops intercepting once released', () => {
+      const { container, buttons: [, last] } = setup();
+      trap(container)();
+      last.focus();
+      expect(pressTab(last).defaultPrevented).toBe(false);
+      expect(document.activeElement).toBe(last);
     });
   });
 

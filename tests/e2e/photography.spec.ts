@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForIsland } from './utils';
 
 test.describe('/photography', () => {
   test('renders the masonry gallery', async ({ page }) => {
@@ -14,6 +15,47 @@ test.describe('/photography', () => {
     await expect(page.locator('.pg-modal')).toBeVisible();
     await expect(page.locator('.pg-modal .image-compare')).toBeVisible(); // first photo has a before image
     await page.keyboard.press('Escape');
+    await expect(page.locator('.pg-modal')).toBeHidden();
+  });
+
+  test('Escape right after an arrow key does not reopen the lightbox', async ({ page }) => {
+    await page.goto('/photography');
+    await waitForIsland(page, '.pg-masonry');
+    await page.locator('.pg-masonry__item').first().click();
+    await expect(page.locator('.pg-modal__close')).toBeFocused();
+    // Hold the next photo's images so its preload is still in flight when Escape lands
+    await page.route('**/_astro/**', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await route.continue().catch(() => {});
+    });
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.pg-modal')).toBeHidden();
+    await page.waitForTimeout(700); // past the 400ms preload timeout
+    await expect(page.locator('.pg-modal')).toBeHidden();
+    await expect(page.locator('body')).not.toHaveClass(/pg-modal-open/);
+    await page.unrouteAll({ behavior: 'ignoreErrors' });
+  });
+
+  test('before/after handle keeps its position when the viewport resizes', async ({ page }) => {
+    await page.goto('/photography');
+    await waitForIsland(page, '.pg-masonry');
+    await page.locator('.pg-masonry__item').first().click();
+    const slider = page.locator('.pg-modal .image-compare');
+    await expect(slider).toBeVisible();
+    await slider.focus();
+    await page.keyboard.press('End');
+    await expect(slider).toHaveAttribute('aria-valuenow', '100');
+    await page.setViewportSize({ width: 1000, height: 640 });
+    await page.waitForTimeout(500); // let the ResizeObserver run
+    await expect(slider).toHaveAttribute('aria-valuenow', '100');
+  });
+
+  test('right-clicking a photo does not open the lightbox', async ({ page }) => {
+    await page.goto('/photography');
+    await waitForIsland(page, '.pg-masonry');
+    await page.locator('.pg-masonry__item').first().click({ button: 'right' });
+    await page.waitForTimeout(600); // past the 400ms preload window
     await expect(page.locator('.pg-modal')).toBeHidden();
   });
 });
