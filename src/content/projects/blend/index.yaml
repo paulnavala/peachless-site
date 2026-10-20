@@ -1,7 +1,8 @@
 title: Blend
-summary: A painted ring of colour for Blend, a creative studio blending artistry with technology.
+summary: "A logo for Blend: one brushed ring in which warm colours melt into each other."
 disciplines:
   - graphic-design
+year: 2025
 tools: []
 cover:
   image: logo.png
@@ -13,8 +14,8 @@ hidden: false
 order: 5
 blocks:
   - type: text
-    heading: The brief
-    body: Blend is a creative design studio blending artistry with technology.
+    heading: The idea
+    body: The name, drawn rather than spelled — a single brushed ring in which orange, rose and violet run into each other, so the colours do the blending.
   - type: logo
     heading: The mark
     variants:
