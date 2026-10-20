@@ -1,16 +1,20 @@
 ---
 import { render } from 'astro:content';
+import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Media from '../components/ui/Media.astro';
 import CtaBand from '../components/CtaBand.astro';
 import ArrowLink from '../components/ui/ArrowLink.astro';
 import { getSingleton } from '../lib/content';
+import { personLd } from '../lib/structured-data';
 
 const about = await getSingleton('about');
 const { Content } = await render(about);
 const { eyebrow, title, statement, portrait, portraitAlt, closing, seo } = about.data;
+const site = (await getSingleton('site')).data;
+const portraitShare = await getImage({ src: portrait, width: 800, format: 'jpg' });
 ---
-<Base title="About" description={seo.description ?? statement}>
+<Base title="About" description={seo.description ?? statement} jsonLd={[personLd(site, Astro.site!, portraitShare.src)]}>
   <section class="section about">
     <div class="container about__inner">
       <div class="about__portrait">

@@ -1,4 +1,7 @@
 ---
+import { getSingleton } from '../lib/content';
+import type { JsonLdNode } from '../lib/structured-data';
+
 interface Props {
   title?: string; // page name without suffix; empty = home
   description: string;
@@ -6,9 +9,12 @@ interface Props {
   image?: string;
   canonical?: string;
   noindex?: boolean;
+  /** schema.org nodes for this page (src/lib/structured-data.ts). */
+  jsonLd?: JsonLdNode[];
 }
-const { title = '', description, image, canonical: canonicalPath, noindex = false } = Astro.props;
-const fullTitle = title ? `${title} — peachless.` : 'peachless.';
+const { title = '', description, image, canonical: canonicalPath, noindex = false, jsonLd = [] } = Astro.props;
+const { siteName } = (await getSingleton('site')).data;
+const fullTitle = title ? `${title} — ${siteName}` : siteName;
 const canonical = new URL(canonicalPath ?? Astro.url.pathname, Astro.site);
 const ogImage = new URL(image ?? '/og/peachless.jpg', Astro.site);
 ---
@@ -16,7 +22,7 @@ const ogImage = new URL(image ?? '/og/peachless.jpg', Astro.site);
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
 {noindex && <meta name="robots" content="noindex" />}
-<meta property="og:site_name" content="peachless." />
+<meta property="og:site_name" content={siteName} />
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:type" content="website" />
@@ -25,14 +31,12 @@ const ogImage = new URL(image ?? '/og/peachless.jpg', Astro.site);
 {!image && <meta property="og:image:width" content="1000" />}
 {!image && <meta property="og:image:height" content="500" />}
 <meta name="twitter:card" content="summary_large_image" />
-<script
-  is:inline
-  type="application/ld+json"
-  set:html={JSON.stringify({
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'peachless.',
-    url: Astro.site?.toString(),
-    description,
-  }).replace(/</g, '\\u003c')}
-/>
+{
+  jsonLd.length > 0 && (
+    <script
+      is:inline
+      type="application/ld+json"
+      set:html={JSON.stringify({ '@context': 'https://schema.org', '@graph': jsonLd }).replace(/</g, '\\u003c')}
+    />
+  )
+}

@@ -6,8 +6,9 @@ import NextProject from '../../components/project/NextProject.astro';
 import BlockRenderer from '../../components/blocks/BlockRenderer.astro';
 import CtaBand from '../../components/CtaBand.astro';
 import ArrowLink from '../../components/ui/ArrowLink.astro';
-import { getPublishedProjects } from '../../lib/content';
+import { getPublishedProjects, getSingleton } from '../../lib/content';
 import { nextProject } from '../../lib/project-order';
+import { projectLd } from '../../lib/structured-data';
 
 export async function getStaticPaths() {
   // Published projects only: a hidden project gets no page at all.
@@ -25,8 +26,14 @@ const { title, summary, seo, cover } = project.data;
 // logo covers fall back to the site image (a cropped transparent logo reads badly).
 const shareSource = seo?.image || (cover.fit === 'cover' && cover.image.format !== 'svg' ? cover.image : undefined);
 const share = shareSource ? await getImage({ src: shareSource, width: 1200, height: 630, fit: 'cover', format: 'jpg' }) : undefined;
+const site = (await getSingleton('site')).data;
 ---
-<Base title={seo?.title || title} description={seo?.description || summary} ogImage={share?.src}>
+<Base
+  title={seo?.title || title}
+  description={seo?.description || summary}
+  ogImage={share?.src}
+  jsonLd={projectLd(project, site, Astro.site!, share?.src)}
+>
   <article class="project">
     <ProjectHero project={project} />
     <BlockRenderer blocks={project.data.blocks} projectTitle={title} cover={cover} />

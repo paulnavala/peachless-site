@@ -10,7 +10,8 @@
     "check": "astro check",
     "test": "vitest run",
     "test:watch": "vitest",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "budgets": "node scripts/check-budgets.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

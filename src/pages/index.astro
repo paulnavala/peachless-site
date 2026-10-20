@@ -1,6 +1,7 @@
 ---
 // Home tells the story in one scroll: who → what I believe → what I do →
 // selected work → through my lens → hello → (footer) let's create together.
+import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import HomeHero from '../components/home/HomeHero.astro';
 import DisciplineCards, { type DisciplineCard } from '../components/home/DisciplineCards.astro';
@@ -11,10 +12,12 @@ import WorkGrid from '../components/work/WorkGrid.astro';
 import ArrowLink from '../components/ui/ArrowLink.astro';
 import { getFeaturedPhotos, getFeaturedProjects, getPublishedPhotos, getPublishedProjects, getSingleton } from '../lib/content';
 import { renderInline } from '../lib/markdown';
+import { personLd, websiteLd } from '../lib/structured-data';
 
 const home = (await getSingleton('home')).data;
 const work = (await getSingleton('work')).data;
 const about = (await getSingleton('about')).data;
+const portrait = await getImage({ src: about.portrait, width: 800, format: 'jpg' });
 const site = (await getSingleton('site')).data;
 const projects = await getPublishedProjects();
 const featured = await getFeaturedProjects();
@@ -52,7 +55,11 @@ const cards: DisciplineCard[] = [
   },
 ];
 ---
-<Base description={home.seo.description ?? site.seo.description} preloadSerif="italic">
+<Base
+  description={home.seo.description ?? site.seo.description}
+  preloadSerif="italic"
+  jsonLd={[websiteLd(site, Astro.site!), personLd(site, Astro.site!, portrait.src)]}
+>
   <HomeHero
     eyebrow={home.eyebrow}
     line1={home.tagline.line1}
