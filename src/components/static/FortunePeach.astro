@@ -184,7 +184,7 @@ import '../../styles/components/fortune-peach.css';
   // Ported from old fortune-peach.entry.ts, minus the window.initFortuneLogoWidget/
   // window.initFortunePeach globals, the MutationObserver bootstrap, and the
   // DOMContentLoaded gate. The markup above is server-rendered, so init runs directly.
-  import { isReducedMotion } from '../../lib/dom';
+  import { isReducedMotion, isPointerClick } from '../../lib/dom';
   
   type Elements = {
     stage: HTMLElement;
@@ -278,9 +278,9 @@ import '../../styles/components/fortune-peach.css';
     ballsEl.appendChild(ball);
   }
   
-  // viaKeyboard: the control that was used is about to be hidden, so move focus on
-  // to the next one instead of letting it fall to <body>.
-  function crack(elements: Elements, viaKeyboard: boolean) {
+  // moveFocus (keyboard and screen-reader use): the control that was used is about
+  // to be hidden, so move focus on to the next one instead of letting it fall to <body>.
+  function crack(elements: Elements, moveFocus: boolean) {
     const { stage, cracking, revealed, quoteEl, ballsEl, particles, again, announcer } = elements;
     const pick = randomFortune();
     announcer.textContent = '';
@@ -294,15 +294,15 @@ import '../../styles/components/fortune-peach.css';
       pick.lucky.forEach((n, idx) => createLuckyBall(n, idx, ballsEl));
       setStage('revealed', stage, cracking, revealed);
       announcer.textContent = `Your fortune: ${pick.quote} Your lucky numbers: ${pick.lucky.join(', ')}.`;
-      if (viaKeyboard) again.focus();
+      if (moveFocus) again.focus();
     }, delay);
   }
 
-  function reset(elements: Elements, viaKeyboard: boolean) {
+  function reset(elements: Elements, moveFocus: boolean) {
     const { stage, cracking, revealed, logoBtn, announcer } = elements;
     setStage('unopened', stage, cracking, revealed);
     announcer.textContent = '';
-    if (viaKeyboard) logoBtn.focus();
+    if (moveFocus) logoBtn.focus();
   }
   
   function initFortuneLogoWidget(): void {
@@ -328,10 +328,10 @@ import '../../styles/components/fortune-peach.css';
     const elements = {
       stage, cracking, revealed, quoteEl, ballsEl, particles, logoBtn, again, announcer,
     } as Elements;
-    // A click's detail is 0 when Enter/Space on the button produced it
-    logoBtn.addEventListener('click', (e) => crack(elements, e.detail === 0));
-    tapBtn.addEventListener('click', (e) => crack(elements, e.detail === 0));
-    again.addEventListener('click', (e) => reset(elements, e.detail === 0));
+    // Keyboard and screen-reader activations move focus along; mouse/touch don't
+    logoBtn.addEventListener('click', (e) => crack(elements, !isPointerClick(e)));
+    tapBtn.addEventListener('click', (e) => crack(elements, !isPointerClick(e)));
+    again.addEventListener('click', (e) => reset(elements, !isPointerClick(e)));
     logoBtn.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();

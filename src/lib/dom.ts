@@ -63,6 +63,17 @@ export function isTouchDevice(): boolean {
   );
 }
 
+/**
+ * True when a click came from a real pointer (mouse, touch, pen). Keyboard and
+ * assistive-technology clicks have an empty pointerType (Pointer Events spec);
+ * where click isn't a PointerEvent, fall back to their detail of 0.
+ */
+export function isPointerClick(e: MouseEvent): boolean {
+  return typeof PointerEvent !== 'undefined' && e instanceof PointerEvent
+    ? e.pointerType !== ''
+    : e.detail !== 0;
+}
+
 /** Visibility check used for focus trapping. */
 export function isVisible(el: Element): boolean {
   const s = window.getComputedStyle(el);
@@ -84,15 +95,18 @@ export function trapFocus(container: HTMLElement, focusableSelector: string): ()
   // replaces its trap instead of stacking a second listener.
   activeTraps.get(container)?.();
 
-  const onKey = (e: KeyboardEvent) => {
-    if (e.key !== 'Tab' || e.ctrlKey || e.altKey || e.metaKey) return;
-    const items = Array.from(container.querySelectorAll<HTMLElement>(focusableSelector)).filter(
+  const tabbables = () =>
+    Array.from(container.querySelectorAll<HTMLElement>(focusableSelector)).filter(
       (el) =>
         !(el as HTMLButtonElement).disabled &&
         // The attribute, not .tabIndex: happy-dom reports -1 for plain buttons.
         !(Number(el.getAttribute('tabindex')) < 0) &&
         isVisible(el)
     );
+
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key !== 'Tab' || e.ctrlKey || e.altKey || e.metaKey) return;
+    const items = tabbables();
     // Hidden or detached container: stay inert instead of swallowing Tab.
     if (!items.length) return;
     const first = items[0];
@@ -111,11 +125,20 @@ export function trapFocus(container: HTMLElement, focusableSelector: string): ()
       e.preventDefault();
     }
   };
+  // Focus can also leave with no keydown we can see: Tab inside a cross-origin
+  // iframe (e.g. a Figma embed) moves it straight to the page behind. Bring it
+  // back to the first item.
+  const onFocusIn = (e: FocusEvent) => {
+    if (container.contains(e.target as Node)) return;
+    tabbables()[0]?.focus();
+  };
   // Listen on document: once focus has dropped to <body>, the container never
   // sees the keydown.
   document.addEventListener('keydown', onKey);
+  document.addEventListener('focusin', onFocusIn);
   const release = () => {
     document.removeEventListener('keydown', onKey);
+    document.removeEventListener('focusin', onFocusIn);
     if (activeTraps.get(container) === release) activeTraps.delete(container);
   };
   activeTraps.set(container, release);

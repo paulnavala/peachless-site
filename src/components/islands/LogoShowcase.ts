@@ -1,5 +1,5 @@
 import { defineComponent, h, ref, type PropType, onMounted, onUnmounted, nextTick } from 'vue';
-import { trapFocus, isReducedMotion } from '../../lib/dom';
+import { trapFocus, isReducedMotion, isPointerClick } from '../../lib/dom';
 
 export interface LogoItem {
   id: string;
@@ -35,9 +35,25 @@ export default defineComponent({
         const isHoveringBottom = ref(false);
         const isInitial = ref(true);
         
-        // History state management for mobile back button
-        const historyStatePushed = ref(false);
-        const isClosingFromHistory = ref(false);
+        // Mobile Back-button support: an open panel owns one history entry.
+        let historyStatePushed = false;
+        // history.back() calls we made ourselves (closing via ×, Escape or an
+        // outside click) whose popstate hasn't arrived yet. That popstate isn't the
+        // user pressing Back, so it must not close a panel opened in the meantime.
+        let ownBacksPending = 0;
+        // Set when a panel opens while one of our back() calls is in flight: its
+        // entry is pushed once that back() lands, as pushing sooner races it.
+        let pushDeferred = false;
+
+        const pushHistoryEntry = () => {
+            if (historyStatePushed) return;
+            if (ownBacksPending > 0) {
+                pushDeferred = true;
+                return;
+            }
+            window.history.pushState({ logoDetail: true }, '');
+            historyStatePushed = true;
+        };
 
         // Focus trap cleanup
         let releaseFocusTrap: (() => void) | null = null;
@@ -92,10 +108,7 @@ export default defineComponent({
                 focusedIndex.value = index;
                 
                 // Push history state on mobile to enable back button
-                if (isMobileBreakpoint() && !historyStatePushed.value) {
-                    window.history.pushState({ logoDetail: true }, '');
-                    historyStatePushed.value = true;
-                }
+                if (isMobileBreakpoint()) pushHistoryEntry();
                 
                 // Lock body scroll on mobile and hide site header
                 if (isMobileBreakpoint()) {
@@ -131,18 +144,15 @@ export default defineComponent({
             document.body.style.overflow = '';
             document.body.classList.remove('ls-panel-open');
             
-            // If we pushed history state and this isn't from popstate, go back
-            if (historyStatePushed.value && !fromPopstate && !isClosingFromHistory.value) {
-                isClosingFromHistory.value = true;
+            // Consume the panel's history entry, unless Back already did. This
+            // bookkeeping is synchronous: a 100ms reset timer here used to drop the
+            // entry of a panel reopened inside that window, so Back left the page.
+            pushDeferred = false;
+            if (historyStatePushed && !fromPopstate) {
+                ownBacksPending++;
                 window.history.back();
-                // Reset flag after history navigation
-                setTimeout(() => {
-                    isClosingFromHistory.value = false;
-                    historyStatePushed.value = false;
-                }, 100);
-            } else {
-                historyStatePushed.value = false;
             }
+            historyStatePushed = false;
             
             // Keyboard closes return focus to the card that opened the panel; other
             // closes blur instead, since :focus swaps the card to its preview image.
@@ -157,10 +167,17 @@ export default defineComponent({
         };
         
         // Handle browser back button
-        const handlePopstate = (e: PopStateEvent) => {
-            if (selectedLogo.value !== null && historyStatePushed.value) {
-                e.preventDefault();
-                historyStatePushed.value = false;
+        const handlePopstate = () => {
+            if (ownBacksPending > 0) {
+                ownBacksPending--;
+                if (ownBacksPending === 0 && pushDeferred) {
+                    pushDeferred = false;
+                    pushHistoryEntry();
+                }
+                return;
+            }
+            if (selectedLogo.value !== null && historyStatePushed) {
+                historyStatePushed = false;
                 closeDetail({ fromPopstate: true });
             }
         };
@@ -395,8 +412,9 @@ export default defineComponent({
                                 ref: closeButtonRef,
                                 onClick: (e: MouseEvent) => {
                                     e.stopPropagation();
-                                    // detail is 0 when activated from the keyboard
-                                    closeDetail({ restoreFocus: e.detail === 0 });
+                                    // Keyboard and screen-reader activations return focus;
+                                    // mouse/touch clicks keep the blur
+                                    closeDetail({ restoreFocus: !isPointerClick(e) });
                                 },
                                 'aria-label': 'Close details panel'
                             }, '×'),
