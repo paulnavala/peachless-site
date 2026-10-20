@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { isReducedMotion, isVisible, trapFocus, rafThrottle } from '../../src/lib/dom';
+import { isReducedMotion, isVisible, trapFocus, rafThrottle, isPointerClick } from '../../src/lib/dom';
 
 describe('dom utilities', () => {
   describe('isReducedMotion', () => {
@@ -105,19 +105,30 @@ describe('dom utilities', () => {
       expect(document.activeElement).toBe(first);
     });
 
-    it('pulls focus back in when it is outside the container', () => {
+    it('pulls focus back in when Tab is pressed from <body>', () => {
       const { container, buttons: [first, last] } = setup();
+      trap(container);
+
+      // e.g. the focused button just became disabled
+      first.focus();
+      first.blur();
+      expect(pressTab(document.body).defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(first);
+
+      first.blur();
+      expect(pressTab(document.body, true).defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(last);
+    });
+
+    it('brings focus back when it moves outside the container', () => {
+      const { container, buttons: [first] } = setup();
       const outside = document.createElement('button');
       document.body.appendChild(outside);
       trap(container);
 
+      // e.g. Tab out of a cross-origin iframe, which sends no keydown to this page
       outside.focus();
-      expect(pressTab(outside).defaultPrevented).toBe(true);
       expect(document.activeElement).toBe(first);
-
-      outside.focus();
-      expect(pressTab(outside, true).defaultPrevented).toBe(true);
-      expect(document.activeElement).toBe(last);
     });
 
     it('replaces the existing trap when the same container is trapped again', () => {
@@ -125,7 +136,7 @@ describe('dom utilities', () => {
       const removeListener = vi.spyOn(document, 'removeEventListener');
       const staleRelease = trap(container);
       trap(container);
-      expect(removeListener).toHaveBeenCalledTimes(1);
+      expect(removeListener.mock.calls.filter(([type]) => type === 'keydown')).toHaveLength(1);
 
       // The replaced trap's release must not disable its replacement
       staleRelease();
@@ -140,6 +151,24 @@ describe('dom utilities', () => {
       last.focus();
       expect(pressTab(last).defaultPrevented).toBe(false);
       expect(document.activeElement).toBe(last);
+    });
+  });
+
+  describe('isPointerClick', () => {
+    it('is true for mouse, touch and pen clicks', () => {
+      for (const pointerType of ['mouse', 'touch', 'pen']) {
+        expect(isPointerClick(new PointerEvent('click', { pointerType, detail: 1 }))).toBe(true);
+      }
+    });
+
+    it('is false for keyboard and assistive-technology clicks, whatever their detail', () => {
+      expect(isPointerClick(new PointerEvent('click', { pointerType: '', detail: 0 }))).toBe(false);
+      expect(isPointerClick(new PointerEvent('click', { pointerType: '', detail: 1 }))).toBe(false);
+    });
+
+    it('falls back to detail where click is a plain MouseEvent', () => {
+      expect(isPointerClick(new MouseEvent('click', { detail: 1 }))).toBe(true);
+      expect(isPointerClick(new MouseEvent('click', { detail: 0 }))).toBe(false);
     });
   });
 

@@ -30,4 +30,19 @@ test.describe('/projects/uiux', () => {
     await page.keyboard.press('Escape');
     await expect(modal).toBeHidden();
   });
+
+  test('focus that escapes the prototype modal is brought back', async ({ page }) => {
+    // Stub the Figma embed: it loads instantly and can't steal focus mid-test
+    await page.route('https://www.figma.com/**', (route) =>
+      route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>stub</title>' })
+    );
+    await page.goto('/projects/uiux');
+    await page.locator('[data-action="open-modal"]').first().click();
+    const modal = page.locator('#portfolio-modal');
+    await expect(modal.locator('.portfolio-modal__close')).toBeFocused();
+    // Tabbing out of the cross-origin iframe moves focus to the page behind with no
+    // keydown this page can see; focusing a footer link stands in for that here
+    await page.locator('#elegant-footer .footer-nav a').first().focus();
+    await expect(modal.locator(':focus')).toHaveCount(1);
+  });
 });
