@@ -1,106 +1,96 @@
-import { defineComponent, h, type PropType, ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import { computed, defineComponent, h, nextTick, onBeforeUnmount, onMounted, ref, type PropType } from 'vue';
 import BeforeAfterSlider from './BeforeAfterSlider';
-import { trapFocus, isReducedMotion } from '../../lib/dom';
+import { lockScroll, trapFocus } from '../../lib/dom';
+import '../../styles/components/photo-gallery.css';
 
 export interface PhotoItem {
   id: string;
   title: string;
-  alt?: string;
-  src: string;        // masonry thumbnail src
-  srcset: string;     // masonry thumbnail srcset
+  alt: string;
+  caption?: string;
+  location?: string;
+  src: string; // grid image
+  srcset: string;
+  width: number; // grid image's intrinsic size, so tiles never reflow
+  height: number;
   modalAfter: string; // large image for the lightbox
   modalBefore?: string;
 }
 
+const icon = (d: string) =>
+  h(
+    'svg',
+    { viewBox: '0 0 24 24', width: 22, height: 22, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' },
+    [h('path', { d })]
+  );
+
+/**
+ * Masonry photo grid with a lightbox; edited photos open as a before/after
+ * comparison. Columns come from CSS; the grid is reordered so reading order
+ * runs across rows. The lightbox keeps Back-button support (it pushes a
+ * history entry), restores focus and scroll, and guards against the races of
+ * rapid arrow presses while large images are still loading.
+ */
 export default defineComponent({
   name: 'PhotographyGallery',
   props: {
     items: { type: Array as PropType<PhotoItem[]>, default: () => [] },
-    title: { type: String, default: 'Selected Photography' },
   },
   setup(props) {
-    const root = ref<HTMLElement | null>(null);
+    const listRef = ref<HTMLElement | null>(null);
     const modalOpen = ref(false);
-    const activeIndex = ref<number>(-1);
-    const lastFocusEl = ref<HTMLElement | null>(null);
+    const activeIndex = ref(-1);
+    const modalRatio = ref(1);
+    const colCount = ref(1);
+    let lastFocusEl: HTMLElement | null = null;
     let lastScrollY = 0;
-    const modalRatio = ref<number>(1);
     let releaseFocusTrap: (() => void) | null = null;
-    // History-entry bookkeeping (mirrors the LogoShowcase pattern): the
-    // watch(modalOpen) below pushes a {pgModal:true} entry on open; closing via
-    // Escape/× must consume it with history.back() or every open/close cycle
-    // leaves a dead entry behind. closingFromPopstate guards against calling
-    // history.back() again when the close itself came from a Back press.
+    let unlockScroll: (() => void) | null = null;
+    // History bookkeeping: opening pushes a {pgModal:true} entry; closing with
+    // Escape/× consumes it with history.back(), unless the close itself came
+    // from a Back press (the browser already consumed it).
     let historyStatePushed = false;
     let closingFromPopstate = false;
-    // Bumped by every open and close: an openModal whose image preload is
-    // overtaken (rapid arrow keys, a second tile click, a close) drops its
-    // now-stale result instead of applying it.
+    // Bumped by every open and close: an openModal whose preload is overtaken
+    // (rapid arrows, another tile, a close) drops its stale result.
     let openSeq = 0;
-    // Photo an in-flight openModal is preloading. Arrow navigation keeps the
-    // current photo up until the next is ready, so rapid presses step on from
-    // here rather than from the photo still showing.
+    // Photo an in-flight openModal is preloading; arrows step on from here.
     let pendingIndex: number | null = null;
+    let swipeStart: { x: number; y: number; id: number } | null = null;
 
+    const items = computed(() => props.items);
+    const count = computed(() => items.value.length);
 
-
-    const visibleCount = computed<number>(() => normalizedItems.value.length);
-
-    // Masonry incremental loading (infinite scroll)
-    const masonryBatchSize = 20;
-    const masonryLoadedCount = ref<number>(masonryBatchSize);
-
-    const colCount = ref<number>(3);
-    function computeColCount() {
-      try {
-        const w = window.innerWidth || 1200;
-        if (w < 600) colCount.value = 1;
-        else if (w < 900) colCount.value = 2;
-        else colCount.value = 3;
-      } catch {
-        colCount.value = 3;
-      }
-    }
-
-    const masonryItems = computed<Array<{ item: PhotoItem; originalIndex: number }>>(() => {
-      const base = normalizedItems.value.slice(0, masonryLoadedCount.value);
-      const cols = Math.max(1, colCount.value || 3);
-      if (cols === 1) {
-        return base.map((item, idx) => ({ item, originalIndex: idx }));
-      }
-      const reordered: Array<{ item: PhotoItem; originalIndex: number }> = [];
-      for (let c = 0; c < cols; c++) {
-        for (let i = c; i < base.length; i += cols) {
-          reordered.push({ item: base[i], originalIndex: i });
-        }
-      }
-      return reordered;
+    // CSS columns fill top-to-bottom; reorder so visual rows read left-to-right.
+    const ordered = computed(() => {
+      const cols = Math.max(1, colCount.value);
+      if (cols === 1) return items.value.map((item, i) => ({ item, index: i }));
+      const out: { item: PhotoItem; index: number }[] = [];
+      for (let c = 0; c < cols; c++) for (let i = c; i < items.value.length; i += cols) out.push({ item: items.value[i], index: i });
+      return out;
     });
 
-    const displayTitle = (item: PhotoItem) => item.title;
-
-    const normalizedItems = computed(() =>
-      props.items.map((p) => ({ ...p, alt: p.alt ?? p.title }))
-    );
+    const readColumns = () => {
+      const el = listRef.value;
+      if (!el) return;
+      const n = parseInt(getComputedStyle(el).columnCount, 10);
+      colCount.value = Number.isFinite(n) && n > 0 ? n : 1;
+    };
 
     async function openModal(index: number) {
-      const item = normalizedItems.value[index];
+      const item = items.value[index];
       if (!item) return;
       const seq = ++openSeq;
       pendingIndex = index;
-
-      // Arrow navigation re-runs openModal while the modal is already open; at
-      // that point activeElement is inside the modal, so only capture the
-      // restore target on the closed→open transition.
       if (!modalOpen.value) {
         lastScrollY = window.scrollY;
-        lastFocusEl.value = (document.activeElement as HTMLElement) || null;
+        lastFocusEl = document.activeElement as HTMLElement | null;
       }
 
-      // Preload main image before opening modal to prevent empty flash
+      // Preload before swapping, so the photo and its box change together.
       const urls = [item.modalAfter, item.modalBefore].filter(Boolean) as string[];
-      const dims: Array<{ w: number; h: number }> = [];
-      const ratioFromDims = () => {
+      const dims: { w: number; h: number }[] = [];
+      const ratio = () => {
         if (!dims.length) return null;
         const small = dims.reduce((a, b) => (a.w * a.h <= b.w * b.h ? a : b));
         return small.w / small.h;
@@ -110,11 +100,9 @@ export default defineComponent({
           (src) =>
             new Promise<void>((resolve) => {
               const img = new Image();
-              (img as any).decoding = 'async';
+              img.decoding = 'async';
               img.onload = () => {
-                if (img.naturalWidth && img.naturalHeight) {
-                  dims.push({ w: img.naturalWidth, h: img.naturalHeight });
-                }
+                if (img.naturalWidth && img.naturalHeight) dims.push({ w: img.naturalWidth, h: img.naturalHeight });
                 resolve();
               };
               img.onerror = () => resolve();
@@ -122,157 +110,95 @@ export default defineComponent({
             })
         )
       );
-      // Timeout after 400ms - don't make user wait too long
       await Promise.race([loaded, new Promise<void>((resolve) => setTimeout(resolve, 400))]);
-
-      // Superseded while preloading: applying this now would show the wrong
-      // photo's ratio, or reopen a modal the user just closed.
       if (seq !== openSeq) return;
       pendingIndex = null;
-      // Swap the photo and the box's shape in one render. Switching the photo
-      // before the preload (with a placeholder ratio of 1) flashed it in a
-      // square box on every arrow press.
       activeIndex.value = index;
-      modalRatio.value = ratioFromDims() ?? 1;
+      // Until the real size is known, use the grid image's ratio — never a
+      // square placeholder box.
+      modalRatio.value = ratio() ?? item.width / item.height;
       if (!dims.length) {
-        // Timed out before the size was known: reshape the box once the
-        // images arrive, if this photo is still the one showing.
         void loaded.then(() => {
-          const ratio = ratioFromDims();
-          if (ratio && seq === openSeq) modalRatio.value = ratio;
+          const r = ratio();
+          if (r && seq === openSeq) modalRatio.value = r;
         });
       }
 
-      // Open modal after preloading (or timeout)
-      modalOpen.value = true;
+      if (!modalOpen.value) {
+        modalOpen.value = true;
+        unlockScroll = lockScroll();
+        document.body.classList.add('pg-modal-open');
+        try {
+          history.pushState({ pgModal: true }, '', window.location.href);
+          historyStatePushed = true;
+        } catch {
+          /* ignore */
+        }
+      }
 
       void nextTick(() => {
-        // Arrow navigation re-enters here with a trap already installed on the
-        // long-lived modal element — release it first or keydown listeners
-        // accumulate unboundedly.
         releaseFocusTrap?.();
-        releaseFocusTrap = null;
-        const modalEl = document.querySelector('.pg-modal') as HTMLElement | null;
-        const closeBtn = document.querySelector('.pg-modal__close') as HTMLButtonElement | null;
-        if (closeBtn) closeBtn.focus();
-        if (modalEl) {
-          releaseFocusTrap = trapFocus(modalEl, 'button, [href], [tabindex]:not([tabindex="-1"])');
-        }
+        const modalEl = document.querySelector<HTMLElement>('.pg-modal');
+        if (!modalEl) return;
+        if (!modalEl.contains(document.activeElement)) modalEl.querySelector<HTMLElement>('.pg-modal__close')?.focus();
+        releaseFocusTrap = trapFocus(modalEl, 'button, [href], [tabindex]:not([tabindex="-1"])');
       });
     }
 
-    // Prefetch modal images on hover/focus for instant modal open
-    const prefetchedIndices = new Set<number>();
-    function prefetchModalImages(index: number) {
-      if (prefetchedIndices.has(index)) return;
-      prefetchedIndices.add(index);
-      
-      const item = normalizedItems.value[index];
-      if (!item) return;
-      
-      const urls = [item.modalAfter, item.modalBefore].filter(Boolean) as string[];
-      urls.forEach((src) => {
+    const prefetched = new Set<number>();
+    function prefetch(index: number) {
+      if (prefetched.has(index)) return;
+      prefetched.add(index);
+      const item = items.value[index];
+      for (const src of [item?.modalAfter, item?.modalBefore]) {
+        if (!src) continue;
         const link = document.createElement('link');
         link.rel = 'prefetch';
         link.as = 'image';
         link.href = src;
         document.head.appendChild(link);
-      });
+      }
     }
 
     function closeModal() {
-      openSeq++; // cancel any openModal still preloading
+      openSeq++;
       pendingIndex = null;
       if (!modalOpen.value) return;
-
-      if (releaseFocusTrap) {
-        releaseFocusTrap();
-        releaseFocusTrap = null;
-      }
-
+      releaseFocusTrap?.();
+      releaseFocusTrap = null;
       modalOpen.value = false;
-      modalRatio.value = 1;
       activeIndex.value = -1;
-
-      // Consume the history entry pushed on open (unless the close itself came
-      // from popstate, where the browser already consumed it). The resulting
-      // popstate fires after modalOpen is false, so onPopState is a no-op.
+      unlockScroll?.();
+      unlockScroll = null;
+      document.body.classList.remove('pg-modal-open');
       if (historyStatePushed && !closingFromPopstate) {
         historyStatePushed = false;
         try {
           if ((history.state as { pgModal?: boolean } | null)?.pgModal) history.back();
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       } else {
         historyStatePushed = false;
       }
-
-      // Restore scroll and focus to the element that opened the modal
       requestAnimationFrame(() => {
         window.scrollTo({ top: lastScrollY });
-        if (lastFocusEl.value) {
-          lastFocusEl.value.focus();
-        }
+        lastFocusEl?.focus({ preventScroll: true });
       });
     }
 
-    // Handle browser back button - only close modal if open
-    function onPopState() {
-      if (modalOpen.value) {
-        closingFromPopstate = true;
-        closeModal();
-        closingFromPopstate = false;
-      }
-    }
+    const onPopState = () => {
+      if (!modalOpen.value) return;
+      closingFromPopstate = true;
+      closeModal();
+      closingFromPopstate = false;
+    };
 
-    type ScrollLockState = { applied: boolean; overflow: string; paddingRight: string };
-    const scrollLockState: ScrollLockState = { applied: false, overflow: '', paddingRight: '' };
-
-    watch(modalOpen, (open) => {
-      const body = document.body;
-      if (!body) return;
-      if (open) {
-        if (!scrollLockState.applied) {
-          scrollLockState.overflow = body.style.overflow || '';
-          scrollLockState.paddingRight = body.style.paddingRight || '';
-        }
-        const scrollbar = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
-        body.style.overflow = 'hidden';
-        if (scrollbar > 0) {
-          body.style.paddingRight = `${scrollbar}px`;
-        } else {
-          body.style.removeProperty('padding-right');
-        }
-        scrollLockState.applied = true;
-        // Add class to body to help hide site header
-        body.classList.add('pg-modal-open');
-        
-        // Push history state for back button support on mobile
-        try {
-          history.pushState({ pgModal: true }, '', window.location.href);
-          historyStatePushed = true;
-        } catch { /* ignore */ }
-      } else if (scrollLockState.applied) {
-        if (scrollLockState.overflow) body.style.overflow = scrollLockState.overflow;
-        else body.style.removeProperty('overflow');
-        if (scrollLockState.paddingRight) body.style.paddingRight = scrollLockState.paddingRight;
-        else body.style.removeProperty('padding-right');
-        scrollLockState.applied = false;
-        // Remove class from body
-        body.classList.remove('pg-modal-open');
-      }
-    });
-
-    function nextPhoto() {
+    const step = (delta: number) => {
       const from = pendingIndex ?? activeIndex.value;
       if (from < 0) return;
-      openModal((from + 1) % normalizedItems.value.length);
-    }
-
-    function prevPhoto() {
-      const from = pendingIndex ?? activeIndex.value;
-      if (from < 0) return;
-      openModal((from - 1 + normalizedItems.value.length) % normalizedItems.value.length);
-    }
+      void openModal((from + delta + count.value) % count.value);
+    };
 
     function onKeydown(e: KeyboardEvent) {
       if (!modalOpen.value) return;
@@ -281,358 +207,167 @@ export default defineComponent({
         closeModal();
         return;
       }
-      // The before/after slider owns ArrowLeft/Right (role=slider keyboard
-      // API); don't hijack them to flip photos when focus is on the slider.
+      // The before/after slider owns the arrow keys while it has focus.
       if ((e.target as HTMLElement)?.closest?.('.image-compare')) return;
       if (e.key === 'ArrowRight') {
         e.preventDefault();
-        nextPhoto();
+        step(1);
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        prevPhoto();
+        step(-1);
       }
     }
 
-    // Observers
-    let revealObserver: IntersectionObserver | null = null;
+    // Swipe between photos on touch screens (not on the comparison slider).
+    const onStagePointerDown = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' || (e.target as HTMLElement).closest('.image-compare')) return;
+      swipeStart = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    };
+    const onStagePointerUp = (e: PointerEvent) => {
+      if (!swipeStart || swipeStart.id !== e.pointerId) return;
+      const dx = e.clientX - swipeStart.x;
+      const dy = e.clientY - swipeStart.y;
+      swipeStart = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) step(dx < 0 ? 1 : -1);
+    };
+
     let resizeObserver: ResizeObserver | null = null;
-    let resizeRafId: number | null = null;
-    let initialRevealDone = false;
-
     onMounted(() => {
-      computeColCount();
-
-      // Use ResizeObserver with debounced RAF for smooth resize handling
-      resizeObserver = new ResizeObserver(() => {
-        // Cancel pending RAF to debounce
-        if (resizeRafId !== null) cancelAnimationFrame(resizeRafId);
-        resizeRafId = requestAnimationFrame(() => {
-          computeColCount();
-          resizeRafId = null;
-        });
-      });
-      resizeObserver.observe(document.documentElement);
-
-      // Setup reveal observer with optimized options
-      revealObserver = new IntersectionObserver(
-        (entries) => {
-          // Batch DOM updates
-          const toReveal: Element[] = [];
-          entries.forEach((e) => {
-            if (e.isIntersecting) {
-              toReveal.push(e.target);
-              revealObserver?.unobserve(e.target);
-            }
-          });
-          // Apply class changes in single batch
-          if (toReveal.length > 0) {
-            requestAnimationFrame(() => {
-              const reduceMotion = isReducedMotion();
-              toReveal.forEach((el) => {
-                const htmlEl = el as HTMLElement;
-                // Skip stagger animation if reduced motion or after initial load
-                if (reduceMotion || initialRevealDone) {
-                  htmlEl.classList.add('is-visible', 'is-instant');
-                } else {
-                  htmlEl.classList.add('is-visible');
-                }
-              });
-              // Mark initial reveal as complete after first batch
-              if (!initialRevealDone) {
-                setTimeout(() => { initialRevealDone = true; }, 100);
-              }
-            });
-          }
-        },
-        { rootMargin: '50px 0px', threshold: 0 }
-      );
-
-      // Observe already-mounted items
-      nextTick(() => {
-        if (root.value && revealObserver) {
-          const items = root.value.querySelectorAll('.pg-masonry__item');
-          items.forEach((item) => revealObserver!.observe(item));
-        }
-      });
-
-      // ESC to close modal - passive where possible
-      window.addEventListener('keydown', onKeydown, { passive: false });
+      readColumns();
+      resizeObserver = new ResizeObserver(() => requestAnimationFrame(readColumns));
+      if (listRef.value) resizeObserver.observe(listRef.value);
+      window.addEventListener('keydown', onKeydown);
       window.addEventListener('popstate', onPopState);
     });
-
     onBeforeUnmount(() => {
       openSeq++;
+      resizeObserver?.disconnect();
       window.removeEventListener('keydown', onKeydown);
       window.removeEventListener('popstate', onPopState);
-      if (resizeRafId !== null) cancelAnimationFrame(resizeRafId);
-      if (resizeObserver) resizeObserver.disconnect();
-      if (revealObserver) revealObserver.disconnect();
-      resizeObserver = null;
-      revealObserver = null;
+      releaseFocusTrap?.();
+      unlockScroll?.();
     });
 
-    // Masonry infinite loader
-    function attachMasonryInfinite(container: HTMLElement, sentinel: HTMLElement) {
-      let loading = false;
-      let lastLoadTs = 0;
-      const io = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              // Load next batch
-              const now = Date.now();
-              if (loading || now - lastLoadTs < 250) return;
-              if (masonryLoadedCount.value < normalizedItems.value.length) {
-                loading = true;
-                masonryLoadedCount.value = Math.min(masonryLoadedCount.value + masonryBatchSize, normalizedItems.value.length);
-                lastLoadTs = now;
-                // Prefetch next 3 thumbnails
-                const nextStart = masonryLoadedCount.value;
-                const nextItems = normalizedItems.value.slice(nextStart, nextStart + 3);
-                const schedulePrefetch = (cb: () => void) => {
-                  if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {
-                    window.requestIdleCallback(cb);
-                  } else {
-                    setTimeout(cb, 0);
-                  }
-                };
-                schedulePrefetch(() => {
-                  nextItems.forEach((n) => {
-                    const src = n.src;
-                    if (src) {
-                      const im = new Image();
-                      (im as any).decoding = 'async';
-                      im.src = src;
-                    }
-                  });
-                });
-                setTimeout(() => (loading = false), 10);
-              }
-            }
-          });
-        },
-        { root: null, rootMargin: '800px 0px', threshold: 0 }
-      );
-      io.observe(sentinel);
+    // Arrow keys on the grid move between tiles in gallery order.
+    function onTileKeydown(e: KeyboardEvent, index: number) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft' && e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      const list = Array.from(listRef.value?.querySelectorAll<HTMLElement>('.pg-masonry__media') ?? []);
+      const current = e.currentTarget as HTMLElement;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        const target = index + (e.key === 'ArrowRight' ? 1 : -1);
+        const j = ordered.value.findIndex((o) => o.index === target);
+        if (j !== -1) {
+          e.preventDefault();
+          list[j]?.focus();
+        }
+        return;
+      }
+      const r = current.getBoundingClientRect();
+      const down = e.key === 'ArrowDown';
+      let best: HTMLElement | null = null;
+      let bestDist = Infinity;
+      for (const el of list) {
+        if (el === current) continue;
+        const rr = el.getBoundingClientRect();
+        const dy = down ? rr.top - r.bottom : r.top - rr.bottom;
+        if (dy < -4) continue;
+        const dist = dy + Math.abs(rr.left - r.left) * 2;
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = el;
+        }
+      }
+      if (best) {
+        e.preventDefault();
+        best.focus();
+      }
     }
 
     return () => {
-      // Masonry
-      const masonrySentinel = h('div', {
-        class: 'pg-masonry__sentinel',
-        onVnodeMounted: (v: any) => {
-          const container = (v.el as HTMLElement).parentElement as HTMLElement | null;
-          if (container) attachMasonryInfinite(container, v.el as HTMLElement);
-        },
-      });
-
-      // Slight randomization to desynchronize columns: offset + pad
-      function hashToRange(id: string, min: number, max: number): number {
-        let h = 0;
-        for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-        const r = (h % 1000) / 1000;
-        return min + r * (max - min);
-      }
-
-      const masonry = h('section', { class: 'pg-masonry', role: 'list', 'aria-label': 'Masonry gallery' },
-        masonryItems.value.map((it, idx) => {
-          const ratio = (hashToRange(it.item.id + 'r', 0.85, 1.35)).toFixed(2); // aspect ratio variety
-          return h('article', {
-            key: it.item.id + '-' + idx,
-            class: 'pg-masonry__item',
-            role: 'listitem',
-            'aria-label': displayTitle(it.item),
-            style: `--m-ratio:${ratio};`,
-            onVnodeMounted: (v: any) => {
-              if (revealObserver && v.el) revealObserver.observe(v.el as HTMLElement);
-            }
-          }, [
-            h('div', {
-              class: 'pg-masonry__media',
-              role: 'button',
-              tabindex: 0,
-              'aria-label': `Open ${displayTitle(it.item)} in fullscreen`,
-              onVnodeMounted: (v: any) => {
-                const el = v.el as HTMLElement;
-                // SSR'd eager images can finish loading BEFORE Vue hydrates, so the
-                // img `load` event (and the onLoad handler below) never fires. Only
-                // show the skeleton for images still in flight; for already-complete
-                // ones mirror the onLoad logic and set the real aspect ratio.
-                const img = el.querySelector('img.pg-masonry__img') as HTMLImageElement | null;
-                if (img?.complete) {
-                  // complete with no natural size = it already failed; no skeleton then
-                  if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-                    el.style.setProperty('--m-ratio', (img.naturalWidth / img.naturalHeight).toFixed(2));
-                  }
-                } else {
-                  el.classList.add('is-loading');
-                }
-              },
-              onMouseenter: () => prefetchModalImages(it.originalIndex),
-              onFocus: () => prefetchModalImages(it.originalIndex),
-              onKeydown: (e: KeyboardEvent) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  openModal(it.originalIndex);
-                } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                  const rootEl = root.value;
-                  if (!rootEl) return;
-                  const list = Array.from(rootEl.querySelectorAll('.pg-masonry__media')) as HTMLElement[];
-                  const current = e.currentTarget as HTMLElement;
-                  const i = list.indexOf(current);
-                  if (i === -1) return;
-                  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-                    // DOM order is column-major (masonryItems reorders for CSS
-                    // columns), so step in gallery order instead, like the
-                    // lightbox's next/prev.
-                    const target = it.originalIndex + (e.key === 'ArrowRight' ? 1 : -1);
-                    const j = masonryItems.value.findIndex((m) => m.originalIndex === target);
-                    if (j !== -1) list[j]?.focus();
-                  }
-                  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                    const r = current.getBoundingClientRect();
-                    const targetY = r.top + (e.key === 'ArrowDown' ? r.height + 8 : -8);
-                    let best = i;
-                    let bestDist = Number.POSITIVE_INFINITY;
-                    list.forEach((el, idx2) => {
-                      if (idx2 === i) return;
-                      const rr = el.getBoundingClientRect();
-                      const dy = rr.top - targetY;
-                      if ((e.key === 'ArrowDown' && dy >= 0) || (e.key === 'ArrowUp' && dy <= 0)) {
-                        const dist = Math.abs(dy) + Math.abs(rr.left - r.left);
-                        if (dist < bestDist) {
-                          bestDist = dist;
-                          best = idx2;
-                        }
-                      }
-                    });
-                    if (best !== i) list[best].focus();
-                  }
-                }
-              },
-              onMousedown: (ev: MouseEvent) => {
-                const el = ev.currentTarget as HTMLElement;
-                el.dataset.startX = String(ev.clientX);
-                el.dataset.startY = String(ev.clientY);
-                el.dataset.moved = '0';
-              },
-              onMousemove: (ev: MouseEvent) => {
-                const el = ev.currentTarget as HTMLElement;
-                if (!el.dataset.startX) return;
-                const dx = Math.abs(ev.clientX - Number(el.dataset.startX));
-                const dy = Math.abs(ev.clientY - Number(el.dataset.startY));
-                if (dx + dy > 6) el.dataset.moved = '1';
-              },
-              // Open on click, not mouseup: click fires only for the primary
-              // button, so right/middle-click don't open the lightbox.
-              onClick: (ev: MouseEvent) => {
-                const el = ev.currentTarget as HTMLElement;
-                const moved = el.dataset.moved === '1';
-                el.dataset.startX = '';
-                el.dataset.startY = '';
-                el.dataset.moved = '';
-                if (!moved) openModal(it.originalIndex);
-              },
-            }, [
-              h('div', { class: 'pg-skel' }),
-              h('img', {
-                class: 'pg-masonry__img',
-                alt: it.item.alt || displayTitle(it.item),
-                decoding: 'async',
-                loading: idx < 6 ? 'eager' : 'lazy',
-                fetchpriority: idx < 3 ? 'high' : undefined,
-                src: it.item.src,
-                srcset: it.item.srcset,
-                sizes: '(max-width: 600px) 92vw, (max-width: 1024px) 46vw, 30vw',
-                onLoad: (e: Event) => {
-                  const img = e.target as HTMLImageElement;
-                  const media = img.parentElement as HTMLElement | null;
-                  if (img && media) {
-                    media.classList.remove('is-loading');
-                    if (img.naturalWidth && img.naturalHeight) {
-                      const r = (img.naturalWidth / img.naturalHeight).toFixed(2);
-                      media.style.setProperty('--m-ratio', r);
-                    }
-                  }
+      const grid = h(
+        'ul',
+        { ref: listRef, class: 'pg-masonry', role: 'list' },
+        ordered.value.map(({ item, index }, position) =>
+          h('li', { key: item.id, class: 'pg-masonry__item' }, [
+            h('figure', { class: 'pg-masonry__figure' }, [
+              h(
+                'button',
+                {
+                  type: 'button',
+                  class: 'pg-masonry__media',
+                  'aria-haspopup': 'dialog',
+                  onMouseenter: () => prefetch(index),
+                  onFocus: () => prefetch(index),
+                  onKeydown: (e: KeyboardEvent) => onTileKeydown(e, index),
+                  // click (not mouseup): only the primary button opens the lightbox
+                  onClick: () => openModal(index),
                 },
-                onError: (e: Event) => {
-                  // Drop the skeleton for a failed image too, or it shimmers forever
-                  (e.target as HTMLImageElement).parentElement?.classList.remove('is-loading');
-                },
-              }),
-              h('div', { class: 'pg-masonry__title' }, displayTitle(it.item)),
-              h('button', {
-                class: 'pg-masonry__fs',
-                type: 'button',
-                // The parent .pg-masonry__media is already role=button with the
-                // same action; a focusable button inside it violates ARIA
-                // content rules and doubles the tab stop. Keep it mouse-only.
-                tabindex: '-1',
-                'aria-hidden': 'true',
-                onClick: (ev: MouseEvent) => {
-                  ev.stopPropagation();
-                  openModal(it.originalIndex);
-                },
-              }, '⤢'),
+                [
+                  h('img', {
+                    class: 'pg-masonry__img',
+                    src: item.src,
+                    srcset: item.srcset,
+                    sizes: '(min-width: 64em) 24rem, (min-width: 36em) 45vw, 92vw',
+                    width: item.width,
+                    height: item.height,
+                    alt: item.alt,
+                    decoding: 'async',
+                    loading: position < 6 ? 'eager' : 'lazy',
+                  }),
+                  item.modalBefore && h('span', { class: 'pg-masonry__tag' }, 'Before / After'),
+                  h('span', { class: 'sr-only' }, ' — open full screen'),
+                ]
+              ),
+              h('figcaption', { class: 'pg-masonry__caption' }, [
+                h('span', { class: 'pg-masonry__title' }, item.title),
+                item.location && h('span', { class: 'pg-masonry__location' }, item.location),
+              ]),
             ]),
-          ]);
-        }).concat([masonrySentinel])
+          ])
+        )
       );
 
-      // Modal
-      const active = activeIndex.value >= 0 ? normalizedItems.value[activeIndex.value] : null;
+      const active = activeIndex.value >= 0 ? items.value[activeIndex.value] : null;
       const modal = h(
         'div',
-        { class: 'pg-modal', 'data-modal': '', hidden: !modalOpen.value, 'aria-hidden': String(!modalOpen.value), role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Photo fullscreen' },
+        {
+          class: 'pg-modal',
+          hidden: !modalOpen.value,
+          'aria-hidden': String(!modalOpen.value),
+          role: 'dialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'pg-modal-title',
+        },
         [
-          h('div', { class: 'pg-modal__backdrop', 'data-close': '', onClick: closeModal }),
-          // Close button for mobile
-          h('button', {
-            class: 'pg-modal__close',
-            type: 'button',
-            'aria-label': 'Close fullscreen',
-            onClick: closeModal,
-          }, '×'),
-          h('div', { class: 'pg-modal__content', role: 'document' }, [
-
+          h('div', { class: 'pg-modal__backdrop', onClick: closeModal }),
+          h('div', { class: 'pg-modal__bar' }, [
+            h('p', { class: 'pg-modal__meta', role: 'status' }, [
+              h('span', { class: 'pg-modal__count' }, active ? `${activeIndex.value + 1} / ${count.value}` : ''),
+              h('span', { id: 'pg-modal-title', class: 'pg-modal__title' }, active?.title ?? 'Photo'),
+              active?.location && h('span', { class: 'pg-modal__location' }, active.location),
+            ]),
+            h('button', { class: 'pg-modal__close', type: 'button', 'aria-label': 'Close', onClick: closeModal }, icon('M6 6l12 12M18 6 6 18')),
+          ]),
+          h('div', { class: 'pg-modal__stage', onPointerdown: onStagePointerDown, onPointerup: onStagePointerUp }, [
+            h('button', { class: 'pg-modal__nav pg-modal__nav--prev', type: 'button', 'aria-label': 'Previous photo', onClick: () => step(-1) }, icon('M15 18l-6-6 6-6')),
             h(
               'div',
-              { class: 'pg-modal__view', 'data-view': '', style: `--m-ratio: ${modalRatio.value || 1}` },
+              { class: 'pg-modal__view', style: `--m-ratio: ${modalRatio.value}` },
               active
                 ? [
-                  active.modalBefore
-                    ? h(BeforeAfterSlider, {
-                      // A fresh slider per photo, so each starts at the default split
-                      key: active.id,
-                      afterSrc: active.modalAfter,
-                      beforeSrc: active.modalBefore,
-                      alt: active.alt || displayTitle(active),
-                    })
-                    : h('img', {
-                      class: 'pg-modal__img',
-                      'data-single': '',
-                      alt: active.alt || displayTitle(active),
-                      src: active.modalAfter,
-                    }),
-                ]
+                    active.modalBefore
+                      ? h(BeforeAfterSlider, { key: active.id, afterSrc: active.modalAfter, beforeSrc: active.modalBefore, alt: active.alt })
+                      : h('img', { class: 'pg-modal__img', alt: active.alt, src: active.modalAfter }),
+                  ]
                 : []
             ),
+            h('button', { class: 'pg-modal__nav pg-modal__nav--next', type: 'button', 'aria-label': 'Next photo', onClick: () => step(1) }, icon('M9 18l6-6-6-6')),
           ]),
+          active?.caption && h('p', { class: 'pg-modal__caption' }, active.caption),
         ]
       );
 
-      // Section Title
-      const sectionTitle = h('header', { class: 'pg-section-title' }, [
-        h('h2', { class: 'pg-section-title__text' }, 'Photography'),
-        h('div', { class: 'pg-section-title__flourish', 'aria-hidden': 'true' }, [
-          h('span', { class: 'pg-section-title__flourish-icon' }),
-        ]),
-        h('span', { class: 'pg-section-title__sub' }, `${visibleCount.value} selected works`),
-      ]);
-
-      return h('div', { ref: root }, [sectionTitle, masonry, modal]);
+      return h('div', { class: 'pg' }, [grid, modal]);
     };
   },
 });
-
-

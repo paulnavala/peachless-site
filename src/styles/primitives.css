@@ -117,19 +117,4 @@
   .skip-link:focus-visible {
     translate: 0 0;
   }
-
-  /* LEGACY (removed in Phase 4): section helpers still used by pages that have
-     not been rebuilt yet. */
-  .section--light {
-    background: var(--linen);
-  }
-
-  .section--bright {
-    background: var(--clay);
-    color: var(--espresso);
-  }
-
-  .section--flush {
-    padding: 0;
-  }
 }

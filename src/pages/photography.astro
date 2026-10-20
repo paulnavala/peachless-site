@@ -1,43 +1,106 @@
 ---
 import { getImage } from 'astro:assets';
-import { getPublishedPhotos } from '../lib/content';
 import Base from '../layouts/Base.astro';
 import PhotographyGallery from '../components/islands/PhotographyGallery.vue';
-import '../styles/components/portfolio-photo.css';
-import '../styles/components/close-button-fix.css';
+import FilterChips from '../components/work/FilterChips.astro';
+import CtaBand from '../components/CtaBand.astro';
+import ArrowLink from '../components/ui/ArrowLink.astro';
+import { getPublishedPhotos, getPublishedProjects, getSingleton } from '../lib/content';
+import { DISCIPLINES } from '../lib/content-schema';
 
+const page = (await getSingleton('photographyPage')).data;
+const work = (await getSingleton('work')).data;
 const entries = await getPublishedPhotos();
+const projects = await getPublishedProjects();
 
 const items = await Promise.all(
   entries.map(async (e) => {
-    const thumb = await getImage({
+    // `width` pins the fallback <img src> to a sensible variant; without it
+    // Astro would point at the full-size original.
+    const grid = await getImage({
       src: e.data.image,
-      // width pins the fallback <img src> to the 1920w variant — without it
-      // Astro emits the full-size original (multi-MB) as the src fallback.
-      width: 1920,
-      widths: [640, 1200, 1920],
-      sizes: '(max-width: 600px) 92vw, (max-width: 1024px) 46vw, 30vw',
+      width: 1200,
+      widths: [480, 800, 1200],
+      sizes: '(min-width: 64em) 24rem, (min-width: 36em) 45vw, 92vw',
       format: 'webp',
     });
-    const modalAfter = await getImage({ src: e.data.image, width: 1920, format: 'webp' });
-    const modalBefore = e.data.before
-      ? await getImage({ src: e.data.before, width: 1920, format: 'webp' })
+    const after = await getImage({ src: e.data.image, width: Math.min(e.data.image.width, 2400), format: 'webp' });
+    const before = e.data.before
+      ? await getImage({ src: e.data.before, width: Math.min(e.data.before.width, 2400), format: 'webp' })
       : null;
     return {
       id: e.id,
       title: e.data.title,
       alt: e.data.alt,
-      src: thumb.src,
-      srcset: thumb.srcSet.attribute,
-      modalAfter: modalAfter.src,
-      ...(modalBefore ? { modalBefore: modalBefore.src } : {}),
+      caption: e.data.caption,
+      location: e.data.location,
+      src: grid.src,
+      srcset: grid.srcSet.attribute,
+      width: Number(grid.attributes.width),
+      height: Number(grid.attributes.height),
+      modalAfter: after.src,
+      ...(before ? { modalBefore: before.src } : {}),
     };
   })
 );
+
+const counts = {
+  all: projects.length,
+  ...Object.fromEntries(DISCIPLINES.map((d) => [d, projects.filter((p) => p.data.disciplines.includes(d)).length])),
+  photography: entries.length,
+};
 ---
-<Base title="Photography" description="Photography by peachless. — before/after edits and selected shots.">
-  <h1 class="sr-only">Photography</h1>
-  <section id="portfolio-photo" class="pg" aria-label="Photography Gallery">
-    <PhotographyGallery client:visible items={items} />
+<Base title="Photography" description={page.seo.description ?? page.lede ?? page.heading}>
+  <section class="section section--tight photo-header">
+    <div class="container">
+      {page.eyebrow && <p class="eyebrow eyebrow--rule">{page.eyebrow}</p>}
+      <h1 class="photo-header__title">{page.heading}</h1>
+      {page.lede && <p class="lede">{page.lede}</p>}
+      <div class="photo-header__filters">
+        <FilterChips
+          current="photography"
+          counts={counts}
+          labels={{
+            graphicDesign: work.disciplines.graphicDesign.title,
+            uiux: work.disciplines.uiux.title,
+            photography: work.disciplines.photography.title,
+          }}
+        />
+      </div>
+    </div>
   </section>
+
+  <section id="portfolio-photo" class="section photo-gallery" aria-label="Photographs">
+    <div class="container">
+      <PhotographyGallery client:visible items={items} />
+    </div>
+  </section>
+
+  <CtaBand eyebrow="Keep exploring" heading="See the brand and interface work." tone="paper">
+    <ArrowLink href="/projects/">All work</ArrowLink>
+    <ArrowLink href="/about/">About me</ArrowLink>
+  </CtaBand>
 </Base>
+
+<style>
+  .photo-header {
+    padding-block-end: 0;
+  }
+
+  .photo-header .container {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .photo-header__title {
+    font-size: var(--text-h1);
+  }
+
+  .photo-header__filters {
+    margin-block-start: var(--space-s);
+  }
+
+  .photo-gallery {
+    padding-block-start: var(--space-l-2xl);
+  }
+</style>

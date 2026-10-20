@@ -1,21 +1,71 @@
 ---
 import Base from '../layouts/Base.astro';
+import WorkGrid from '../components/work/WorkGrid.astro';
+import PeachMark from '../components/ui/PeachMark.astro';
+import Icon from '../components/ui/Icon.astro';
+import { getFeaturedProjects } from '../lib/content';
+
+const suggestions = (await getFeaturedProjects()).slice(0, 3);
 ---
-<Base title="Page Not Found" description="The page you're looking for doesn't exist.">
-  <section class="section section--light">
-    <div class="container" style="text-align: center; padding-block: 10vh;">
-      <h1>404</h1>
-      <h2 class="subtitle">Every pixel tells a story — this one got lost.</h2>
-      <p><a href="/">Back to the homepage</a></p>
+<Base title="Page not found" description="This page doesn’t exist — but the work does." noindex>
+  <section class="section not-found">
+    <div class="container not-found__inner">
+      <PeachMark class="not-found__mark" />
+      <p class="eyebrow">404</p>
+      <h1 class="not-found__title">This pixel got lost.</h1>
+      <p class="lede">The page you were looking for has moved, or never existed. Here’s where the story picks up again.</p>
+      <div class="cluster not-found__actions">
+        <a class="btn btn--lg" href="/projects/">
+          See the work
+          <Icon name="arrow-right" />
+        </a>
+        <a class="btn btn--secondary btn--lg" href="/">Go home</a>
+      </div>
     </div>
   </section>
+
+  {
+    suggestions.length > 0 && (
+      <section class="section not-found__more" data-next-step aria-labelledby="not-found-more">
+        <div class="container">
+          <h2 id="not-found-more" class="not-found__more-title">Maybe you were looking for…</h2>
+          <WorkGrid projects={suggestions} layout="trio" headingLevel={3} />
+        </div>
+      </section>
+    )
+  }
 </Base>
 
 <style>
-  /* h2 for heading hierarchy (h1 -> h2), but locked to the previous h3 rendering:
-     global h2 on .section--light would be clay at clamp(2rem, 4vw, 3rem). */
-  .subtitle {
-    font-size: clamp(1.4rem, 2.5vw, 1.9rem);
-    color: #000;
+  .not-found__inner {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-s);
+    text-align: center;
+  }
+
+  .not-found__inner :global(.not-found__mark) {
+    width: 4.5rem;
+    margin-block-end: var(--space-s);
+    rotate: -12deg;
+  }
+
+  .not-found__title {
+    font-size: var(--text-h1);
+  }
+
+  .not-found__actions {
+    justify-content: center;
+    --cluster-gap: var(--space-xs) var(--space-s);
+    margin-top: var(--space-xs);
+  }
+
+  .not-found__more {
+    padding-block-start: 0;
+  }
+
+  .not-found__more-title {
+    font-size: var(--text-h3);
+    margin-block-end: var(--space-l);
   }
 </style>

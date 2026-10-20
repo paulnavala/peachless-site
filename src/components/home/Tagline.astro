@@ -1,0 +1,89 @@
+---
+// The home headline, typed out once per visit. Characters are rendered on the
+// server with fixed delays and CSS does the typing, so it starts at first
+// paint with no JavaScript framework; screen readers get the whole sentence at
+// once. Under reduced motion — or on a second visit in the same session —
+// the full text simply shows.
+interface Props {
+  line1: string;
+  line2: string;
+}
+const { line1, line2 } = Astro.props;
+
+const STEP = 52; // ms per character
+const LINE_PAUSE = 380;
+// Deterministic ±16ms jitter, so it feels typed rather than mechanical (and
+// server and browser always agree).
+const jitter = (i: number) => ((i * 7919) % 33) - 16;
+const escape = (s: string) =>
+  s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+
+// Built as one string: template whitespace between the spans would show up
+// as gaps inside the word, and minification would drop the word spaces.
+let clock = 120;
+const line = (text: string, modifier: string) => {
+  const words = text.split(' ').map((word, w, all) => {
+    const chars = [...word]
+      .map((char) => {
+        const span = `<span class="tagline__char" style="--d:${clock + jitter(clock)}ms">${escape(char)}</span>`;
+        clock += STEP;
+        return span;
+      })
+      .join('');
+    if (w < all.length - 1) clock += STEP; // the space
+    return `<span class="tagline__word">${chars}</span>`;
+  });
+  return `<span class="tagline__line${modifier}">${words.join(' ')}</span>`;
+};
+const visual = line(line1, '') + ((clock += LINE_PAUSE), line(line2, ' tagline__line--2'));
+---
+<script is:inline>
+  // Play the typing once per session: set before the headline is parsed, so a
+  // returning visitor never sees it restart.
+  try {
+    if (sessionStorage.getItem('peachless:tagline')) document.documentElement.dataset.taglineSeen = '';
+    else sessionStorage.setItem('peachless:tagline', '1');
+  } catch {}
+</script>
+<h1 class="tagline">
+  <span class="sr-only">{line1} {line2}</span>
+  <span class="tagline__visual" aria-hidden="true" set:html={visual} />
+</h1>
+
+<style>
+  .tagline {
+    font-family: var(--font-display);
+    font-size: var(--text-hero);
+    font-style: italic;
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+    color: var(--color-heading);
+  }
+
+  .tagline :global(.tagline__line) {
+    display: block;
+  }
+
+  .tagline :global(.tagline__line--2) {
+    color: var(--color-accent-text);
+  }
+
+  .tagline :global(.tagline__word) {
+    white-space: nowrap;
+  }
+
+  /* Characters stay inline (not inline-block) so the serif keeps its kerning;
+     the typing is an opacity reveal. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not([data-tagline-seen])) .tagline :global(.tagline__char) {
+      animation: tagline-in 220ms var(--ease-out) var(--d) both;
+    }
+
+    @keyframes tagline-in {
+      from {
+        opacity: 0;
+      }
+    }
+  }
+</style>

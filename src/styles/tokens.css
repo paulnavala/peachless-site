@@ -163,26 +163,6 @@
   --z-modal: 300;
   --z-toast: 400;
   --z-skip: 500;
-
-  /* ── LEGACY aliases ──────────────────────────────────────────────────────
-     Only for the ported component CSS that has not been rebuilt yet. Delete
-     this block when the last of those files is gone (v2 plan, Phase 4). */
-  --white: #ffffff;
-  --clay-dark: #b8806a;
-  --ink: var(--cacao);
-  --text-muted: var(--stone);
-  --text-light: var(--stone);
-  --card-bg: var(--paper);
-  --accent-rgb: 210, 154, 132;
-  --shadow-color: 88, 67, 59;
-  --shadow: 0 12px 30px rgba(88, 67, 59, 0.08);
-  --shadow-hover: 0 18px 46px rgba(88, 67, 59, 0.12);
-  --ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-card: cubic-bezier(0.25, 0.85, 0.25, 1);
-  --max-ch: 68ch;
-  --font-heading: var(--font-display);
-  --container: min(1200px, 92vw);
-  --header-height: 88px;
 }
 
 [data-surface='paper'] {

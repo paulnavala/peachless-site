@@ -6,33 +6,14 @@ import { describe, expect, it } from 'vitest';
  * Keeps the design system honest: colours and font names live only in
  * src/styles/tokens.css, stacking uses the --z-* scale, media queries use the
  * three documented breakpoints, and !important stays in the global reset
- * layers. Files that predate the v2 redesign are allowlisted in LEGACY_FILES;
- * that list must only ever shrink and is empty at launch.
+ * layers. No file is exempt: fix the code, or add the value to tokens.css.
  */
 
 const ROOT = join(__dirname, '..', '..');
 const SRC = join(ROOT, 'src');
 
-const LEGACY_FILES = new Set<string>([
-  'src/styles/components/close-button-fix.css',
-  'src/styles/components/contact-form-core.css',
-  'src/styles/components/contact-form.css',
-  'src/styles/components/fortune-peach.css',
-  'src/styles/components/portfolio-photo.css',
-  'src/styles/components/tagline.css',
-  'src/styles/components/twin-gallery.css',
-  'src/components/static/FortunePeach.astro',
-  'src/components/static/TwinGallery.astro',
-  'src/components/islands/BeforeAfterSlider.ts',
-  'src/components/islands/ContactForm.ts',
-  'src/components/islands/PhotographyGallery.ts',
-  'src/components/islands/Tagline.ts',
-  'src/pages/404.astro',
-  'src/pages/about.astro',
-  'src/pages/contact.astro',
-  'src/pages/index.astro',
-  'src/pages/photography.astro',
-]);
+// Escape hatch for a file mid-migration; keep it empty.
+const LEGACY_FILES = new Set<string>([]);
 
 const EXCLUDED = [/^src\/styles\/tokens\.css$/, /^src\/content\//, /\.d\.ts$/];
 const IMPORTANT_ALLOWED = new Set(['src/styles/reset.css', 'src/styles/base.css', 'src/styles/primitives.css']);

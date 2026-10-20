@@ -42,14 +42,6 @@ export function onReducedMotionChange(cb: (reduced: boolean) => void): () => voi
   return () => mql.removeEventListener('change', handler);
 }
 
-/** Best-effort touch-capable device detection. */
-export function isTouchDevice(): boolean {
-  return (
-    (typeof window !== 'undefined' && 'ontouchstart' in window) ||
-    window.matchMedia('(hover: none)').matches
-  );
-}
-
 /**
  * True when a click came from a real pointer (mouse, touch, pen). Keyboard and
  * assistive-technology clicks have an empty pointerType (Pointer Events spec);

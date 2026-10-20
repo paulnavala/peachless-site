@@ -1,0 +1,92 @@
+---
+import type { Photo } from '../../lib/content';
+import Media from '../ui/Media.astro';
+
+interface Props {
+  photos: Photo[];
+}
+const { photos } = Astro.props;
+---
+<ul class="photo-strip" role="list">
+  {
+    photos.map((photo, i) => (
+      <li class:list={['photo-strip__item', { 'photo-strip__item--lead': i === 0 }]} data-reveal style={`--reveal-index: ${i}`}>
+        <a class="photo-strip__link" href="/photography/">
+          <Media
+            image={photo.data.image}
+            alt={photo.data.alt}
+            sizes={i === 0 ? '(min-width: 64em) 37rem, 100vw' : '(min-width: 64em) 18rem, 50vw'}
+          />
+          <span class="photo-strip__title">{photo.data.title}</span>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .photo-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-s);
+    margin: 0;
+  }
+
+  .photo-strip__item--lead {
+    grid-column: 1 / -1;
+  }
+
+  @media (min-width: 64em) {
+    .photo-strip {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-auto-rows: 15rem;
+    }
+
+    .photo-strip__item--lead {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+
+  .photo-strip__link {
+    position: relative;
+    display: block;
+    height: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: clip;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+
+  @media (min-width: 64em) {
+    .photo-strip__link {
+      aspect-ratio: auto;
+    }
+  }
+
+  .photo-strip__link :global(picture) {
+    height: 100%;
+  }
+
+  .photo-strip__title {
+    position: absolute;
+    left: var(--space-xs);
+    bottom: var(--space-xs);
+    padding: 0.3em 0.75em;
+    border-radius: var(--radius-pill);
+    background: rgb(var(--linen-rgb) / 0.9);
+    color: var(--ink-strong);
+    font-size: var(--text-small);
+    font-weight: var(--weight-medium);
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .photo-strip__link :global(.media) {
+      transition: scale 600ms var(--ease-out);
+    }
+
+    .photo-strip__link:hover :global(.media) {
+      scale: var(--hover-scale);
+    }
+  }
+</style>

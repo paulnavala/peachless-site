@@ -1,181 +1,155 @@
 ---
-import { Image } from 'astro:assets';
-import { getSingleton } from '../lib/content';
-import { renderInline } from '../lib/markdown';
+// Home tells the story in one scroll: who → what I believe → what I do →
+// selected work → through my lens → hello → (footer) let's create together.
 import Base from '../layouts/Base.astro';
-import Tagline from '../components/islands/Tagline.vue';
-import TwinGallery from '../components/static/TwinGallery.astro';
-import hero from '../assets/home/hero.png';
-import '../styles/components/tagline.css';
+import HomeHero from '../components/home/HomeHero.astro';
+import DisciplineCards, { type DisciplineCard } from '../components/home/DisciplineCards.astro';
+import PhotoStrip from '../components/home/PhotoStrip.astro';
+import AboutTeaser from '../components/home/AboutTeaser.astro';
+import SectionHeader from '../components/ui/SectionHeader.astro';
+import WorkGrid from '../components/work/WorkGrid.astro';
+import ArrowLink from '../components/ui/ArrowLink.astro';
+import { getFeaturedPhotos, getFeaturedProjects, getPublishedPhotos, getPublishedProjects, getSingleton } from '../lib/content';
+import { renderInline } from '../lib/markdown';
 
 const home = (await getSingleton('home')).data;
+const work = (await getSingleton('work')).data;
+const about = (await getSingleton('about')).data;
 const site = (await getSingleton('site')).data;
-const { heading, lead } = home.manifesto;
+const projects = await getPublishedProjects();
+const featured = await getFeaturedProjects();
+const photos = await getPublishedPhotos();
+const strip = (await getFeaturedPhotos(5)).slice(0, 5);
+
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+const firstOf = (discipline: 'graphic-design' | 'uiux') => {
+  const list = projects.filter((p) => p.data.disciplines.includes(discipline));
+  // Prefer a photographic cover for variety; fall back to the first project.
+  const pick = list.find((p) => p.data.cover.fit === 'cover') ?? list[0];
+  return { list, cover: pick?.data.cover };
+};
+const graphic = firstOf('graphic-design');
+const uiux = firstOf('uiux');
+const firstGraphic = graphic.list[0]?.data.cover;
+const cards: DisciplineCard[] = [
+  {
+    ...work.disciplines.graphicDesign,
+    href: '/projects/graphic-design/',
+    count: plural(graphic.list.length, 'project'),
+    image: firstGraphic && { image: firstGraphic.image, panel: firstGraphic.panel, fit: firstGraphic.fit },
+  },
+  {
+    ...work.disciplines.uiux,
+    href: '/projects/uiux/',
+    count: plural(uiux.list.length, 'project'),
+    image: uiux.cover && { image: uiux.cover.image, panel: uiux.cover.panel, fit: uiux.cover.fit },
+  },
+  {
+    ...work.disciplines.photography,
+    href: '/photography/',
+    count: plural(photos.length, 'photo'),
+    image: photos[0] && { image: photos[0].data.image, panel: 'none', fit: 'cover' },
+  },
+];
 ---
 <Base description={home.seo.description ?? site.seo.description} preloadSerif="italic">
-  <h1 class="sr-only">peachless. — visual design portfolio</h1>
-  <section class="section section--bright home-hero">
-    <div class="container">
-      <!-- fixedCenter must stay false (live parity): the old Squarespace loader set no
-           data-fixed-center, so live typed chars as normal inline spans in a width-auto,
-           centered box — text re-centers as it grows. fixedCenter=true pre-builds hidden
-           per-char inline-block slots in a fixed-width box, which (a) starts typing
-           left-offset and (b) loses kerning, overflowing the measured width at 390 and
-           wrapping line 1 to two lines. -->
-      <Tagline client:load fixedCenter={false} />
-    </div>
-  </section>
+  <HomeHero
+    eyebrow={home.eyebrow}
+    line1={home.tagline.line1}
+    line2={home.tagline.line2}
+    lede={home.lede}
+    primary={home.primaryCta}
+    secondary={home.secondaryCta}
+  />
 
-  <section class="section section--light home-intro">
-    <div class="container">
-      <!-- Live composition: lockup image first in source (stacks first on mobile),
-           text column pulled left of it at desktop via order. -->
-      <div class="home-intro__media">
-        <Image src={hero} alt="" widths={[480, 1000, hero.width]} sizes="(max-width: 739px) 160px, 480px" loading="eager" fetchpriority="high" />
-      </div>
-      <div class="home-intro__text">
-        <h3>{heading}</h3>
-        <p set:html={renderInline(lead)} />
-        <a class="btn-primary" href={home.primaryCta.link}>{home.primaryCta.label}</a>
+  <section class="section manifesto" data-surface="paper" aria-labelledby="manifesto-title">
+    <div class="container manifesto__inner">
+      <h2 id="manifesto-title" class="manifesto__title t-display-2" data-reveal>{home.manifesto.heading}</h2>
+      <div class="manifesto__aside" data-reveal style="--reveal-index: 1">
+        <p class="manifesto__lead" set:html={renderInline(home.manifesto.lead)} />
+        <ArrowLink href="/about/">{home.about.linkLabel}</ArrowLink>
       </div>
     </div>
   </section>
 
-  <section class="section section--light home-gallery">
+  <section class="section" aria-labelledby="services-title">
     <div class="container">
-      <TwinGallery />
+      <SectionHeader id="services-title" eyebrow="What I do" title={home.services.heading} lede={home.services.intro} />
+      <DisciplineCards cards={cards} />
     </div>
   </section>
+
+  <section class="section selected-work" aria-labelledby="featured-title">
+    <div class="container">
+      <SectionHeader
+        id="featured-title"
+        eyebrow="Work"
+        title={home.featured.heading}
+        lede={home.featured.intro}
+        action={{ href: '/projects/', label: 'All work' }}
+      />
+      <WorkGrid projects={featured} layout="featured" headingLevel={3} />
+    </div>
+  </section>
+
+  {
+    strip.length > 0 && (
+      <section class="section" data-surface="blush" aria-labelledby="photography-title">
+        <div class="container">
+          <SectionHeader
+            id="photography-title"
+            eyebrow="Photography"
+            title={home.photography.heading}
+            lede={home.photography.intro}
+            action={{ href: '/photography/', label: 'View the gallery' }}
+          />
+          <PhotoStrip photos={strip} />
+        </div>
+      </section>
+    )
+  }
+
+  <AboutTeaser
+    heading={home.about.heading}
+    body={home.about.body}
+    linkLabel={home.about.linkLabel}
+    portrait={about.portrait}
+    portraitAlt={about.portraitAlt}
+  />
 </Base>
 
 <style>
-  /* Live clay band: header+hero end ~y=338 at 1440 (hero ≈ 250px tall), while at
-     768 the band matches the default .section rhythm (~215px). Negative-slope
-     clamp interpolates: ~61px at 768 → ~24px at 1440. (.section.home-hero: must
-     out-specify global .section — Astro's :where() scoping adds no specificity,
-     so a bare .home-hero would only tie and depend on bundle order.) */
-  .section.home-hero {
-    padding-block: clamp(20px, 103px - 5.5vw, 64px);
+  .manifesto__inner {
+    display: grid;
+    gap: var(--space-l);
   }
-  .home-hero .container {
-    min-height: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+
+  .manifesto__title {
+    max-width: 18ch;
   }
-  @media (max-width: 480px) {
-    /* Live renders the tagline at ~24px at 390 (wraps to 2 lines — same as live) */
-    .home-hero :global(.tagline.typewriter) {
-      font-size: 1.5rem;
-    }
-    /* Live 390 band is ~205px with ~140px of space BELOW the tagline —
-       bottom-weighted padding reproduces that distribution. */
-    .section.home-hero {
-      padding-block: 32px 96px;
+
+  .manifesto__aside {
+    display: grid;
+    gap: var(--space-s);
+    justify-items: start;
+    align-content: end;
+  }
+
+  .manifesto__lead {
+    font-size: var(--step-1);
+    color: var(--color-text-secondary);
+    max-width: 38ch;
+  }
+
+  @media (min-width: 64em) {
+    .manifesto__inner {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--space-2xl);
+      align-items: end;
     }
   }
 
-  /* Intro: stacked (image → heading → lead → CTA) on mobile,
-     two columns (text left / lockup right) from 740px — matches live. */
-  .home-intro .container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-    text-align: left;
-  }
-  .home-intro__media {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .home-intro__media img {
-    width: 100%;
-    max-width: 160px; /* live lockup renders ~160px wide at 390 */
-    height: auto;
-  }
-  .home-intro__text {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-  .home-intro h3 {
-    /* Live: ~30px at 390, ~35px at 1440 */
-    font-size: clamp(1.8rem, 1.2rem + 1.6vw, 2.2rem);
-    /* Deliberate live-match: live's Squarespace markup wraps the heading in
-       <strong> (verified in docs/reference/snapshots/home.html), so it renders
-       as synthetic-bold Marcellus at every width. */
-    font-weight: 700;
-    margin: 0;
-  }
-  .home-intro p {
-    margin: 0;
-  }
-  /* Live keeps a clearly narrow intro text column at tablet (large gutters).
-     ~60-90px side padding reads close to live's rhythm without wrapping the
-     heading to 5 lines (live's literal 195px column would). */
-  @media (min-width: 600px) and (max-width: 900px) {
-    .section.home-intro {
-      padding-inline: clamp(60px, 10vw, 90px);
-    }
-  }
-  @media (min-width: 740px) {
-    .home-intro .container {
-      grid-template-columns: 1.15fr 1fr;
-      align-items: center;
-      gap: clamp(32px, 5vw, 80px);
-    }
-    .home-intro__text {
-      order: -1; /* text column left, lockup right (live composition) */
-      /* Live constrains the intro text block to ~375px at 1440 (measured: widest
-         heading line 353px, widest lead line 370px), so the heading wraps 3 lines:
-         'Design isn't just / something you see, it's / something you feel.' */
-      max-width: 375px;
-    }
-    .home-intro h3 {
-      /* Live Squarespace h3 formula for >=768px viewports:
-         (2.2 - 1) * 1.2vw + 1rem -> 27.06px @768, 36.7px @1440 (verified in
-         docs/reference/snapshots/site.css; pitch matches measured 31px/42px). */
-      font-size: calc(1.44vw + 1rem);
-      line-height: 1.1424; /* live: 1.2em * (1 + (1 - 2.2)/25) */
-    }
-    .home-intro__media img {
-      /* Live lockup: ~230px at 768, ~450-500px at 1440 */
-      max-width: clamp(240px, 32vw, 480px);
-    }
-  }
-  @media (min-width: 740px) and (max-width: 900px) {
-    /* Live @768 keeps a ~200px-wide intro text block (heading x91-266, lead ~190px):
-       the heading wraps 5 lines ('Design isn't just / something you / see, it's /
-       something you / feel.'). The CTA button stays wider on live (~409px), so cap
-       only the heading and lead, not the whole column. */
-    .home-intro h3,
-    .home-intro p {
-      max-width: 200px;
-    }
-  }
-  /* Live @768 twin gallery: ~586px panels with ~91px symmetric gutters
-     (768 - 2*91 = 586) and ~415px panel height (586 * 0.707). The gallery is
-     single-column up to 768px (twin-gallery.css), so cap the container there. */
-  @media (min-width: 600px) and (max-width: 768px) {
-    .section.home-gallery .container {
-      max-width: 586px;
-    }
-  }
-  .btn-primary {
-    display: block;
-    width: min(490px, 100%);
-    box-sizing: border-box;
-    background: var(--clay);
-    color: #fff;
-    text-decoration: none;
-    text-align: center;
-    padding: 14px 24px;
-    border-radius: var(--radius-xl);
-    font-size: 0.95rem;
-    transition: background 0.3s ease;
-  }
-  .btn-primary:hover {
-    background: var(--clay-dark);
+  .selected-work {
+    padding-block-start: 0;
   }
 </style>
