@@ -21,3 +21,22 @@ describe('collection access', () => {
     expect(offenders).toEqual([]);
   });
 });
+
+/**
+ * The contact form's real endpoint emails the owner on every submission.
+ * tests/e2e/fixtures.ts blocks it, so every e2e spec must take `test` from there.
+ */
+describe('e2e safety', () => {
+  it('every e2e spec takes `test` from the fixtures that block the real form endpoint', () => {
+    const dir = join(ROOT, 'tests', 'e2e');
+    const offenders = readdirSync(dir)
+      .filter((f) => f.endsWith('.spec.ts'))
+      .filter((f) => {
+        const code = readFileSync(join(dir, f), 'utf8');
+        const fromFixtures = /import\s*\{[^}]*\btest\b[^}]*\}\s*from\s*['"]\.\/fixtures['"]/.test(code);
+        const fromPlaywright = /import\s*\{[^}]*\btest\b[^}]*\}\s*from\s*['"]@playwright\/test['"]/.test(code);
+        return !fromFixtures || fromPlaywright;
+      });
+    expect(offenders).toEqual([]);
+  });
+});
