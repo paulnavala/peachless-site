@@ -4,10 +4,15 @@ import Base from '../../layouts/Base.astro';
 import GuidelinePage from '../../components/islands/GuidelinePage.vue';
 import '../../styles/components/guideline-page.css';
 
-// Live card order (data/brand-guidelines.json in the old repo)
+// Live card order (data/brand-guidelines.json in the old repo). Brands added later
+// (e.g. through the CMS) sort after these, by id, instead of jumping to the front.
 const LIVE_ORDER = ['peachless', 'blend', 'fish-seafood', 'intouch', 'melody', 'the-world'];
+const rank = (id: string) => {
+  const i = LIVE_ORDER.indexOf(id);
+  return i === -1 ? LIVE_ORDER.length : i;
+};
 const brands = (await getCollection('brands'))
-  .sort((a, b) => LIVE_ORDER.indexOf(a.id) - LIVE_ORDER.indexOf(b.id))
+  .sort((a, b) => rank(a.id) - rank(b.id) || a.id.localeCompare(b.id))
   .map((b) => ({
     id: b.id,
     name: b.data.name,
