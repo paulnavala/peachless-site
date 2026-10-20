@@ -33,6 +33,10 @@ export default defineComponent({
     // history.back() again when the close itself came from a Back press.
     let historyStatePushed = false;
     let closingFromPopstate = false;
+    // Bumped by every open and close: an openModal whose image preload is
+    // overtaken (rapid arrow keys, a second tile click, a close) drops its
+    // now-stale result instead of applying it.
+    let openSeq = 0;
 
 
 
@@ -78,6 +82,7 @@ export default defineComponent({
     async function openModal(index: number) {
       const item = normalizedItems.value[index];
       if (!item) return;
+      const seq = ++openSeq;
 
       modalRatio.value = 1;
       // Arrow navigation re-runs openModal while the modal is already open; at
@@ -91,7 +96,8 @@ export default defineComponent({
 
       // Preload main image before opening modal to prevent empty flash
       const urls = [item.modalAfter, item.modalBefore].filter(Boolean) as string[];
-      
+      let ratio = 1;
+
       if (urls.length > 0) {
         try {
           const dims: Array<{ w: number; h: number }> = [];
@@ -120,12 +126,17 @@ export default defineComponent({
 
           if (dims.length > 0) {
             const small = dims.reduce((a, b) => (a.w * a.h <= b.w * b.h ? a : b));
-            modalRatio.value = small.w / small.h;
+            ratio = small.w / small.h;
           }
         } catch {
           // Continue with default ratio
         }
       }
+
+      // Superseded while preloading: applying this now would show the wrong
+      // photo's ratio, or reopen a modal the user just closed.
+      if (seq !== openSeq) return;
+      modalRatio.value = ratio;
 
       // Open modal after preloading (or timeout)
       modalOpen.value = true;
@@ -165,6 +176,7 @@ export default defineComponent({
     }
 
     function closeModal() {
+      openSeq++; // cancel any openModal still preloading
       if (!modalOpen.value) return;
 
       if (releaseFocusTrap) {
@@ -345,6 +357,7 @@ export default defineComponent({
     });
 
     onBeforeUnmount(() => {
+      openSeq++;
       window.removeEventListener('keydown', onKeydown);
       window.removeEventListener('popstate', onPopState);
       if (resizeRafId !== null) cancelAnimationFrame(resizeRafId);
@@ -442,8 +455,11 @@ export default defineComponent({
                 // show the skeleton for images still in flight; for already-complete
                 // ones mirror the onLoad logic and set the real aspect ratio.
                 const img = el.querySelector('img.pg-masonry__img') as HTMLImageElement | null;
-                if (img && img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
-                  el.style.setProperty('--m-ratio', (img.naturalWidth / img.naturalHeight).toFixed(2));
+                if (img?.complete) {
+                  // complete with no natural size = it already failed; no skeleton then
+                  if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                    el.style.setProperty('--m-ratio', (img.naturalWidth / img.naturalHeight).toFixed(2));
+                  }
                 } else {
                   el.classList.add('is-loading');
                 }
@@ -461,8 +477,14 @@ export default defineComponent({
                   const current = e.currentTarget as HTMLElement;
                   const i = list.indexOf(current);
                   if (i === -1) return;
-                  if (e.key === 'ArrowRight' && i < list.length - 1) list[i + 1].focus();
-                  if (e.key === 'ArrowLeft' && i > 0) list[i - 1].focus();
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                    // DOM order is column-major (masonryItems reorders for CSS
+                    // columns), so step in gallery order instead, like the
+                    // lightbox's next/prev.
+                    const target = it.originalIndex + (e.key === 'ArrowRight' ? 1 : -1);
+                    const j = masonryItems.value.findIndex((m) => m.originalIndex === target);
+                    if (j !== -1) list[j]?.focus();
+                  }
                   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                     const r = current.getBoundingClientRect();
                     const targetY = r.top + (e.key === 'ArrowDown' ? r.height + 8 : -8);
@@ -497,21 +519,15 @@ export default defineComponent({
                 const dy = Math.abs(ev.clientY - Number(el.dataset.startY));
                 if (dx + dy > 6) el.dataset.moved = '1';
               },
-              onMouseup: (ev: MouseEvent) => {
+              // Open on click, not mouseup: click fires only for the primary
+              // button, so right/middle-click don't open the lightbox.
+              onClick: (ev: MouseEvent) => {
                 const el = ev.currentTarget as HTMLElement;
                 const moved = el.dataset.moved === '1';
                 el.dataset.startX = '';
                 el.dataset.startY = '';
                 el.dataset.moved = '';
                 if (!moved) openModal(it.originalIndex);
-              },
-              onClick: (ev: MouseEvent) => {
-                // Guard against some browsers firing click after mouseup drag
-                const el = ev.currentTarget as HTMLElement;
-                if (el.dataset.moved === '1') {
-                  ev.preventDefault();
-                  ev.stopPropagation();
-                }
               },
             }, [
               h('div', { class: 'pg-skel' }),
@@ -534,6 +550,10 @@ export default defineComponent({
                       media.style.setProperty('--m-ratio', r);
                     }
                   }
+                },
+                onError: (e: Event) => {
+                  // Drop the skeleton for a failed image too, or it shimmers forever
+                  (e.target as HTMLImageElement).parentElement?.classList.remove('is-loading');
                 },
               }),
               h('div', { class: 'pg-masonry__title' }, displayTitle(it.item)),
@@ -578,10 +598,11 @@ export default defineComponent({
                 ? [
                   active.modalBefore
                     ? h(BeforeAfterSlider, {
+                      // A fresh slider per photo, so each starts at the default split
+                      key: active.id,
                       afterSrc: active.modalAfter,
                       beforeSrc: active.modalBefore,
                       alt: active.alt || displayTitle(active),
-                      initialSplit: 0.75,
                     })
                     : h('img', {
                       class: 'pg-modal__img',
