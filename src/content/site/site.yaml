@@ -1,12 +1,29 @@
+siteName: peachless.
+ownerName: Patricia
+tagline: Every pixel tells a story. Let the world know yours.
 nav:
-  - { label: "Projects", href: "/projects" }
-  - { label: "Photography", href: "/photography" }
-  - { label: "About", href: "/about" }
-  - { label: "Contact", href: "/contact" }
-tagline: "Every pixel tells a story. Let the world know yours."
+  - label: Work
+    href: /projects/
+    cta: false
+  - label: Photography
+    href: /photography/
+    cta: false
+  - label: About
+    href: /about/
+    cta: false
+  - label: Contact
+    href: /contact/
+    cta: true
 emails:
-  - { label: "personal", address: "patricia@peachless.design" }
-  - { label: "contact", address: "i.am.peachless@gmail.com" }
-defaultDescription: "Every pixel tells a story. Let the world know yours."
-formEndpoint: "https://api.web3forms.com/submit"
-formHidden: { access_key: "a3568119-cc5b-457d-b146-be4bf375fcde" }
+  - label: personal
+    address: patricia@peachless.design
+  - label: contact
+    address: i.am.peachless@gmail.com
+socials: []
+cta:
+  eyebrow: Have a project in mind?
+  heading: Let’s create together.
+  buttonLabel: Start a conversation
+  buttonLink: /contact/
+seo:
+  description: Every pixel tells a story. Let the world know yours.

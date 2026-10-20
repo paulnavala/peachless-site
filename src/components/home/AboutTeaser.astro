@@ -1,0 +1,73 @@
+---
+import type { ImageMetadata } from 'astro';
+import Media from '../ui/Media.astro';
+import ArrowLink from '../ui/ArrowLink.astro';
+
+interface Props {
+  heading: string;
+  body: string;
+  linkLabel: string;
+  portrait: ImageMetadata;
+  portraitAlt: string;
+}
+const { heading, body, linkLabel, portrait, portraitAlt } = Astro.props;
+---
+<section class="section about-teaser" aria-labelledby="about-teaser-title" data-next-step>
+  <div class="container about-teaser__inner">
+    <div class="about-teaser__portrait" data-reveal>
+      <Media image={portrait} alt={portraitAlt} sizes="(min-width: 64em) 28rem, 80vw" />
+    </div>
+    <div class="about-teaser__text" data-reveal style="--reveal-index: 1">
+      <p class="eyebrow eyebrow--rule">About</p>
+      <h2 id="about-teaser-title" class="about-teaser__title">{heading}</h2>
+      <p class="t-quote about-teaser__body">{body}</p>
+      <ArrowLink href="/about/">{linkLabel}</ArrowLink>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about-teaser__inner {
+    display: grid;
+    gap: var(--space-xl);
+    align-items: center;
+  }
+
+  .about-teaser__portrait {
+    width: min(100%, 24rem);
+    aspect-ratio: 4 / 5;
+    overflow: clip;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+  }
+
+  .about-teaser__portrait :global(picture) {
+    height: 100%;
+  }
+
+  .about-teaser__text {
+    display: grid;
+    gap: var(--space-s);
+    justify-items: start;
+  }
+
+  .about-teaser__title {
+    font-size: var(--text-h2);
+  }
+
+  .about-teaser__body {
+    max-width: 30ch;
+    color: var(--color-text-secondary);
+  }
+
+  @media (min-width: 48em) {
+    .about-teaser__inner {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: var(--space-2xl);
+    }
+
+    .about-teaser__portrait {
+      width: 100%;
+    }
+  }
+</style>

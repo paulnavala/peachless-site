@@ -1,0 +1,63 @@
+---
+// Renders a project's story: each block type maps to one component. Blocks
+// sit on the .content-grid, so each can be content-, wide- or full-width.
+import type { Project } from '../../lib/content';
+import TextBlock from './TextBlock.astro';
+import ImageBlock from './ImageBlock.astro';
+import GalleryBlock from './GalleryBlock.astro';
+import QuoteBlock from './QuoteBlock.astro';
+import LogoBlock from './LogoBlock.astro';
+import PaletteBlock from './PaletteBlock.astro';
+import GuidelinesBlock from './GuidelinesBlock.astro';
+import PrototypeEmbed from './PrototypeEmbed.astro';
+import BeforeAfterBlock from './BeforeAfterBlock.astro';
+
+type Block = Project['data']['blocks'][number];
+
+interface Props {
+  blocks: Block[];
+  projectTitle: string;
+  cover: Project['data']['cover'];
+}
+const { blocks, projectTitle, cover } = Astro.props;
+---
+<div class="story content-grid">
+  {
+    blocks.map((block) => {
+      switch (block.type) {
+        case 'text':
+          return <TextBlock heading={block.heading} body={block.body} />;
+        case 'image':
+          return <ImageBlock image={block.image} alt={block.alt} caption={block.caption} size={block.size} />;
+        case 'gallery':
+          return <GalleryBlock heading={block.heading} images={block.images} />;
+        case 'quote':
+          return <QuoteBlock quote={block.quote} attribution={block.attribution} />;
+        case 'logo':
+          return <LogoBlock heading={block.heading} caption={block.caption} variants={block.variants} />;
+        case 'palette':
+          return <PaletteBlock heading={block.heading} swatches={block.swatches} />;
+        case 'guidelines':
+          return <GuidelinesBlock heading={block.heading} pages={block.pages} projectTitle={projectTitle} />;
+        case 'prototype':
+          return (
+            <PrototypeEmbed
+              url={block.url}
+              label={block.label}
+              poster={block.poster || undefined}
+              fallback={cover}
+              projectTitle={projectTitle}
+            />
+          );
+        case 'before-after':
+          return <BeforeAfterBlock before={block.before} after={block.after} alt={block.alt} caption={block.caption} />;
+      }
+    })
+  }
+</div>
+
+<style>
+  .story {
+    padding-block: var(--space-l-2xl) var(--space-2xl-4xl);
+  }
+</style>

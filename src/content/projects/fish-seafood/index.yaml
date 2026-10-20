@@ -1,0 +1,28 @@
+title: Fish & Seafood
+summary: A bold wordmark for a seafood supplier, with fish swimming through the letters.
+disciplines:
+  - graphic-design
+tools: []
+cover:
+  image: logo.png
+  alt: "The Fish & Seafood logo: a bold wordmark on a tilted blue panel"
+  panel: paper
+  fit: contain
+featured: false
+hidden: false
+order: 6
+blocks:
+  - type: text
+    heading: The brief
+    body: Fish & Seafood is a premium seafood supplier delivering fresh quality daily.
+  - type: logo
+    heading: The mark
+    variants:
+      - image: logo.png
+        alt: Fish & Seafood logo in its original colours
+        label: Original colours
+        panel: paper
+      - image: logo-peach.png
+        alt: Fish & Seafood logo redrawn in the peachless. palette
+        label: In the peachless. palette
+        panel: linen

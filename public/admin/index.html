@@ -1,14 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
-    <title>Sveltia CMS — peachless.</title>
+    <title>Admin — peachless.</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body>
+    <!--
+      Version-pinned with Subresource Integrity. To upgrade: bump the exact
+      @sveltia/cms devDependency in package.json, run `npm install`, update the
+      version below and in config.yml's $schema line, then paste the hash that
+      tests/unit/cms-config.spec.ts prints. Never loosen the pin. (Lazy-loaded
+      chunks are fetched from the same immutable versioned URL.)
+    -->
     <script
-      src="https://unpkg.com/@sveltia/cms@0.166.1/dist/sveltia-cms.js"
-      integrity="sha384-1/DKOpJpGv+HDKOaqh5zcZWoUoV5NVk3mW94cTh7y5vOR9BqBQWRk2SldLhNiwJs"
+      src="https://unpkg.com/@sveltia/cms@0.248.1/dist/sveltia-cms.js"
+      integrity="sha384-xl7lXeXUld1AugbGHdlLnjplg9R3m16pz1ErvPnTq2dlfjbveMW1zlEUcOHRc3sN"
       crossorigin="anonymous"
     ></script>
   </body>

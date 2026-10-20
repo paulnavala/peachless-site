@@ -1,0 +1,107 @@
+---
+import type { Project } from '../../lib/content';
+import { DISCIPLINE_LABELS } from '../../lib/content-schema';
+import ArrowLink from '../ui/ArrowLink.astro';
+import Media from '../ui/Media.astro';
+
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+const { title, summary, disciplines, cover } = project.data;
+---
+<section class="next-project" data-surface="paper" data-next-step aria-labelledby="next-project-title">
+  <div class="container next-project__inner">
+    <div class="next-project__text">
+      <p class="eyebrow eyebrow--rule">Next project</p>
+      <h2 id="next-project-title" class="next-project__title">
+        <a class="next-project__link" href={`/projects/${project.id}/`} data-testid="next-project">{title}</a>
+      </h2>
+      <p class="next-project__meta">{disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · ')}</p>
+      <p class="next-project__summary">{summary}</p>
+      <ArrowLink class="next-project__all" href="/projects/">All work</ArrowLink>
+    </div>
+    <a class="next-project__media work-media" href={`/projects/${project.id}/`} tabindex="-1" aria-hidden="true" data-panel={cover.panel} style={`--vt: work-${project.id}`}>
+      <Media image={cover.image} alt="" sizes="(min-width: 64em) 36rem, 100vw" fit={cover.fit} />
+    </a>
+  </div>
+</section>
+
+<style>
+  .next-project {
+    padding-block: var(--space-xl-3xl);
+  }
+
+  .next-project__inner {
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+  }
+
+  .next-project__text {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: start;
+  }
+
+  .next-project__title {
+    font-size: var(--text-h1);
+    line-height: var(--leading-display);
+  }
+
+  .next-project__link {
+    color: var(--color-heading);
+    text-decoration: none;
+  }
+
+  .next-project__link:hover {
+    color: var(--color-accent-text);
+  }
+
+  .next-project__meta {
+    font-size: var(--text-micro);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--color-accent-text);
+  }
+
+  .next-project__summary {
+    color: var(--color-text-secondary);
+    max-width: 46ch;
+  }
+
+  .next-project__all {
+    margin-block-start: var(--space-s);
+  }
+
+  .next-project__media {
+    display: block;
+    aspect-ratio: 4 / 3;
+    overflow: clip;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    --panel-pad: 16%;
+  }
+
+  .next-project__media :global(picture) {
+    height: 100%;
+  }
+
+  @media (min-width: 64em) {
+    .next-project__inner {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+      gap: var(--space-2xl);
+    }
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .next-project__media :global(.media) {
+      transition: scale 600ms var(--ease-out);
+    }
+
+    .next-project__inner:hover .next-project__media :global(.media) {
+      scale: var(--hover-scale);
+    }
+  }
+</style>

@@ -1,0 +1,28 @@
+title: InTouch
+summary: Identity for InTouch, a communication platform — the word “touch” held inside the curve of “in”.
+disciplines:
+  - graphic-design
+tools: []
+cover:
+  image: logo.png
+  alt: "The InTouch logo: the word touch set vertically inside a bold letter n"
+  panel: paper
+  fit: contain
+featured: false
+hidden: false
+order: 7
+blocks:
+  - type: text
+    heading: The brief
+    body: InTouch is a communication platform connecting people worldwide.
+  - type: logo
+    heading: The mark
+    variants:
+      - image: logo.png
+        alt: InTouch logo in its original colours
+        label: Original colours
+        panel: paper
+      - image: logo-peach.png
+        alt: InTouch logo redrawn in the peachless. palette
+        label: In the peachless. palette
+        panel: linen

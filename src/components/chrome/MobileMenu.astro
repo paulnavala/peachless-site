@@ -1,68 +1,214 @@
 ---
-import '../../styles/components/mobile-menu.css';
+import { getEntry } from 'astro:content';
+import { navCurrent } from '../../lib/nav';
+import PeachMark from '../ui/PeachMark.astro';
+import Icon from '../ui/Icon.astro';
 
-interface Props {
-  nav: { label: string; href: string }[];
-}
-const { nav } = Astro.props;
+const site = await getEntry('site', 'site');
+const { nav, emails, tagline, siteName } = site!.data;
+const links = nav.filter((item) => !item.cta);
+const cta = nav.find((item) => item.cta);
+const path = Astro.url.pathname;
 ---
-<div class="mmx-overlay" aria-hidden="true">
-  <div class="mmx-inner" role="dialog" aria-modal="true" aria-label="Menu">
-    <button class="mmx-close" type="button" aria-label="Close menu">×</button>
-    <div class="mmx-brand">peachless.</div>
-    <nav class="mmx-nav" aria-label="Mobile">
-      {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+<dialog class="mobile-menu" id="mobile-menu" aria-label="Menu" data-mobile-menu>
+  <div class="mobile-menu__inner container">
+    <div class="mobile-menu__top">
+      <a class="mobile-menu__brand" href="/">
+        <PeachMark class="mobile-menu__mark" />
+        <span>{siteName}</span>
+      </a>
+      <button class="btn btn--secondary btn--sm" type="button" data-menu-close>
+        Close
+        <Icon name="close" />
+      </button>
+    </div>
+
+    <nav class="mobile-menu__nav" aria-label="Mobile">
+      <ol class="mobile-menu__list" role="list">
+        {links.map((item, i) => (
+          <li style={`--i: ${i}`}>
+            <a
+              class="mobile-menu__link"
+              href={item.href}
+              aria-current={navCurrent(item.href, path)}
+              autofocus={i === 0}
+            >
+              <span class="mobile-menu__num numeral" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <span>{item.label}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+      {cta && (
+        <a class="btn btn--accent btn--lg mobile-menu__cta" href={cta.href} aria-current={navCurrent(cta.href, path)}>
+          {cta.label}
+          <Icon name="arrow-right" />
+        </a>
+      )}
     </nav>
+
+    <div class="mobile-menu__foot">
+      <ul class="mobile-menu__emails" role="list">
+        {emails.map((e) => (
+          <li><a class="link-quiet" href={`mailto:${e.address}`}>{e.address}</a></li>
+        ))}
+      </ul>
+      <p class="mobile-menu__tagline">{tagline}</p>
+    </div>
   </div>
-</div>
+</dialog>
 
 <script>
-  import { trapFocus } from '../../lib/dom';
+  import { lockScroll, trapFocus } from '../../lib/dom';
+  import { minWidth } from '../../lib/breakpoints';
 
-  const overlay = document.querySelector<HTMLElement>('.mmx-overlay')!;
-  const toggle = document.querySelector<HTMLButtonElement>('.site-header__burger')!;
-  const closeBtn = overlay.querySelector<HTMLButtonElement>('.mmx-close')!;
-  let releaseTrap: (() => void) | null = null;
+  const dialog = document.querySelector<HTMLDialogElement>('[data-mobile-menu]');
+  const openBtn = document.querySelector<HTMLButtonElement>('[data-menu-open]');
+  if (dialog && openBtn) {
+    let releaseTrap: (() => void) | null = null;
+    let unlockScroll: (() => void) | null = null;
 
-  const open = () => {
-    overlay.classList.add('open');
-    overlay.setAttribute('aria-hidden', 'false');
-    toggle.setAttribute('aria-expanded', 'true');
-    document.documentElement.classList.add('mmx-locked');
-    document.body.classList.add('mmx-locked');
-    releaseTrap = trapFocus(overlay, 'a[href], button');
-    // The overlay transitions from visibility: hidden, so its links are not
-    // focusable until styles recalc; defer the initial focus by two frames.
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => {
-        if (!overlay.classList.contains('open')) return;
-        (overlay.querySelector<HTMLElement>('.mmx-nav a') ?? closeBtn).focus({
-          preventScroll: true,
-        });
-      })
-    );
-  };
+    const open = () => {
+      if (dialog.open) return;
+      dialog.showModal();
+      openBtn.setAttribute('aria-expanded', 'true');
+      releaseTrap = trapFocus(dialog, 'a[href], button');
+      unlockScroll = lockScroll();
+    };
+    const close = () => {
+      if (dialog.open) dialog.close();
+    };
 
-  const close = () => {
-    overlay.classList.remove('open');
-    overlay.setAttribute('aria-hidden', 'true');
-    toggle.setAttribute('aria-expanded', 'false');
-    document.documentElement.classList.remove('mmx-locked');
-    document.body.classList.remove('mmx-locked');
-    releaseTrap?.();
-    releaseTrap = null;
-    toggle.focus({ preventScroll: true });
-  };
-
-  toggle.addEventListener('click', () =>
-    overlay.classList.contains('open') ? close() : open()
-  );
-  closeBtn.addEventListener('click', close);
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && overlay.classList.contains('open')) close();
-  });
-  overlay.querySelectorAll('a').forEach((a) => a.addEventListener('click', close));
-  matchMedia('(min-width: 901px)').addEventListener('change', (e) => {
-    if (e.matches && overlay.classList.contains('open')) close();
-  });
+    // One exit path: Escape (cancel), the Close button and link clicks all end
+    // in the dialog's close event.
+    dialog.addEventListener('close', () => {
+      openBtn.setAttribute('aria-expanded', 'false');
+      releaseTrap?.();
+      unlockScroll?.();
+      releaseTrap = unlockScroll = null;
+      openBtn.focus({ preventScroll: true });
+    });
+    openBtn.addEventListener('click', open);
+    dialog.querySelector('[data-menu-close]')?.addEventListener('click', close);
+    dialog.querySelectorAll('a[href]').forEach((a) => a.addEventListener('click', close));
+    matchMedia(minWidth('md')).addEventListener('change', (e) => {
+      if (e.matches) close();
+    });
+  }
 </script>
+
+<style>
+  .mobile-menu {
+    width: 100%;
+    height: 100%;
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  .mobile-menu::backdrop {
+    background: var(--color-bg);
+  }
+
+  .mobile-menu__inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    min-height: 100%;
+    padding-block: var(--space-s) var(--space-l);
+  }
+
+  .mobile-menu__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--header-h-condensed);
+  }
+
+  .mobile-menu__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    font-weight: var(--weight-display);
+    color: var(--color-heading);
+    text-decoration: none;
+  }
+
+  .mobile-menu__brand :global(.peach-mark) {
+    width: 1.55rem;
+  }
+
+  .mobile-menu__nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-l);
+  }
+
+  .mobile-menu__list {
+    margin: 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .mobile-menu__link {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-s);
+    padding-block: var(--space-s);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    font-weight: var(--weight-display);
+    line-height: 1.1;
+    text-decoration: none;
+  }
+
+  .mobile-menu__link[aria-current] {
+    color: var(--color-accent-text);
+  }
+
+  .mobile-menu__num {
+    font-size: var(--text-small);
+    min-width: 2ch;
+  }
+
+  .mobile-menu__cta {
+    align-self: stretch;
+  }
+
+  .mobile-menu__foot {
+    margin-top: auto;
+    display: grid;
+    gap: var(--space-xs);
+    color: var(--color-text-secondary);
+    font-size: var(--text-small);
+  }
+
+  .mobile-menu__emails {
+    display: grid;
+    gap: var(--space-3xs);
+    margin: 0;
+  }
+
+  .mobile-menu__tagline {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-1);
+    color: var(--color-text-muted);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .mobile-menu[open] .mobile-menu__list li {
+      animation: menu-in var(--duration-slow) var(--ease-out) both;
+      animation-delay: calc(var(--i) * var(--stagger));
+    }
+
+    @keyframes menu-in {
+      from {
+        opacity: 0;
+        translate: 0 0.75rem;
+      }
+    }
+  }
+</style>

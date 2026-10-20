@@ -1,54 +1,68 @@
-/**
- * Contact Form Component - Minimal Layout Styles Only
- * 
- * This file contains only basic layout structure (flex, grid, gap).
- * All visual styling (padding, fonts, colors, hover effects) is handled
- * by core/contact-form.css which loads after this file.
- * 
- * DO NOT add padding, font-size, colors, or other visual styles here
- * as they will conflict with and override the comprehensive styles in core.
- */
+/* ContactForm island (src/components/islands/ContactForm.ts). */
 
-/* Container layout - centered with max width */
-.contact-form-container {
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-    max-width: 100%;
-    box-sizing: border-box;
+.cf {
+  display: grid;
+  gap: var(--space-m);
 }
 
-/* Header section */
-.contact-form-header {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
+.cf__header {
+  display: grid;
+  gap: var(--space-3xs);
 }
 
-/* Form layout */
-.contact-form-inner {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    width: 100%;
+.cf__title {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-heading);
+  color: var(--color-heading);
 }
 
-/* Individual form field */
-.form-field {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+.cf__subtitle {
+  color: var(--color-text-secondary);
 }
 
-/* Form inputs and textarea */
-.form-input {
-    width: 100%;
-    box-sizing: border-box;
+.cf__form {
+  display: grid;
+  gap: var(--space-s);
 }
 
-/* Submit button */
-.form-submit {
-    width: 100%;
-    box-sizing: border-box;
+.cf__submit {
+  justify-self: start;
+  margin-top: var(--space-2xs);
+}
+
+.cf__trap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.form-status {
+  padding: var(--space-xs) var(--space-s);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-tint);
+  font-weight: var(--weight-medium);
+}
+
+/* Empty but still rendered: a live region must exist before its message
+   arrives for screen readers to announce it. */
+.form-status:empty {
+  padding: 0;
+  background: none;
+}
+
+.form-status--success {
+  color: var(--color-success);
+}
+
+.form-status--error,
+.form-status--unconfigured {
+  color: var(--color-danger);
+}
+
+.form-status a {
+  color: inherit;
 }

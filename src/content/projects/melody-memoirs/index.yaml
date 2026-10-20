@@ -1,0 +1,34 @@
+title: Melody Memoirs
+summary: Logo and app prototype for Melody Memoirs — an open book that turns into a musical note.
+disciplines:
+  - graphic-design
+  - uiux
+year: 2025
+tools:
+  - figma
+cover:
+  image: logo.png
+  alt: "The Melody Memoirs logo: an open book with a musical note rising from its pages"
+  panel: blush
+  fit: contain
+featured: true
+hidden: false
+order: 3
+blocks:
+  - type: text
+    heading: The idea
+    body: "Melody Memoirs brings music and memory together: the mark is an open book whose pages hold a single note."
+  - type: logo
+    heading: The mark
+    variants:
+      - image: logo.png
+        alt: Melody Memoirs logo in its original colours
+        label: Original colours
+        panel: paper
+      - image: logo-peach.png
+        alt: Melody Memoirs logo redrawn in the peachless. palette
+        label: In the peachless. palette
+        panel: linen
+  - type: prototype
+    url: https://www.figma.com/make/BQtydWnM0aJYReMTqpOiaB/Melody-Memoirs--Community-?node-id=0-1&p=f&t=18eWXd6TlkRVcn16-0&fullscreen=1
+    label: Try the Melody Memoirs prototype

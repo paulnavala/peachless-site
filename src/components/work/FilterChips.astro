@@ -1,0 +1,39 @@
+---
+// Discipline filters as plain links to pre-rendered pages: shareable, no
+// JavaScript, and the current one is marked with aria-current.
+export type WorkFilter = 'all' | 'graphic-design' | 'uiux' | 'photography';
+
+interface Props {
+  current: WorkFilter;
+  counts: Partial<Record<WorkFilter, number>>;
+  labels: { graphicDesign: string; uiux: string; photography: string };
+}
+const { current, counts, labels } = Astro.props;
+const chips: { key: WorkFilter; label: string; href: string }[] = [
+  { key: 'all', label: 'All', href: '/projects/' },
+  { key: 'graphic-design', label: labels.graphicDesign, href: '/projects/graphic-design/' },
+  { key: 'uiux', label: labels.uiux, href: '/projects/uiux/' },
+  { key: 'photography', label: labels.photography, href: '/photography/' },
+];
+---
+<nav class="filter-chips" aria-label="Filter work">
+  <ul class="cluster" role="list">
+    {
+      chips.map((chip) => (
+        <li>
+          <a class="chip" href={chip.href} aria-current={chip.key === current ? 'page' : undefined}>
+            {chip.label}
+            {counts[chip.key] !== undefined && <span class="chip__count">{counts[chip.key]}</span>}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  .filter-chips ul {
+    margin: 0;
+    --cluster-gap: var(--space-2xs);
+  }
+</style>

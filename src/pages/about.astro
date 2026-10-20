@@ -1,103 +1,97 @@
 ---
-import { getEntry, render } from 'astro:content';
-import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import portrait from '../assets/about/portrait.jpg';
+import Media from '../components/ui/Media.astro';
+import CtaBand from '../components/CtaBand.astro';
+import ArrowLink from '../components/ui/ArrowLink.astro';
+import { getSingleton } from '../lib/content';
+import { personLd } from '../lib/structured-data';
 
-const about = await getEntry('pages', 'about');
-const { Content } = await render(about!);
+const about = await getSingleton('about');
+const { Content } = await render(about);
+const { eyebrow, title, statement, portrait, portraitAlt, closing, seo } = about.data;
+const site = (await getSingleton('site')).data;
+const portraitShare = await getImage({ src: portrait, width: 800, format: 'jpg' });
 ---
-<Base title="About" description="About peachless. — a visual designer exploring the space between art and functionality.">
-  <h1 class="sr-only">About peachless.</h1>
-  <section class="section section--light">
-    <div class="container about-grid">
-      <div class="about-content">
-        <Content />
+<Base title="About" description={seo.description ?? statement} jsonLd={[personLd(site, Astro.site!, portraitShare.src)]}>
+  <section class="section about">
+    <div class="container about__inner">
+      <div class="about__portrait">
+        <Media image={portrait} alt={portraitAlt} sizes="(min-width: 64em) 30rem, 90vw" priority />
       </div>
-      <div class="about-portrait">
-        <Image
-          src={portrait}
-          alt="Portrait of Patricia, the designer behind peachless."
-          widths={[480, 800, portrait.width]}
-          sizes="(max-width: 900px) 92vw, 420px"
-          loading="eager"
-          fetchpriority="high"
-        />
+      <div class="about__text">
+        {eyebrow && <p class="eyebrow eyebrow--rule">{eyebrow}</p>}
+        <h1 class="about__title">{title}</h1>
+        <p class="about__statement t-quote">{statement}</p>
+        <div class="about__body flow">
+          <Content />
+        </div>
+        {closing && <p class="about__closing kicker">{closing}</p>}
       </div>
     </div>
   </section>
+
+  <CtaBand eyebrow="Keep exploring" heading="See the work behind the words." tone="paper">
+    <ArrowLink href="/projects/">Explore my work</ArrowLink>
+    <ArrowLink href="/photography/">Photography</ArrowLink>
+  </CtaBand>
 </Base>
 
 <style>
-  /* Live: portrait LEFT, text RIGHT, two columns kept down to tablet width.
-     At 1440 live spans ~1263px: photo col 434px, gap ~67px, text col 762px —
-     wider than the default 1200px container, so this grid carries its own cap. */
-  /* .container.about-grid: the max-width must out-specify global .container —
-     Astro's :where() scoping adds no specificity, so a bare .about-grid would
-     only tie with .container and depend on bundle order. */
-  .container.about-grid {
+  .about__inner {
     display: grid;
-    grid-template-columns: 434fr 762fr;
-    gap: 67px;
-    align-items: start;
-    max-width: min(1264px, 92vw);
+    gap: var(--space-xl);
   }
-  .about-portrait {
-    order: -1; /* markup keeps text first so mobile stacking is text-first like live */
+
+  .about__portrait {
+    width: min(100%, 26rem);
+    aspect-ratio: 4 / 5;
+    overflow: clip;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
   }
-  .about-content :global(h3) {
-    /* Live lead statements are non-monotonic across widths: ~35px at 1440,
-       ~22px at 768, ~30px at 390 — clamp for desktop, explicit overrides below. */
-    font-size: clamp(1.75rem, 1.1rem + 1.5vw, 2.2rem);
-    margin-bottom: 1.2em;
+
+  .about__portrait :global(picture) {
+    height: 100%;
   }
-  @media (max-width: 900px) {
-    /* Ground-truthed against live @768 (screens-cmp/live/768/about.png): statement 1
-       wraps 3 lines ('I'm a visual designer driven by the' = 393px ink / 'belief
-       that design is more than' / 'what we see - it's what we feel.'), statement 2
-       wraps 7 lines, line ink 27px, baseline pitch 31px. That is exactly
-       Squarespace's h3 formula (2.2 - 1) * 1.2vw + 1rem = 27.06px @768 with
-       line-height 1.2em * (1 + (1 - 2.2)/25) = 1.1424em -> 30.9px pitch and
-       --heading-font-letter-spacing: -0.02em (without the tracking, local text runs
-       ~2% wider and pushes 'the' off line 1). The earlier 1.4rem (22.4px) was too
-       small. */
-    .about-content :global(h3) {
-      font-size: calc(1.44vw + 1rem);
-      line-height: 1.1424;
-      letter-spacing: -0.02em;
+
+  .about__text {
+    display: grid;
+    gap: var(--space-m);
+    align-content: start;
+  }
+
+  .about__title {
+    font-size: var(--text-h1);
+  }
+
+  .about__statement {
+    max-width: 26ch;
+    color: var(--color-heading);
+  }
+
+  .about__body {
+    max-width: var(--measure);
+    font-size: var(--step-1);
+    color: var(--color-text-secondary);
+  }
+
+  .about__closing {
+    font-size: var(--step-2);
+  }
+
+  @media (min-width: 64em) {
+    .about__inner {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: var(--space-2xl);
+      align-items: start;
     }
-  }
-  @media (max-width: 480px) {
-    .about-content :global(h3) { font-size: 1.85rem; } /* live ~30px at 390 */
-  }
-  .about-content :global(h3 + h3) {
-    margin-top: 1.6em; /* live has a ~75px gap between the two statement blocks */
-  }
-  .about-content :global(p) {
-    max-width: var(--max-ch);
-  }
-  .about-portrait img {
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    width: 100%;
-    /* Live crops the portrait taller (435x673 ≈ 0.646) than its natural ratio */
-    aspect-ratio: 435 / 673;
-    object-fit: cover;
-  }
-  /* Tablet two-column range: live stretches the portrait the full height of the
-     text column (227×720 at 768, ratio ~0.32) instead of keeping a fixed aspect. */
-  @media (min-width: 741px) and (max-width: 900px) {
-    .about-portrait {
-      align-self: stretch;
+
+    .about__portrait {
+      position: sticky;
+      top: calc(var(--header-h-condensed) + var(--space-l));
+      width: 100%;
     }
-    .about-portrait img {
-      height: 100%;
-      aspect-ratio: auto;
-    }
-  }
-  @media (max-width: 740px) {
-    /* Must match the base rule's .container.about-grid specificity to win */
-    .container.about-grid { grid-template-columns: 1fr; }
-    .about-portrait { order: 0; max-width: 420px; } /* text stacks first (live) */
   }
 </style>

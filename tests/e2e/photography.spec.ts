@@ -1,5 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { waitForIsland } from './utils';
+import { publishedPhotos } from './content';
+
+const photos = publishedPhotos();
+const second = new RegExp(photos[1].id);
 
 test.describe('/photography', () => {
   test('renders the masonry gallery', async ({ page }) => {
@@ -16,6 +20,8 @@ test.describe('/photography', () => {
     await expect(page.locator('.pg-modal .image-compare')).toBeVisible(); // first photo has a before image
     await page.keyboard.press('Escape');
     await expect(page.locator('.pg-modal')).toBeHidden();
+    // Focus returns to the tile that opened it (Safari doesn't focus buttons on click).
+    await expect(page.locator('.pg-masonry__media').first()).toBeFocused();
   });
 
   test('Escape right after an arrow key does not reopen the lightbox', async ({ page }) => {
@@ -52,7 +58,7 @@ test.describe('/photography', () => {
       });
     });
     await page.keyboard.press('ArrowRight');
-    await expect(page.locator('.pg-modal .image-compare img').first()).toHaveAttribute('src', /cave_angel/);
+    await expect(page.locator('.pg-modal .image-compare img').first()).toHaveAttribute('src', second);
     expect(await page.evaluate(() => (window as any).__ratios)).not.toContain('1');
   });
 
@@ -67,7 +73,7 @@ test.describe('/photography', () => {
       await route.continue().catch(() => {});
     });
     await page.keyboard.press('ArrowRight');
-    await expect(page.locator('.pg-modal .image-compare img').first()).toHaveAttribute('src', /cave_angel/);
+    await expect(page.locator('.pg-modal .image-compare img').first()).toHaveAttribute('src', second);
     await expect
       .poll(() => page.locator('.pg-modal__view').evaluate((el) => el.style.getPropertyValue('--m-ratio').trim()))
       .not.toBe('1');

@@ -1,53 +1,103 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
+import { publishedProjects, site } from './content';
+
+const settings = site();
 
 test.describe('site chrome', () => {
-  test('header renders title, centered logo, and nav', async ({ page }) => {
+  test('header has one brand link and the nav from site settings', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.site-header__title')).toHaveText('peachless.');
-    await expect(page.locator('.site-header__logo img')).toBeVisible();
-    const nav = page.locator('.site-header__nav a');
-    await expect(nav).toHaveCount(4);
-    await expect(nav.nth(0)).toHaveAttribute('href', '/projects');
-    await expect(nav.nth(1)).toHaveAttribute('href', '/photography');
-    await expect(nav.nth(2)).toHaveAttribute('href', '/about');
-    await expect(nav.nth(3)).toHaveAttribute('href', '/contact');
+    const brand = page.locator('.site-header__brand');
+    await expect(brand).toHaveCount(1);
+    await expect(brand).toHaveAttribute('href', '/');
+    await expect(brand).toContainText(settings.siteName ?? 'peachless.');
+
+    const links = page.locator('.site-header__nav a');
+    await expect(links).toHaveCount(settings.nav.length);
+    for (const [i, item] of settings.nav.entries()) {
+      await expect(links.nth(i)).toHaveAttribute('href', item.href);
+      await expect(links.nth(i)).toHaveText(item.label);
+      if (item.cta) await expect(links.nth(i)).toHaveClass(/btn/);
+    }
   });
 
-  test('footer renders brand, nav, contact emails, legal', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('#elegant-footer .brand-name')).toHaveText('peachless.');
-    await expect(page.locator('#elegant-footer .footer-nav a')).toHaveCount(4);
-    await expect(
-      page.locator('#elegant-footer .footer-contact a[href="mailto:patricia@peachless.design"]')
-    ).toBeVisible();
-    await expect(page.locator('#elegant-footer .footer-legal')).toContainText('peachless.');
+  test('nav marks the current page, and its section on pages below it', async ({ page }) => {
+    const about = settings.nav.find((n) => n.href.startsWith('/about'))!;
+    await page.goto(about.href);
+    await expect(page.locator(`.site-header__nav a[href="${about.href}"]`)).toHaveAttribute('aria-current', 'page');
+
+    const work = settings.nav.find((n) => n.href.startsWith('/projects'))!;
+    await page.goto('/projects/cern/');
+    await expect(page.locator(`.site-header__nav a[href="${work.href}"]`)).toHaveAttribute('aria-current', 'true');
   });
 
-  test('mobile menu opens, moves focus into overlay, closes on Escape and restores focus', async ({ page }) => {
-    await page.setViewportSize({ width: 480, height: 800 });
+  test('header condenses once the page scrolls', async ({ page }) => {
+    await page.goto('/about/');
+    const header = page.locator('[data-site-header]');
+    await expect(header).not.toHaveAttribute('data-condensed');
+    await page.mouse.wheel(0, 600);
+    await expect(header).toHaveAttribute('data-condensed', '');
+  });
+
+  test('footer invites contact and lists nav, emails and legal line', async ({ page }) => {
     await page.goto('/');
-    await page.locator('.site-header__burger').click();
-    await expect(page.locator('.mmx-overlay')).toHaveClass(/open/);
-    await expect(page.locator('.mmx-nav a')).toHaveCount(4);
-    // Opening moves focus inside the overlay (first nav link)
-    await expect(page.locator('.mmx-overlay .mmx-nav a').first()).toBeFocused();
+    const footer = page.locator('.site-footer');
+    if (settings.cta) {
+      await expect(footer.locator('#footer-cta-title')).toHaveText(settings.cta.heading);
+      await expect(footer.locator(`.site-footer__cta a[href="${settings.cta.buttonLink}"]`)).toBeVisible();
+    }
+    await expect(footer.locator('nav a')).toHaveCount(settings.nav.length);
+    for (const e of settings.emails) {
+      await expect(footer.locator(`.site-footer__main a[href="mailto:${e.address}"]`)).toBeVisible();
+    }
+    await expect(footer.locator('.site-footer__legal')).toContainText(settings.siteName ?? 'peachless.');
+  });
+
+  test('mobile menu opens as a modal, focuses the first link, closes on Escape and restores focus', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    const toggle = page.locator('[data-menu-open]');
+    await expect(toggle).toBeVisible();
+    await toggle.click();
+    const menu = page.locator('#mobile-menu');
+    await expect(menu).toHaveAttribute('open', '');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    const links = settings.nav.filter((n) => !n.cta);
+    await expect(menu.locator('.mobile-menu__link')).toHaveCount(links.length);
+    await expect(menu.locator('.mobile-menu__link').first()).toBeFocused();
     await page.keyboard.press('Escape');
-    await expect(page.locator('.mmx-overlay')).not.toHaveClass(/open/);
-    // Closing returns focus to the burger toggle
-    await expect(page.locator('.site-header__burger')).toBeFocused();
+    await expect(menu).not.toHaveAttribute('open');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).toBeFocused();
+  });
+
+  test('mobile menu keeps Tab inside the dialog', async ({ page, browserName }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await page.locator('[data-menu-open]').click();
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press('Tab');
+      const where = await page.evaluate(() =>
+        document.activeElement === document.body ? 'body' : document.activeElement?.closest('#mobile-menu') ? 'menu' : 'behind'
+      );
+      // Never the page behind. Safari's Tab skips links by default, so focus
+      // passes through the browser's own UI (<body>) on its way round.
+      expect(where === 'menu' || (browserName === 'webkit' && where === 'body'), where).toBe(true);
+    }
   });
 
   test('every page has exactly one h1', async ({ page }) => {
     for (const path of [
       '/',
-      '/about',
-      '/contact',
-      '/photography',
-      '/projects',
-      '/projects/uiux',
-      '/projects/logo-design',
-      '/projects/guidelines',
-      '/projects/cern',
+      '/about/',
+      '/contact/',
+      '/photography/',
+      '/projects/',
+      '/projects/uiux/',
+      '/projects/graphic-design/',
+      '/projects/logo-design/',
+      ...publishedProjects().map((p) => `/projects/${p.id}/`),
     ]) {
       await page.goto(path);
       await expect(page.locator('h1'), path).toHaveCount(1);
@@ -57,6 +107,6 @@ test.describe('site chrome', () => {
   test('404 page renders for unknown URLs', async ({ page }) => {
     const response = await page.goto('/does-not-exist');
     expect(response?.status()).toBe(404);
-    await expect(page.locator('h1')).toHaveText('404');
+    await expect(page.locator('h1')).toBeVisible();
   });
 });

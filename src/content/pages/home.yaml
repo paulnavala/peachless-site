@@ -1,4 +1,29 @@
-heading: "Design isn’t just something you see, it’s something you feel."
-lead: "<strong>peachless. -</strong> my creative universe, showcasing work shaped by curiosity, clarity and emotion. Here, every color, shape and pixel is crafted with intention."
-buttonLabel: "Learn more"
-buttonHref: "/about"
+eyebrow: Hi, I’m Patricia — visual designer
+tagline:
+  line1: Every pixel tells a story.
+  line2: Let the world know yours.
+lede: I design brand identities, interfaces and images — blending the precision of UI/UX with the expressive freedom of graphic design.
+primaryCta:
+  label: See my work
+  link: /projects/
+secondaryCta:
+  label: Let’s talk
+  link: /contact/
+manifesto:
+  heading: Design isn’t just something you see, it’s something you feel.
+  lead: "**peachless.** — my creative universe, showcasing work shaped by curiosity, clarity and emotion. Here, every color, shape and pixel is crafted with intention."
+services:
+  heading: What I do
+  intro: "Three crafts, one way of seeing: every project starts with the feeling it should leave behind."
+featured:
+  heading: Selected work
+  intro: A few projects, from first sketch to finished system.
+photography:
+  heading: Through my lens
+  intro: Photography and retouching — open a photo to compare the before and after.
+about:
+  heading: Hi, I’m Patricia.
+  body: I’m a visual designer driven by the belief that design is more than what we see — it’s what we feel.
+  linkLabel: More about me
+seo:
+  description: peachless. — the portfolio of Patricia, a visual designer working across brand identity, UI/UX and photography.

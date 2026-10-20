@@ -1,0 +1,25 @@
+title: LoGo
+summary: Wordmark concept for a graphic design studio.
+disciplines:
+  - graphic-design
+tools: []
+cover:
+  image: logo.png
+  alt: The LoGo wordmark with a painted texture between the letters
+  panel: paper
+  fit: contain
+featured: false
+hidden: true
+order: 9
+blocks:
+  - type: logo
+    heading: The mark
+    variants:
+      - image: logo.png
+        alt: LoGo logo in its original colours
+        label: Original colours
+        panel: paper
+      - image: logo-peach.png
+        alt: LoGo logo redrawn in the peachless. palette
+        label: In the peachless. palette
+        panel: linen

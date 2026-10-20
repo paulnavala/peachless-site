@@ -1,0 +1,28 @@
+title: Blend
+summary: A painted ring of colour for Blend, a creative studio blending artistry with technology.
+disciplines:
+  - graphic-design
+tools: []
+cover:
+  image: logo.png
+  alt: "The Blend logo: a brushed ring of warm colour"
+  panel: paper
+  fit: contain
+featured: false
+hidden: false
+order: 5
+blocks:
+  - type: text
+    heading: The brief
+    body: Blend is a creative design studio blending artistry with technology.
+  - type: logo
+    heading: The mark
+    variants:
+      - image: logo.png
+        alt: Blend logo in its original colours
+        label: Original colours
+        panel: paper
+      - image: logo-peach.png
+        alt: Blend logo redrawn in the peachless. palette
+        label: In the peachless. palette
+        panel: linen

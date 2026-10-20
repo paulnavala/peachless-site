@@ -1,0 +1,46 @@
+---
+import ArrowLink from './ArrowLink.astro';
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  level?: 1 | 2 | 3;
+  lede?: string;
+  id?: string;
+  action?: { href: string; label: string };
+  /** Size class for the title (defaults by level). */
+  size?: 't-h1' | 't-display-2' | 't-h2' | 't-h3';
+}
+const { eyebrow, title, level = 2, lede, id, action, size } = Astro.props;
+const Heading = `h${level}` as 'h1' | 'h2' | 'h3';
+const sizeClass = size ?? (level === 1 ? 't-h1' : level === 2 ? 't-h2' : 't-h3');
+---
+<header class="section-header">
+  <div class="section-header__text">
+    {eyebrow && <p class="eyebrow eyebrow--rule">{eyebrow}</p>}
+    <Heading id={id} class:list={['section-header__title', sizeClass]}>{title}</Heading>
+    {lede && <p class="lede">{lede}</p>}
+  </div>
+  {action && <ArrowLink class="section-header__action" href={action.href}>{action.label}</ArrowLink>}
+</header>
+
+<style>
+  .section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-s) var(--space-l);
+    margin-block-end: var(--space-l-2xl);
+  }
+
+  .section-header__text {
+    display: grid;
+    gap: var(--space-xs);
+    max-width: 44rem;
+  }
+
+  .section-header__title {
+    margin: 0;
+  }
+</style>

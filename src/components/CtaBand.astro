@@ -1,0 +1,52 @@
+---
+// A closing "where next" band. Every page's <main> ends in one (or another
+// [data-next-step] element), so no page is a dead end.
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  body?: string;
+  tone?: 'paper' | 'blush' | 'inverse';
+  id?: string;
+}
+const { eyebrow, heading, body, tone = 'blush', id = 'next-step-title' } = Astro.props;
+---
+<section class="cta-band" data-surface={tone} data-next-step aria-labelledby={id}>
+  <div class="container cta-band__inner">
+    <div class="cta-band__text">
+      {eyebrow && <p class="eyebrow eyebrow--rule">{eyebrow}</p>}
+      <h2 id={id} class="cta-band__title t-h2">{heading}</h2>
+      {body && <p class="cta-band__body">{body}</p>}
+    </div>
+    <div class="cluster cta-band__actions">
+      <slot />
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-band {
+    padding-block: var(--space-xl-3xl);
+  }
+
+  .cta-band__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-m) var(--space-xl);
+  }
+
+  .cta-band__text {
+    display: grid;
+    gap: var(--space-xs);
+    max-width: 40rem;
+  }
+
+  .cta-band__body {
+    color: var(--color-text-secondary);
+  }
+
+  .cta-band__actions {
+    --cluster-gap: var(--space-s) var(--space-l);
+  }
+</style>

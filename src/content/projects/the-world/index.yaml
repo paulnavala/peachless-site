@@ -1,0 +1,28 @@
+title: The World of Biologi
+summary: A botanical wordmark for The World of Biologi, with vines growing through the letters.
+disciplines:
+  - graphic-design
+tools: []
+cover:
+  image: logo.png
+  alt: "The World of Biologi logo: vintage lettering wrapped in green vines"
+  panel: paper
+  fit: contain
+featured: false
+hidden: false
+order: 8
+blocks:
+  - type: text
+    heading: The brief
+    body: A wordmark for The World of Biologi, where the type grows its own leaves.
+  - type: logo
+    heading: The mark
+    variants:
+      - image: logo.png
+        alt: The World of Biologi logo in its original colours
+        label: Original colours
+        panel: paper
+      - image: logo-peach.png
+        alt: The World of Biologi logo redrawn in the peachless. palette
+        label: In the peachless. palette
+        panel: linen

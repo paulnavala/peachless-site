@@ -1,65 +1,50 @@
 ---
-import { getCollection } from 'astro:content';
+import { getImage } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
+import ProjectHero from '../../components/project/ProjectHero.astro';
+import NextProject from '../../components/project/NextProject.astro';
+import BlockRenderer from '../../components/blocks/BlockRenderer.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import ArrowLink from '../../components/ui/ArrowLink.astro';
+import { getPublishedProjects, getSingleton } from '../../lib/content';
+import { nextProject } from '../../lib/project-order';
+import { projectLd } from '../../lib/structured-data';
 
 export async function getStaticPaths() {
-  const projects = await getCollection('projects');
-  return projects.map((p) => ({ params: { slug: p.id }, props: { project: p } }));
+  // Published projects only: a hidden project gets no page at all.
+  const projects = await getPublishedProjects();
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project, next: nextProject(projects, project.id) },
+  }));
 }
 
-const { project } = Astro.props;
-const { title, description, badges, year, figma } = project.data;
-const embed = `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(figma)}`;
----
-<Base title={title} description={description}>
-  <article class="case-study section section--light">
-    <div class="container">
-      <a class="case-back" href="/projects/uiux">← Back to UI/UX</a>
-      <h1>{title}</h1>
-      <p class="case-meta">
-        {badges.map((b) => <span class="badge">{b}</span>)}
-        {year && <span class="case-year">{year}</span>}
-      </p>
-      <p class="case-description">{description}</p>
-      <div class="case-frame">
-        <iframe src={embed} title={`${title} prototype`} loading="lazy" allowfullscreen></iframe>
-      </div>
-    </div>
-  </article>
-</Base>
+const { project, next } = Astro.props;
+const { title, summary, seo, cover } = project.data;
 
-<style>
-  .case-study .container { max-width: 1100px; }
-  .case-back {
-    display: inline-block;
-    margin-bottom: 24px;
-    color: var(--text-muted);
-    text-decoration: none;
+// Share image: an explicit one, else a photographic cover cropped to 1200×630;
+// logo covers fall back to the site image (a cropped transparent logo reads badly).
+const shareSource = seo?.image || (cover.fit === 'cover' && cover.image.format !== 'svg' ? cover.image : undefined);
+const share = shareSource ? await getImage({ src: shareSource, width: 1200, height: 630, fit: 'cover', format: 'jpg' }) : undefined;
+const site = (await getSingleton('site')).data;
+---
+<Base
+  title={seo?.title || title}
+  description={seo?.description || summary}
+  ogImage={share?.src}
+  jsonLd={projectLd(project, site, Astro.site!, share?.src)}
+>
+  <article class="project">
+    <ProjectHero project={project} />
+    <BlockRenderer blocks={project.data.blocks} projectTitle={title} cover={cover} />
+  </article>
+  {
+    next ? (
+      <NextProject project={next} />
+    ) : (
+      <CtaBand eyebrow="Keep exploring" heading="See more of the work." tone="paper">
+        <ArrowLink href="/projects/">All work</ArrowLink>
+      </CtaBand>
+    )
   }
-  .case-back:hover { color: var(--ink-strong); }
-  .case-meta {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .badge {
-    background: var(--card-bg);
-    color: var(--cacao);
-    border: 1px solid rgba(var(--shadow-color), 0.15);
-    border-radius: 999px;
-    padding: 4px 14px;
-    font-size: var(--step--1);
-  }
-  .case-year { color: var(--text-light); font-size: var(--step--1); }
-  .case-description { max-width: var(--max-ch); font-size: var(--step-1); }
-  .case-frame {
-    margin-top: 32px;
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    background: var(--card-bg);
-    aspect-ratio: 16 / 10;
-  }
-  .case-frame iframe { width: 100%; height: 100%; border: 0; }
-</style>
+</Base>
