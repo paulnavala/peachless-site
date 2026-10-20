@@ -1,128 +1,721 @@
-# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms/schema/sveltia-cms.json
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms@0.248.1/schema/sveltia-cms.json
+#
+# peachless. admin (Sveltia CMS).
+# Field names, required-ness, limits, options and patterns mirror
+# src/lib/content-schema.ts — tests/unit/cms-config.spec.ts fails CI when the
+# two drift. Editor guide: docs/EDITING.md.
+
 backend:
   name: github
   repo: paulnavala/peachless-site
   branch: main
-  # No OAuth proxy configured: sign in with a GitHub personal access token
-  # ("Sign In with Token" on the login screen). To add browser OAuth later,
-  # deploy https://github.com/sveltia/sveltia-cms-auth and set base_url here.
+  # "Sign in with GitHub": the sveltia-cms-auth worker on Cloudflare (setup in
+  # docs/EDITING.md). Until it is deployed, "Sign In with Token" still works.
+  # base_url: https://sveltia-cms-auth.<subdomain>.workers.dev
+  auth_scope: public_repo
+  # Each saved change gets a Cloudflare Pages preview; the editor links to it.
+  preview_context: Cloudflare Pages
+  squash_merges: true
 
-media_folder: 'public/uploads'
-public_folder: '/uploads'
+# Save → a private preview build → Publish. "Save and publish" is still there
+# for quick fixes.
+publish_mode:
+  type: preview
+  direct_publish: true
+
+site_url: https://peachless.design
+display_url: https://peachless.design
+logo:
+  src: /favicon.svg
+
+# Fallback only: every image field below stores files next to its entry.
+media_folder: /public/uploads
+public_folder: /uploads
+media_libraries:
+  default:
+    config:
+      slugify_filename: true
+      max_file_size: 20000000
+
+slug:
+  encoding: ascii
+  clean_accents: true
+  maxlength: 60
+
+output:
+  omit_empty_optional_fields: true
 
 collections:
   - name: projects
-    label: UI/UX Projects
-    folder: /src/content/projects
-    create: true
-    format: json
-    extension: json
+    label: Projects
+    label_singular: project
+    description: Your portfolio. Every project gets its own page and appears on the Work page. Drag projects to change their order.
+    icon: design_services
+    folder: src/content/projects
+    path: '{{slug}}/index'
+    extension: yaml
+    format: yaml
+    media_folder: ''
+    public_folder: ''
     identifier_field: title
+    slug:
+      editable: [create]
+      hint: The project’s web address, e.g. peachless.design/projects/fish-seafood. It can’t be changed later.
+      pattern:
+        - '^(?!(graphic-design|uiux|ui-ux|logo-design|guidelines|index|all|page|projects)$)[a-z0-9]+(?:-[a-z0-9]+)*$'
+        - Use lowercase letters, numbers and dashes — and not the name of a site page.
+    summary: "{{title}}{{hidden | ternary(' · hidden', '')}}{{featured | ternary(' · on the home page', '')}}"
+    thumbnail: cover.image
+    reorder: true
+    duplicate: false
+    preview_path: /projects/{{slug}}/
+    editor:
+      preview: false
+    view_filters:
+      filters:
+        - { name: featured, label: On the home page, field: featured, eq: true }
+        - { name: hidden, label: Hidden from the site, field: hidden, eq: true }
+        - { name: graphic-design, label: Graphic design, field: disciplines, pattern: graphic-design }
+        - { name: uiux, label: UI/UX, field: disciplines, pattern: uiux }
     fields:
-      - { label: Title, name: title, widget: string }
-      - { label: Description, name: description, widget: text }
-      - { label: Figma URL, name: figma, widget: string, pattern: ['^https://', 'Must be an https URL'] }
-      - { label: Badges, name: badges, widget: list, default: [] }
-      - { label: Categories, name: categories, widget: list, default: [] }
-      - { label: Year, name: year, widget: number, required: false }
-      - { label: Accent color, name: accent, widget: string, required: false, default: "" }
-      - { label: Order, name: order, widget: number, default: 0 }
-
-  - name: logos
-    label: Logos
-    folder: /src/content/logos
-    create: true
-    format: json
-    extension: json
-    identifier_field: name
-    media_folder: /src/assets/logos
-    public_folder: ../../assets/logos
-    fields:
-      - { label: Name, name: name, widget: string }
-      - { label: Description, name: description, widget: text }
-      - { label: Alt text, name: alt, widget: string }
-      - { label: Grid image, name: grid, widget: image }
-      - { label: Preview image, name: preview, widget: image }
-      - { label: Order, name: order, widget: number, default: 0 }
+      - name: title
+        label: Project name
+        widget: string
+        maxlength: 80
+        hint: Shown on the project card, at the top of its page and in search results.
+      - name: summary
+        label: One-line summary
+        widget: text
+        maxlength: 160
+        hint: One sentence for the project card and for Google — what it is and who it’s for.
+      - name: disciplines
+        label: Type of work
+        widget: select
+        multiple: true
+        min: 1
+        options:
+          - { label: Graphic design, value: graphic-design }
+          - { label: UI/UX, value: uiux }
+        hint: Decides which Work filters show the project. Choose both for a logo with an app.
+      - name: year
+        label: Year
+        widget: number
+        value_type: int
+        min: 2000
+        max: 2100
+        required: false
+      - name: client
+        label: Client or context
+        widget: string
+        maxlength: 80
+        required: false
+        hint: The client’s name, or “Concept project”, “University coursework”…
+      - name: role
+        label: My role
+        widget: string
+        maxlength: 80
+        required: false
+        hint: e.g. “Brand identity and UI design”.
+      - name: tools
+        label: Tools used
+        widget: select
+        multiple: true
+        required: false
+        options:
+          - { label: Photoshop, value: photoshop }
+          - { label: Illustrator, value: illustrator }
+          - { label: InDesign, value: indesign }
+          - { label: Canva, value: canva }
+          - { label: Adobe XD, value: xd }
+          - { label: Figma, value: figma }
+          - { label: Miro, value: miro }
+          - { label: Lightroom, value: lightroom }
+      - name: cover
+        label: Cover image
+        widget: object
+        hint: The picture on the Work page and at the top of the project page.
+        fields:
+          - name: image
+            label: Image
+            widget: image
+            choose_url: false
+            hint: At least 1600 px wide. For a logo, a transparent PNG or an SVG.
+          - name: alt
+            label: Describe the image
+            widget: string
+            maxlength: 200
+            hint: What someone who can’t see the image should know, e.g. “The TON logo, a wordmark with a note rising from the O”.
+          - name: panel
+            label: Background colour
+            widget: select
+            default: none
+            required: false
+            options:
+              - { label: None — the image fills the card, value: none }
+              - { label: Linen, value: linen }
+              - { label: Paper, value: paper }
+              - { label: Blush, value: blush }
+              - { label: Clay, value: clay }
+              - { label: Espresso (dark), value: espresso }
+            hint: For logos and other artwork with a transparent background.
+          - name: fit
+            label: Fit
+            widget: select
+            default: cover
+            required: false
+            options:
+              - { label: Fill the card (photos and screenshots), value: cover }
+              - { label: Show the whole image (logos), value: contain }
+      - name: accent
+        label: Accent colour
+        widget: color
+        allowInput: true
+        required: false
+        pattern: ['^#[0-9A-Fa-f]{6}$', 'Use a six-digit hex colour, like #D29A84']
+      - name: featured
+        label: Feature on the home page
+        widget: boolean
+        default: false
+        required: false
+        hint: Featured projects appear under “Selected work” on the home page.
+      - name: hidden
+        label: Hide from site
+        widget: boolean
+        default: false
+        required: false
+        hint: Keep a project private while you work on it. Hidden projects have no page and appear nowhere on the site.
+      - name: seo
+        label: Search & sharing
+        widget: object
+        required: false
+        collapsed: true
+        hint: Optional. Leave empty to use the project name, summary and cover.
+        fields:
+          - { name: title, label: Page title, widget: string, maxlength: 60, required: false }
+          - { name: description, label: Search description, widget: text, maxlength: 160, required: false }
+          - name: image
+            label: Share image
+            widget: image
+            choose_url: false
+            required: false
+            hint: 1200 × 630 px, shown when the page is shared on social media.
+      - name: blocks
+        label: Story
+        label_singular: section
+        widget: list
+        min: 1
+        collapsed: auto
+        typeKey: type
+        hint: Tell the story in sections — the brief, the idea, the process, the result. Drag sections to reorder them.
+        types:
+          - name: text
+            label: Text
+            description: A heading and a few paragraphs.
+            summary: '{{heading}}'
+            fields:
+              - name: heading
+                label: Heading
+                widget: string
+                maxlength: 80
+                required: false
+                hint: e.g. “The brief”, “The idea”, “The result”.
+              - name: body
+                label: Text
+                widget: richtext
+                buttons: [bold, italic, link, bulleted-list, numbered-list, quote]
+                editor_components: []
+          - name: image
+            label: Image
+            description: One image, with an optional caption.
+            summary: '{{caption}}'
+            fields:
+              - { name: image, label: Image, widget: image, choose_url: false, hint: At least 2000 px wide for wide or full-width images. }
+              - { name: alt, label: Describe the image, widget: string, maxlength: 200 }
+              - { name: caption, label: Caption, widget: string, maxlength: 200, required: false }
+              - name: size
+                label: Width
+                widget: select
+                default: wide
+                required: false
+                options:
+                  - { label: Text width, value: inline }
+                  - { label: Wide, value: wide }
+                  - { label: Full width (edge to edge), value: full }
+          - name: gallery
+            label: Gallery
+            description: Two to twelve images in a grid — screens, details, sketches.
+            summary: '{{heading}}'
+            fields:
+              - { name: heading, label: Heading, widget: string, maxlength: 80, required: false }
+              - name: images
+                label: Images
+                label_singular: image
+                widget: list
+                min: 2
+                max: 12
+                collapsed: auto
+                summary: '{{caption}}'
+                thumbnail: image
+                fields:
+                  - { name: image, label: Image, widget: image, choose_url: false }
+                  - { name: alt, label: Describe the image, widget: string, maxlength: 200 }
+                  - { name: caption, label: Caption, widget: string, maxlength: 200, required: false }
+          - name: quote
+            label: Quote
+            description: A short, large quotation.
+            summary: '{{quote}}'
+            fields:
+              - { name: quote, label: Quote, widget: text, maxlength: 400 }
+              - { name: attribution, label: Who said it, widget: string, maxlength: 80, required: false }
+          - name: logo
+            label: Logo
+            description: Logo versions side by side, each on its own background.
+            summary: '{{heading}}'
+            fields:
+              - { name: heading, label: Heading, widget: string, maxlength: 80, required: false }
+              - { name: caption, label: Caption, widget: text, maxlength: 200, required: false }
+              - name: variants
+                label: Versions
+                label_singular: version
+                widget: list
+                min: 1
+                max: 6
+                collapsed: auto
+                summary: '{{label}}'
+                thumbnail: image
+                fields:
+                  - { name: image, label: Image, widget: image, choose_url: false, hint: A transparent PNG or an SVG. }
+                  - { name: alt, label: Describe the image, widget: string, maxlength: 200 }
+                  - { name: label, label: Label, widget: string, maxlength: 40, required: false, hint: 'e.g. “Primary”, “Monochrome”.' }
+                  - name: panel
+                    label: Background colour
+                    widget: select
+                    default: linen
+                    required: false
+                    options:
+                      - { label: None, value: none }
+                      - { label: Linen, value: linen }
+                      - { label: Paper, value: paper }
+                      - { label: Blush, value: blush }
+                      - { label: Clay, value: clay }
+                      - { label: Espresso (dark), value: espresso }
+          - name: palette
+            label: Colour palette
+            description: Brand colours as swatches visitors can copy.
+            summary: '{{heading}}'
+            fields:
+              - { name: heading, label: Heading, widget: string, maxlength: 80, required: false }
+              - name: swatches
+                label: Colours
+                label_singular: colour
+                widget: list
+                min: 1
+                max: 12
+                collapsed: auto
+                summary: '{{name}} {{hex}}'
+                fields:
+                  - { name: name, label: Name, widget: string, maxlength: 40 }
+                  - { name: hex, label: Colour, widget: color, allowInput: true, pattern: ['^#[0-9A-Fa-f]{6}$', 'Use a six-digit hex colour, like #D29A84'] }
+          - name: guidelines
+            label: Brand guidelines
+            description: The pages of a brand book, readable full screen.
+            summary: '{{heading}}'
+            fields:
+              - { name: heading, label: Heading, widget: string, maxlength: 80, required: false }
+              - name: pages
+                label: Pages
+                label_singular: page
+                widget: list
+                min: 1
+                max: 40
+                collapsed: auto
+                summary: '{{title}}'
+                thumbnail: image
+                fields:
+                  - { name: title, label: Page title, widget: string, maxlength: 80 }
+                  - name: image
+                    label: Page
+                    widget: image
+                    choose_url: false
+                    accept: image/svg+xml,image/png,image/jpeg,image/webp
+                    hint: Export each page as a PNG (about 2400 px wide) or an SVG with outlined text.
+          - name: prototype
+            label: Figma prototype
+            description: An interactive prototype visitors can try.
+            summary: '{{label}}'
+            fields:
+              - name: url
+                label: Figma link
+                widget: string
+                type: url
+                pattern: ['^https:\/\/(www\.)?figma\.com\/(proto|design|file|make|board)\/', 'Paste a figma.com prototype or design link']
+                hint: In Figma, click Share → Copy link (the prototype must be viewable by anyone with the link).
+              - { name: label, label: Button text, widget: string, maxlength: 40, required: false, hint: e.g. “Try the app”. }
+              - { name: poster, label: Preview image, widget: image, choose_url: false, required: false, hint: Shown until a visitor starts the prototype. Defaults to the cover. }
+          - name: before-after
+            label: Before & after
+            description: A slider that compares two images, e.g. a photo before and after editing.
+            summary: '{{caption}}'
+            fields:
+              - { name: before, label: Before, widget: image, choose_url: false }
+              - { name: after, label: After, widget: image, choose_url: false, hint: Use the same size and crop as the before image. }
+              - { name: alt, label: Describe the image, widget: string, maxlength: 200 }
+              - { name: caption, label: Caption, widget: string, maxlength: 200, required: false }
 
   - name: photos
-    label: Photography
-    folder: /src/content/photos
-    create: true
-    format: json
-    extension: json
+    label: Photos
+    label_singular: photo
+    description: Your photography. Add the edited photo — and the original, to show a before/after slider. Drag photos to change their order.
+    icon: photo_camera
+    folder: src/content/photos
+    path: '{{slug}}/index'
+    extension: yaml
+    format: yaml
+    media_folder: ''
+    public_folder: ''
     identifier_field: title
-    media_folder: /src/assets/photography
-    public_folder: ../../assets/photography
+    slug:
+      editable: [create]
+      pattern:
+        - '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+        - Use lowercase letters, numbers and dashes.
+    summary: "{{title}}{{hidden | ternary(' · hidden', '')}}{{featured | ternary(' · on the home page', '')}}"
+    thumbnail: image
+    reorder: true
+    duplicate: false
+    preview_path: /photography/
+    editor:
+      preview: false
     fields:
-      - { label: Title, name: title, widget: string }
-      - { label: After image, name: after, widget: image }
-      - { label: Before image, name: before, widget: image, required: false }
-      - { label: Order, name: order, widget: number, default: 0 }
+      - { name: title, label: Title, widget: string, maxlength: 80 }
+      - name: image
+        label: Photo
+        widget: image
+        choose_url: false
+        hint: The finished photo. Large uploads are resized to 3840 px and saved as WebP automatically.
+        media_libraries:
+          default:
+            config:
+              transformations:
+                raster_image: { format: webp, quality: 90, width: 3840, height: 3840 }
+      - name: alt
+        label: Describe the photo
+        widget: string
+        maxlength: 200
+        hint: What someone who can’t see it should know, e.g. “A red fox standing in a black-and-white woodland”.
+      - name: before
+        label: Original, before editing
+        widget: image
+        choose_url: false
+        required: false
+        hint: Optional. Adds a before/after slider — use the same size and crop as the photo.
+        media_libraries:
+          default:
+            config:
+              transformations:
+                raster_image: { format: webp, quality: 90, width: 3840, height: 3840 }
+      - { name: caption, label: Caption, widget: string, maxlength: 200, required: false }
+      - { name: location, label: Location, widget: string, maxlength: 80, required: false }
+      - name: featured
+        label: Feature on the home page
+        widget: boolean
+        default: false
+        required: false
+        hint: Featured photos appear in the photography strip on the home page.
+      - { name: hidden, label: Hide from site, widget: boolean, default: false, required: false }
 
-  - name: brands
-    label: Brand Guidelines
-    folder: /src/content/brands
-    create: true
-    format: json
-    extension: json
-    identifier_field: name
+singletons:
+  - name: home
+    label: Home page
+    icon: home
+    file: src/content/pages/home.yaml
+    preview_path: /
+    editor:
+      preview: false
     fields:
-      - { label: Name, name: name, widget: string }
-      - { label: Description, name: description, widget: text, required: false }
-      - { label: Logo (public path), name: logo, widget: string }
-      - label: Guideline pages
-        name: guidelines
-        widget: list
+      - { name: eyebrow, label: Small line above the headline, widget: string, maxlength: 80, required: false }
+      - name: tagline
+        label: Headline
+        widget: object
+        hint: Typed out on the home page, line by line.
         fields:
-          - { label: Name, name: name, widget: string }
-          - { label: Path (public), name: path, widget: string }
-
-  - name: pages
-    label: Page Copy
-    files:
-      - name: home
-        label: Home
-        file: src/content/pages/home.yaml
+          - { name: line1, label: First line, widget: string, maxlength: 80 }
+          - { name: line2, label: Second line, widget: string, maxlength: 80 }
+      - { name: lede, label: Introduction, widget: text, maxlength: 300, required: false }
+      - name: primaryCta
+        label: Main button
+        widget: object
         fields:
-          - { label: Heading, name: heading, widget: string }
-          - { label: Lead (HTML), name: lead, widget: text }
-          - { label: Button label, name: buttonLabel, widget: string }
-          - { label: Button link, name: buttonHref, widget: string }
+          - { name: label, label: Button text, widget: string, maxlength: 40 }
+          - { name: link, label: Link, widget: string, pattern: ['^(\/|https:\/\/|mailto:)', 'Start with / for a page on this site, or https://'] }
+      - name: secondaryCta
+        label: Second button
+        widget: object
+        required: false
+        collapsed: true
+        fields:
+          - { name: label, label: Button text, widget: string, maxlength: 40 }
+          - { name: link, label: Link, widget: string, pattern: ['^(\/|https:\/\/|mailto:)', 'Start with / for a page on this site, or https://'] }
+      - name: manifesto
+        label: Manifesto
+        widget: object
+        fields:
+          - { name: heading, label: Statement, widget: text, maxlength: 160 }
+          - { name: lead, label: Paragraph, widget: richtext, buttons: [bold, italic, link], editor_components: [] }
+      - name: services
+        label: “What I do” section
+        widget: object
+        collapsed: true
+        hint: The three disciplines come from the Work page settings.
+        fields:
+          - { name: heading, label: Heading, widget: string, maxlength: 120 }
+          - { name: intro, label: Introduction, widget: text, maxlength: 400, required: false }
+      - name: featured
+        label: “Selected work” section
+        widget: object
+        collapsed: true
+        hint: Choose the projects with “Feature on the home page”.
+        fields:
+          - { name: heading, label: Heading, widget: string, maxlength: 120 }
+          - { name: intro, label: Introduction, widget: text, maxlength: 400, required: false }
+      - name: photography
+        label: Photography section
+        widget: object
+        collapsed: true
+        hint: Choose the photos with “Feature on the home page”.
+        fields:
+          - { name: heading, label: Heading, widget: string, maxlength: 120 }
+          - { name: intro, label: Introduction, widget: text, maxlength: 400, required: false }
       - name: about
-        label: About
-        file: src/content/pages/about.md
+        label: About teaser
+        widget: object
+        collapsed: true
         fields:
-          - { label: Body, name: body, widget: markdown }
-      - name: contact
-        label: Contact
-        file: src/content/pages/contact.yaml
+          - { name: heading, label: Heading, widget: string, maxlength: 80 }
+          - { name: body, label: Text, widget: text, maxlength: 400 }
+          - { name: linkLabel, label: Link text, widget: string, maxlength: 40 }
+      - name: seo
+        label: Search & sharing
+        widget: object
+        collapsed: true
+        required: false
         fields:
-          - { label: Heading, name: heading, widget: string }
-          - label: Emails
-            name: emails
-            widget: list
-            fields:
-              - { label: Label, name: label, widget: string }
-              - { label: Address, name: address, widget: string, pattern: ['^[^@\s]+@[^@\s]+\.[^@\s]+$', 'Must be an email address'] }
-      - name: site
-        label: Site Settings
-        file: src/content/site/site.yaml
+          - { name: description, label: Search description, widget: text, maxlength: 160, required: false }
+
+  - name: work
+    label: Work page
+    icon: grid_view
+    file: src/content/pages/work.yaml
+    preview_path: /projects/
+    editor:
+      preview: false
+    fields:
+      - { name: eyebrow, label: Small line above the heading, widget: string, maxlength: 40, required: false }
+      - { name: heading, label: Heading, widget: string, maxlength: 80 }
+      - { name: intro, label: Introduction, widget: text, maxlength: 300, required: false }
+      - name: disciplines
+        label: Disciplines
+        widget: object
+        hint: Used for the Work filters, the discipline pages and the “What I do” section on the home page.
         fields:
-          - label: Navigation
-            name: nav
-            widget: list
+          - name: graphicDesign
+            label: Graphic design
+            widget: object
             fields:
-              - { label: Label, name: label, widget: string }
-              - { label: Href, name: href, widget: string }
-          - { label: Tagline, name: tagline, widget: string }
-          - label: Emails
-            name: emails
-            widget: list
+              - { name: title, label: Name, widget: string, maxlength: 40 }
+              - { name: description, label: Description, widget: text, maxlength: 200 }
+          - name: uiux
+            label: UI/UX
+            widget: object
             fields:
-              - { label: Label, name: label, widget: string }
-              - { label: Address, name: address, widget: string, pattern: ['^[^@\s]+@[^@\s]+\.[^@\s]+$', 'Must be an email address'] }
-          - { label: Default meta description, name: defaultDescription, widget: string }
-          - { label: Form endpoint URL, name: formEndpoint, widget: string, required: false, default: "" }
-          # Declared so saving Site Settings keeps it: the Web3Forms access_key lives here.
-          - { label: Form hidden fields, name: formHidden, widget: keyvalue, required: false }
+              - { name: title, label: Name, widget: string, maxlength: 40 }
+              - { name: description, label: Description, widget: text, maxlength: 200 }
+          - name: photography
+            label: Photography
+            widget: object
+            fields:
+              - { name: title, label: Name, widget: string, maxlength: 40 }
+              - { name: description, label: Description, widget: text, maxlength: 200 }
+      - name: seo
+        label: Search & sharing
+        widget: object
+        collapsed: true
+        required: false
+        fields:
+          - { name: description, label: Search description, widget: text, maxlength: 160, required: false }
+
+  - name: about
+    label: About page
+    icon: person
+    file: src/content/pages/about.md
+    preview_path: /about/
+    editor:
+      preview: false
+    fields:
+      - { name: eyebrow, label: Small line above the heading, widget: string, maxlength: 40, required: false }
+      - { name: title, label: Heading, widget: string, maxlength: 80 }
+      - { name: statement, label: Statement, widget: text, maxlength: 300, hint: 'One or two sentences, shown large.' }
+      - name: portrait
+        label: Portrait
+        widget: image
+        choose_url: false
+        media_folder: images
+        public_folder: images
+      - { name: portraitAlt, label: Describe the portrait, widget: string, maxlength: 200 }
+      - { name: closing, label: Closing line, widget: string, maxlength: 200, required: false }
+      - name: seo
+        label: Search & sharing
+        widget: object
+        collapsed: true
+        required: false
+        fields:
+          - { name: description, label: Search description, widget: text, maxlength: 160, required: false }
+      - name: body
+        label: Your story
+        widget: richtext
+        buttons: [bold, italic, link, bulleted-list, numbered-list, quote]
+        editor_components: []
+
+  - name: contact
+    label: Contact page
+    icon: mail
+    file: src/content/pages/contact.yaml
+    preview_path: /contact/
+    editor:
+      preview: false
+    fields:
+      - { name: eyebrow, label: Small line above the heading, widget: string, maxlength: 40, required: false }
+      - { name: heading, label: Heading, widget: string, maxlength: 80 }
+      - { name: lede, label: Introduction, widget: text, maxlength: 300, required: false, hint: The email addresses come from Site settings. }
+      - name: form
+        label: Contact form
+        widget: object
+        collapsed: true
+        fields:
+          - { name: title, label: Heading, widget: string, maxlength: 60 }
+          - { name: subtitle, label: Introduction, widget: text, maxlength: 200, required: false }
+          - { name: submitLabel, label: Button text, widget: string, maxlength: 30 }
+          - { name: successMessage, label: Thank-you message, widget: string, maxlength: 120 }
+      - name: fortune
+        label: Fortune peach
+        widget: object
+        collapsed: true
+        fields:
+          - { name: heading, label: Heading, widget: string, maxlength: 80 }
+          - { name: intro, label: Introduction, widget: text, maxlength: 200, required: false }
+          - name: fortunes
+            label: Fortunes
+            label_singular: fortune
+            widget: list
+            min: 3
+            field: { name: fortune, label: Fortune, widget: text, maxlength: 200 }
+      - name: seo
+        label: Search & sharing
+        widget: object
+        collapsed: true
+        required: false
+        fields:
+          - { name: description, label: Search description, widget: text, maxlength: 160, required: false }
+
+  - name: photographyPage
+    label: Photography page
+    icon: camera
+    file: src/content/pages/photography.yaml
+    preview_path: /photography/
+    editor:
+      preview: false
+    fields:
+      - { name: eyebrow, label: Small line above the heading, widget: string, maxlength: 40, required: false }
+      - { name: heading, label: Heading, widget: string, maxlength: 80 }
+      - { name: lede, label: Introduction, widget: text, maxlength: 300, required: false }
+      - name: seo
+        label: Search & sharing
+        widget: object
+        collapsed: true
+        required: false
+        fields:
+          - { name: description, label: Search description, widget: text, maxlength: 160, required: false }
+
+  - divider: true
+
+  - name: site
+    label: Site settings
+    icon: settings
+    file: src/content/site/site.yaml
+    editor:
+      preview: false
+    fields:
+      - { name: siteName, label: Site name, widget: string, maxlength: 40 }
+      - { name: ownerName, label: Your name, widget: string, maxlength: 40, required: false, hint: Used to introduce you. Leave empty to stay “peachless.” only. }
+      - { name: tagline, label: Tagline, widget: string, maxlength: 120, hint: Shown in the footer and the mobile menu. }
+      - name: nav
+        label: Menu
+        label_singular: menu item
+        widget: list
+        min: 1
+        max: 6
+        collapsed: auto
+        summary: '{{label}} → {{href}}'
+        fields:
+          - { name: label, label: Text, widget: string, maxlength: 30 }
+          - { name: href, label: Link, widget: string, pattern: ['^(\/|https:\/\/|mailto:)', 'Start with / for a page on this site, or https://'], hint: e.g. /projects/ }
+          - { name: cta, label: Show as a button, widget: boolean, default: false, required: false }
+      - name: emails
+        label: Email addresses
+        label_singular: email address
+        widget: list
+        min: 1
+        collapsed: auto
+        summary: '{{label}}: {{address}}'
+        hint: The first address also receives a link when the contact form can’t send.
+        fields:
+          - { name: label, label: What it’s for, widget: string, maxlength: 30, hint: 'e.g. “Projects”, “Personal”.' }
+          - name: address
+            label: Address
+            widget: string
+            type: email
+            pattern: ['^(?!\.)(?!.*\.\.)([A-Za-z0-9_''+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$', 'Enter a valid email address']
+      - name: socials
+        label: Social links
+        label_singular: social link
+        widget: list
+        required: false
+        collapsed: auto
+        summary: '{{label}}'
+        fields:
+          - { name: label, label: Name, widget: string, maxlength: 30, hint: 'e.g. Instagram, Behance, LinkedIn.' }
+          - { name: url, label: Link, widget: string, type: url, pattern: ['^https:\/\/', 'Start with https://'] }
+      - name: cta
+        label: Footer invitation
+        widget: object
+        collapsed: true
+        fields:
+          - { name: eyebrow, label: Small line above, widget: string, maxlength: 60, required: false }
+          - { name: heading, label: Heading, widget: string, maxlength: 80 }
+          - { name: buttonLabel, label: Button text, widget: string, maxlength: 40 }
+          - { name: buttonLink, label: Button link, widget: string, pattern: ['^(\/|https:\/\/|mailto:)', 'Start with / for a page on this site, or https://'] }
+      - name: seo
+        label: Search & sharing
+        widget: object
+        collapsed: true
+        fields:
+          - { name: description, label: Default search description, widget: text, maxlength: 160 }
+          - name: image
+            label: Default share image
+            widget: image
+            choose_url: false
+            required: false
+            media_folder: images
+            public_folder: images
+            hint: 1200 × 630 px.
+
+  - name: form
+    label: Contact form — developer
+    icon: lock
+    file: src/content/site/form.yaml
+    readonly: true
+    editor:
+      preview: false
+    fields:
+      - { name: endpoint, label: Form endpoint, widget: string, required: false }
+      - { name: hidden, label: Hidden fields, widget: keyvalue, required: false }

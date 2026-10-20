@@ -1,0 +1,53 @@
+title: TON
+summary: "Identity and booking app for music students: find a free practice room at the Faculty of Music in Brașov and book it in a few taps."
+disciplines:
+  - graphic-design
+  - uiux
+year: 2025
+tools:
+  - figma
+cover:
+  image: logo.png
+  alt: "The TON logo: a wordmark with a musical note rising from the O"
+  panel: paper
+  fit: contain
+featured: true
+hidden: false
+order: 2
+blocks:
+  - type: text
+    heading: The brief
+    body: TON helps students of the Faculty of Music at Transilvania University of Brașov find a free practice room — piano, guitar, violin and more — and reserve it straight from their phone.
+  - type: logo
+    heading: The mark
+    caption: The O doubles as a power symbol, crowned with a musical note.
+    variants:
+      - image: logo.png
+        alt: TON logo in its original colours
+        label: Original colours
+        panel: paper
+      - image: logo-peach.png
+        alt: TON logo redrawn in the peachless. palette
+        label: In the peachless. palette
+        panel: linen
+  - type: gallery
+    heading: The app
+    images:
+      - image: screen-landing.webp
+        alt: TON splash screen showing the logo
+        caption: Launch
+      - image: screen-home.webp
+        alt: Home screen recommending practice rooms with their live availability
+        caption: Recommended rooms
+      - image: screen-room.webp
+        alt: Booking a piano room by choosing a date and a time
+        caption: Book a room
+      - image: screen-sessions.webp
+        alt: List of upcoming practice sessions with dates and times
+        caption: Upcoming sessions
+  - type: text
+    heading: The flow
+    body: Students see recommended rooms and whether they are free, pick a date and a time, and find every upcoming session in one list. The prototype also covers booking a past room again, temporarily closed rooms and switching between English and Romanian.
+  - type: prototype
+    url: https://www.figma.com/proto/RBhMF1Cg9vQJDEg2iTsJoO/Project-TON-ui-ux?node-id=1-54&p=f&t=AZlMwB4kDwuTqA2X-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=1%3A3&show-proto-sidebar=1
+    label: Try the TON prototype

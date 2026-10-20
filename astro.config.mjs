@@ -1,6 +1,7 @@
 import { defineConfig, fontProviders } from 'astro/config';
 import vue from '@astrojs/vue';
 import sitemap from '@astrojs/sitemap';
+import { REDIRECTS } from './redirects.config.mjs';
 
 // Fonts come from pinned @fontsource-variable packages through the local
 // provider, so builds are deterministic and need no font CDN. Crimson Pro
@@ -10,13 +11,16 @@ const fsv = (pkg, file) => `./node_modules/@fontsource-variable/${pkg}/files/${f
 
 export default defineConfig({
   site: 'https://peachless.design',
-  integrations: [vue(), sitemap()],
-  redirects: {
-    '/home': '/',
-    '/uiux': '/projects/uiux',
-    '/projects/ui-ux': '/projects/uiux',
-    '/projects/graphic-design': '/projects/logo-design',
-  },
+  integrations: [
+    vue(),
+    // The logo-design alias page carries a canonical link to graphic-design;
+    // only the canonical URL belongs in the sitemap.
+    sitemap({ filter: (url) => !url.endsWith('/projects/logo-design/') }),
+  ],
+  redirects: REDIRECTS,
+  // A project folder named like a static page fails the build instead of
+  // silently shadowing (or being shadowed by) that page.
+  prerenderConflictBehavior: 'error',
   fonts: [
     {
       provider: fontProviders.local(),

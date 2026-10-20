@@ -1,0 +1,36 @@
+---
+import type { ImageMetadata } from 'astro';
+import { getImage } from 'astro:assets';
+import BeforeAfterSlider from '../islands/BeforeAfterSlider.vue';
+
+interface Props {
+  before: ImageMetadata;
+  after: ImageMetadata;
+  alt: string;
+  caption?: string;
+}
+const { before, after, alt, caption } = Astro.props;
+const [afterImg, beforeImg] = await Promise.all([
+  getImage({ src: after, width: Math.min(after.width, 2000), format: 'webp' }),
+  getImage({ src: before, width: Math.min(before.width, 2000), format: 'webp' }),
+]);
+---
+<figure class="before-after-block is-wide">
+  <div class="before-after-block__frame">
+    <BeforeAfterSlider client:visible afterSrc={afterImg.src} beforeSrc={beforeImg.src} alt={alt} />
+  </div>
+  {caption && <figcaption class="block-caption">{caption}</figcaption>}
+</figure>
+
+<style>
+  .before-after-block {
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .before-after-block__frame {
+    overflow: clip;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+  }
+</style>

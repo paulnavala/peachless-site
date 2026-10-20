@@ -1,0 +1,49 @@
+---
+interface Props {
+  quote: string;
+  attribution?: string;
+}
+const { quote, attribution } = Astro.props;
+---
+<figure class="quote-block">
+  <blockquote class="quote-block__quote t-quote">
+    <p>{quote}</p>
+  </blockquote>
+  {attribution && <figcaption class="quote-block__by">— {attribution}</figcaption>}
+</figure>
+
+<style>
+  .quote-block {
+    display: grid;
+    gap: var(--space-s);
+    justify-items: center;
+    padding-block: var(--space-l);
+    text-align: center;
+  }
+
+  .quote-block__quote {
+    margin: 0;
+    max-width: 24ch;
+    font-size: var(--text-display-2);
+    line-height: var(--leading-heading);
+    color: var(--color-heading);
+  }
+
+  .quote-block__quote p::before {
+    content: '“';
+    color: var(--color-accent-text);
+  }
+
+  .quote-block__quote p::after {
+    content: '”';
+    color: var(--color-accent-text);
+  }
+
+  .quote-block__by {
+    font-size: var(--text-small);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+</style>

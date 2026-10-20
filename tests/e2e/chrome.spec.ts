@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { site } from './content';
+import { test, expect } from './fixtures';
+import { publishedProjects, site } from './content';
 
 const settings = site();
 
@@ -90,9 +90,9 @@ test.describe('site chrome', () => {
       '/photography/',
       '/projects/',
       '/projects/uiux/',
+      '/projects/graphic-design/',
       '/projects/logo-design/',
-      '/projects/guidelines/',
-      '/projects/cern/',
+      ...publishedProjects().map((p) => `/projects/${p.id}/`),
     ]) {
       await page.goto(path);
       await expect(page.locator('h1'), path).toHaveCount(1);

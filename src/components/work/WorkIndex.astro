@@ -1,0 +1,103 @@
+---
+// The Work index and its pre-filtered discipline views share this template.
+import Base from '../../layouts/Base.astro';
+import CtaBand from '../CtaBand.astro';
+import ArrowLink from '../ui/ArrowLink.astro';
+import FilterChips, { type WorkFilter } from './FilterChips.astro';
+import WorkGrid from './WorkGrid.astro';
+import { getPublishedPhotos, getPublishedProjects, getSingleton } from '../../lib/content';
+import { DISCIPLINES, type Discipline } from '../../lib/content-schema';
+
+interface Props {
+  discipline?: Discipline;
+  /** For alias URLs (/projects/logo-design/): point search engines at the real page. */
+  canonical?: string;
+}
+const { discipline, canonical } = Astro.props;
+
+const work = (await getSingleton('work')).data;
+const all = await getPublishedProjects();
+const photos = await getPublishedPhotos();
+const projects = discipline ? all.filter((p) => p.data.disciplines.includes(discipline)) : all;
+
+const copy = {
+  'graphic-design': work.disciplines.graphicDesign,
+  uiux: work.disciplines.uiux,
+} as const;
+const current: WorkFilter = discipline ?? 'all';
+const counts = {
+  all: all.length,
+  ...Object.fromEntries(DISCIPLINES.map((d) => [d, all.filter((p) => p.data.disciplines.includes(d)).length])),
+  photography: photos.length,
+};
+const heading = discipline ? copy[discipline].title : work.heading;
+const lede = discipline ? copy[discipline].description : work.intro;
+const title = discipline ? copy[discipline].title : 'Work';
+const description = discipline ? copy[discipline].description : (work.seo.description ?? work.intro ?? heading);
+
+// "Keep exploring": the other views, so the page never dead-ends.
+const others = [
+  ...(discipline ? [{ href: '/projects/', label: 'All work' }] : []),
+  ...DISCIPLINES.filter((d) => d !== discipline).map((d) => ({ href: `/projects/${d}/`, label: copy[d].title })),
+  { href: '/photography/', label: work.disciplines.photography.title },
+];
+---
+<Base title={title} description={description} canonical={canonical}>
+  <section class="section section--tight work-header">
+    <div class="container">
+      {work.eyebrow && <p class="eyebrow eyebrow--rule">{work.eyebrow}</p>}
+      <h1 class="work-header__title">{heading}</h1>
+      {lede && <p class="lede">{lede}</p>}
+      <div class="work-header__filters">
+        <FilterChips
+          current={current}
+          counts={counts}
+          labels={{
+            graphicDesign: work.disciplines.graphicDesign.title,
+            uiux: work.disciplines.uiux.title,
+            photography: work.disciplines.photography.title,
+          }}
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="section work-list" aria-label={heading}>
+    <div class="container">
+      {
+        projects.length ? (
+          <WorkGrid projects={projects} priorityFirst />
+        ) : (
+          <p class="lede">New work is on its way.</p>
+        )
+      }
+    </div>
+  </section>
+
+  <CtaBand eyebrow="Keep exploring" heading="There’s more to see." tone="paper">
+    {others.map((o) => <ArrowLink href={o.href}>{o.label}</ArrowLink>)}
+  </CtaBand>
+</Base>
+
+<style>
+  .work-header {
+    padding-block-end: 0;
+  }
+
+  .work-header .container {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .work-header__title {
+    font-size: var(--text-h1);
+  }
+
+  .work-header__filters {
+    margin-block-start: var(--space-s);
+  }
+
+  .work-list {
+    padding-block-start: var(--space-l-2xl);
+  }
+</style>

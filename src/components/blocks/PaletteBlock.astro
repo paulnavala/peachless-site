@@ -1,0 +1,95 @@
+---
+import { readableTextToken } from '../../lib/color';
+
+interface Props {
+  heading?: string;
+  swatches: { name: string; hex: string }[];
+}
+const { heading, swatches } = Astro.props;
+---
+<section class="palette-block is-wide" data-palette>
+  {heading && <h2 class="block-heading">{heading}</h2>}
+  <ul class="palette-block__swatches" role="list">
+    {
+      swatches.map((s) => (
+        <li class="swatch" style={`--swatch: ${s.hex}; --swatch-text: ${readableTextToken(s.hex)}`}>
+          <span class="swatch__name">{s.name}</span>
+          <button class="swatch__copy" type="button" data-copy={s.hex.toUpperCase()}>
+            <span class="sr-only">Copy {s.name}, </span>
+            {s.hex.toUpperCase()}
+          </button>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="sr-only" role="status" data-copy-status></p>
+</section>
+
+<script>
+  // Copy a swatch's hex value; the status region tells screen readers it worked.
+  document.querySelectorAll<HTMLElement>('[data-palette]').forEach((block) => {
+    const status = block.querySelector<HTMLElement>('[data-copy-status]');
+    block.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) =>
+      btn.addEventListener('click', async () => {
+        const value = btn.dataset.copy ?? '';
+        try {
+          await navigator.clipboard.writeText(value);
+          btn.dataset.copied = '';
+          if (status) status.textContent = `Copied ${value}`;
+          setTimeout(() => delete btn.dataset.copied, 1600);
+        } catch {
+          if (status) status.textContent = `Couldn’t copy ${value}`;
+        }
+      })
+    );
+  });
+</script>
+
+<style>
+  .palette-block {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .palette-block__swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+    gap: var(--space-xs);
+    margin: 0;
+  }
+
+  .swatch {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-l);
+    min-height: 11rem;
+    padding: var(--space-s);
+    border-radius: var(--radius-lg);
+    background: var(--swatch);
+    color: var(--swatch-text);
+    box-shadow: inset 0 0 0 1px rgb(var(--espresso-rgb) / 0.1);
+  }
+
+  .swatch__name {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    font-weight: var(--weight-display);
+    line-height: 1.1;
+  }
+
+  .swatch__copy {
+    align-self: flex-start;
+    min-height: 2.25rem;
+    padding: 0.35em 0.8em;
+    border-radius: var(--radius-pill);
+    border: 1px solid currentColor;
+    font-size: var(--text-small);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+  }
+
+  .swatch__copy[data-copied]::after {
+    content: ' ✓';
+  }
+</style>

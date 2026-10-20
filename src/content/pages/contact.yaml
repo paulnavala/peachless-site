@@ -1,6 +1,26 @@
-heading: "Contact"
-emails:
-  - label: "personal"
-    address: "patricia@peachless.design"
-  - label: "contact"
-    address: "i.am.peachless@gmail.com"
+eyebrow: Contact
+heading: Let’s create together.
+lede: Have a project in mind? Let’s bring your vision to life — write to me directly or send a message below.
+form:
+  title: Send a message
+  subtitle: Tell me a little about your project and I’ll get back to you.
+  submitLabel: Send message
+  successMessage: Message sent — thank you!
+fortune:
+  heading: Need a little luck first?
+  intro: Tap the peach to crack open a fortune.
+  fortunes:
+    - The best time to plant a tree was 20 years ago. The second best time is now.
+    - Your limitation—it's only your imagination.
+    - Great things never come from comfort zones.
+    - Success doesn't just find you. You have to go out and get it.
+    - Dream bigger. Do bigger.
+    - Don't stop when you're tired. Stop when you're done.
+    - Wake up with determination. Go to bed with satisfaction.
+    - Little by little, a little becomes a lot.
+    - The secret of getting ahead is getting started.
+    - Believe you can and you're halfway there.
+    - Opportunities don't happen. You create them.
+    - Everything you've ever wanted is on the other side of fear.
+seo:
+  description: Get in touch with Patricia at peachless. — new projects, collaborations or just to say hello.

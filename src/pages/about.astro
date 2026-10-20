@@ -1,23 +1,26 @@
 ---
-import { getEntry, render } from 'astro:content';
+import { render } from 'astro:content';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import portrait from '../assets/about/portrait.jpg';
+import { getSingleton } from '../lib/content';
 
-const about = await getEntry('pages', 'about');
-const { Content } = await render(about!);
+const about = await getSingleton('about');
+const { Content } = await render(about);
+const { portrait, portraitAlt, statement, closing } = about.data;
 ---
 <Base title="About" description="About peachless. — a visual designer exploring the space between art and functionality.">
   <h1 class="sr-only">About peachless.</h1>
   <section class="section section--light">
     <div class="container about-grid">
       <div class="about-content">
+        <h3>{statement}</h3>
         <Content />
+        {closing && <p><em>{closing}</em></p>}
       </div>
       <div class="about-portrait">
         <Image
           src={portrait}
-          alt="Portrait of Patricia, the designer behind peachless."
+          alt={portraitAlt}
           widths={[480, 800, portrait.width]}
           sizes="(max-width: 900px) 92vw, 420px"
           loading="eager"

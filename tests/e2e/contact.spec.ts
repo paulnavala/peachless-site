@@ -1,18 +1,18 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { waitForIsland } from './utils';
+import { readYaml, site } from './content';
+
+const contact = readYaml('pages', 'contact.yaml');
+const emails = site().emails;
 
 test.describe('/contact', () => {
-  test('shows heading and both email addresses', async ({ page }) => {
+  test('shows the heading and every email address', async ({ page }) => {
     await page.goto('/contact');
-    await expect(page.locator('h2').first()).toContainText('Contact');
-    // Scoped to the page's email block: the footer also renders both mailto links,
-    // so the unscoped locator is a strict-mode violation.
-    await expect(
-      page.locator('.contact-emails a[href="mailto:patricia@peachless.design"]')
-    ).toBeVisible();
-    await expect(
-      page.locator('.contact-emails a[href="mailto:i.am.peachless@gmail.com"]')
-    ).toBeVisible();
+    await expect(page.locator('main')).toContainText(contact.heading);
+    // Scoped to the page's email block: the footer also renders the mailto links.
+    for (const e of emails) {
+      await expect(page.locator(`.contact-emails a[href="mailto:${e.address}"]`)).toBeVisible();
+    }
   });
 
   test('contact form validates required fields and submits to the configured endpoint', async ({ page }) => {
@@ -81,7 +81,7 @@ test.describe('/contact', () => {
     await form.locator('textarea[name="message"]').fill('Hello');
     await form.locator('button[type="submit"]').click();
     await expect(
-      page.locator('.form-status a[href="mailto:patricia@peachless.design"]')
+      page.locator(`.form-status a[href="mailto:${emails[0].address}"]`)
     ).toBeVisible();
   });
 });

@@ -4,11 +4,12 @@ interface Props {
   description: string;
   /** Absolute or root-relative share image; defaults to the site image. */
   image?: string;
+  canonical?: string;
   noindex?: boolean;
 }
-const { title = '', description, image, noindex = false } = Astro.props;
+const { title = '', description, image, canonical: canonicalPath, noindex = false } = Astro.props;
 const fullTitle = title ? `${title} — peachless.` : 'peachless.';
-const canonical = new URL(Astro.url.pathname, Astro.site);
+const canonical = new URL(canonicalPath ?? Astro.url.pathname, Astro.site);
 const ogImage = new URL(image ?? '/og/peachless.jpg', Astro.site);
 ---
 <title>{fullTitle}</title>

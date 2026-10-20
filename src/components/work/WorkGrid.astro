@@ -1,0 +1,63 @@
+---
+import type { Project } from '../../lib/content';
+import ProjectCard from './ProjectCard.astro';
+
+interface Props {
+  projects: Project[];
+  /** `featured`: the first project gets a wide card, the rest pair up. */
+  layout?: 'grid' | 'featured';
+  headingLevel?: 2 | 3;
+  /** Load the first card's image eagerly (it is above the fold). */
+  priorityFirst?: boolean;
+}
+const { projects, layout = 'grid', headingLevel = 2, priorityFirst = false } = Astro.props;
+---
+<ul class:list={['work-grid', `work-grid--${layout}`]} role="list">
+  {
+    projects.map((project, i) => {
+      const feature = layout === 'featured' && i === 0;
+      return (
+        <li class:list={{ 'work-grid__feature': feature }} data-reveal style={`--reveal-index: ${i % 2}`}>
+          <ProjectCard
+            project={project}
+            headingLevel={headingLevel}
+            feature={feature}
+            priority={priorityFirst && i === 0}
+            sizes={feature ? '(min-width: 75rem) 75rem, 100vw' : '(min-width: 64em) 38rem, (min-width: 36em) 50vw, 100vw'}
+          />
+        </li>
+      );
+    })
+  }
+</ul>
+
+<style>
+  .work-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl) var(--space-l);
+    margin: 0;
+  }
+
+  @media (min-width: 36em) {
+    .work-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .work-grid__feature {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (min-width: 64em) {
+    .work-grid {
+      gap: var(--space-2xl) var(--space-xl);
+    }
+
+    .work-grid--featured .work-grid__feature :global(.project-card) {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: end;
+      gap: var(--space-xl);
+    }
+  }
+</style>

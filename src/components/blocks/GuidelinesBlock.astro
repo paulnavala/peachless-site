@@ -1,0 +1,38 @@
+---
+import type { ImageMetadata } from 'astro';
+import GuidelineViewer from '../islands/GuidelineViewer.vue';
+import '../../styles/components/guideline-viewer.css';
+
+interface Props {
+  heading?: string;
+  pages: { title: string; image: ImageMetadata }[];
+  projectTitle: string;
+}
+const { heading, pages, projectTitle } = Astro.props;
+// Vue islands get plain strings and numbers (image metadata objects for SVGs
+// are not serialisable). Pages are always shown as <img>, never inlined: every
+// brand-book SVG uses the same .cls-N class names.
+const viewerPages = pages.map((p) => ({ title: p.title, src: p.image.src, width: p.image.width, height: p.image.height }));
+---
+<section class="guidelines-block is-wide">
+  <div class="guidelines-block__head">
+    <h2 class="block-heading">{heading ?? 'Brand guidelines'}</h2>
+    <p class="block-caption">{pages.length} pages — open any page to read the book full screen.</p>
+  </div>
+  <GuidelineViewer client:visible pages={viewerPages} label={`${projectTitle} brand book`} />
+</section>
+
+<style>
+  .guidelines-block {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .guidelines-block__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2xs) var(--space-m);
+  }
+</style>

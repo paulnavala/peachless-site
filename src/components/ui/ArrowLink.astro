@@ -1,0 +1,24 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  href: string;
+  direction?: 'forward' | 'back' | 'external';
+  class?: string;
+  [attr: string]: unknown;
+}
+const { href, direction = 'forward', class: className, ...rest } = Astro.props;
+const external = direction === 'external';
+---
+<a
+  class:list={['link-arrow', className]}
+  href={href}
+  {...(external ? { target: '_blank', rel: 'noopener' } : {})}
+  {...rest}
+>
+  {direction === 'back' && <Icon name="arrow-left" />}
+  <span><slot /></span>
+  {direction === 'forward' && <Icon name="arrow-right" />}
+  {external && <Icon name="arrow-up-right" />}
+  {external && <span class="sr-only">(opens in a new tab)</span>}
+</a>

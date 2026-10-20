@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('/about', () => {
   test('renders the manifesto and portrait', async ({ page }) => {

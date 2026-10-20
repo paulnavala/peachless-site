@@ -1,0 +1,46 @@
+---
+import type { ImageMetadata } from 'astro';
+import Media from '../ui/Media.astro';
+
+interface Props {
+  image: ImageMetadata;
+  alt: string;
+  caption?: string;
+  size: 'inline' | 'wide' | 'full';
+}
+const { image, alt, caption, size } = Astro.props;
+const sizes = size === 'full' ? '100vw' : size === 'wide' ? '(min-width: 75rem) 75rem, 100vw' : '(min-width: 46rem) 46rem, 100vw';
+---
+<figure class:list={['image-block', `image-block--${size}`, { 'is-wide': size === 'wide', 'is-full': size === 'full' }]}>
+  <div class="image-block__frame">
+    <Media image={image} alt={alt} sizes={sizes} />
+  </div>
+  {caption && <figcaption class="block-caption">{caption}</figcaption>}
+</figure>
+
+<style>
+  .image-block {
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .image-block__frame {
+    overflow: clip;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .image-block--full .image-block__frame {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .image-block__frame :global(.media) {
+    height: auto;
+  }
+
+  .image-block--full .block-caption {
+    padding-inline: var(--gutter);
+  }
+</style>

@@ -1,0 +1,49 @@
+---
+import { renderMarkdown } from '../../lib/markdown';
+
+interface Props {
+  heading?: string;
+  body: string;
+}
+const { heading, body } = Astro.props;
+---
+<section class="text-block is-wide">
+  {heading && <h2 class="block-heading text-block__heading">{heading}</h2>}
+  <div class="text-block__body flow" set:html={renderMarkdown(body)} />
+</section>
+
+<style>
+  .text-block {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .text-block__body {
+    font-size: var(--step-1);
+    line-height: 1.6;
+    max-width: 38em;
+    color: var(--color-text);
+  }
+
+  .text-block__body :global(p) {
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 64em) {
+    .text-block {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+      gap: var(--space-xl);
+    }
+
+    .text-block__heading {
+      position: sticky;
+      top: calc(var(--header-h-condensed) + var(--space-l));
+      align-self: start;
+    }
+
+    /* A text block without a heading still sits in the reading column. */
+    .text-block__body:only-child {
+      grid-column: 2;
+    }
+  }
+</style>

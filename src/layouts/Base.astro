@@ -11,13 +11,15 @@ interface Props {
   description: string;
   /** Absolute or root-relative share image; defaults to the site image. */
   ogImage?: string;
+  /** Override the canonical URL (alias pages point at the real one). */
+  canonical?: string;
   noindex?: boolean;
   /** Which Crimson Pro face the page's h1 uses; preloaded to avoid a swap. */
   preloadSerif?: 'normal' | 'italic';
   /** Show the "Let's create together" invitation in the footer. */
   footerCta?: boolean;
 }
-const { title, description, ogImage, noindex = false, preloadSerif = 'normal', footerCta = true } = Astro.props;
+const { title, description, ogImage, canonical, noindex = false, preloadSerif = 'normal', footerCta = true } = Astro.props;
 
 // Prefetch same-site pages on hover/press (Chromium); the admin is excluded.
 const speculationRules = JSON.stringify({
@@ -41,7 +43,7 @@ const speculationRules = JSON.stringify({
     <link rel="icon" href="/icons/icon-32.png" type="image/png" sizes="32x32" />
     <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-    <Seo title={title} description={description} image={ogImage} noindex={noindex} />
+    <Seo title={title} description={description} image={ogImage} canonical={canonical} noindex={noindex} />
     <Font cssVariable="--font-inter" preload={[{ style: 'normal' }]} />
     <Font cssVariable="--font-crimson-pro" preload={[{ style: preloadSerif }]} />
     <link rel="sitemap" href="/sitemap-index.xml" />

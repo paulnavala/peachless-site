@@ -1,0 +1,80 @@
+---
+import type { ImageMetadata } from 'astro';
+import Media from '../ui/Media.astro';
+
+interface Props {
+  heading?: string;
+  images: { image: ImageMetadata; alt: string; caption?: string }[];
+}
+const { heading, images } = Astro.props;
+// Phone screens sit four (or three) across; landscape screenshots pair up.
+const portrait = images.every((i) => i.image.height > i.image.width);
+const columns = portrait ? Math.min(images.length, 4) : 2;
+const sizes = portrait ? '(min-width: 64em) 18rem, 45vw' : '(min-width: 64em) 37rem, 100vw';
+---
+<section class="gallery-block is-wide">
+  {heading && <h2 class="block-heading">{heading}</h2>}
+  <ul class:list={['gallery-block__grid', { 'is-portrait': portrait }]} role="list" style={`--columns: ${columns}`}>
+    {
+      images.map((item, i) => (
+        <li class:list={{ 'is-lead': !portrait && images.length % 2 === 1 && i === 0 }}>
+          <figure class="gallery-block__item">
+            <div class="gallery-block__frame">
+              <Media image={item.image} alt={item.alt} sizes={sizes} />
+            </div>
+            {item.caption && <figcaption class="block-caption">{item.caption}</figcaption>}
+          </figure>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .gallery-block {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .gallery-block__grid {
+    display: grid;
+    gap: var(--space-l) var(--space-m);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+  }
+
+  .gallery-block__grid:not(.is-portrait) {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-block__item {
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .gallery-block__frame {
+    overflow: clip;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+  }
+
+  .is-portrait .gallery-block__frame {
+    border-radius: var(--radius-xl);
+  }
+
+  .gallery-block__frame :global(.media) {
+    height: auto;
+  }
+
+  @media (min-width: 48em) {
+    .gallery-block__grid,
+    .gallery-block__grid:not(.is-portrait) {
+      grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+    }
+
+    .is-lead {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

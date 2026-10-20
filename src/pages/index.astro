@@ -1,17 +1,18 @@
 ---
-import { getEntry } from 'astro:content';
 import { Image } from 'astro:assets';
+import { getSingleton } from '../lib/content';
+import { renderInline } from '../lib/markdown';
 import Base from '../layouts/Base.astro';
 import Tagline from '../components/islands/Tagline.vue';
 import TwinGallery from '../components/static/TwinGallery.astro';
 import hero from '../assets/home/hero.png';
 import '../styles/components/tagline.css';
 
-const home = await getEntry('pages', 'home');
-const site = await getEntry('site', 'site');
-const { heading, lead, buttonLabel, buttonHref } = home!.data;
+const home = (await getSingleton('home')).data;
+const site = (await getSingleton('site')).data;
+const { heading, lead } = home.manifesto;
 ---
-<Base description={site!.data.defaultDescription} preloadSerif="italic">
+<Base description={home.seo.description ?? site.seo.description} preloadSerif="italic">
   <h1 class="sr-only">peachless. — visual design portfolio</h1>
   <section class="section section--bright home-hero">
     <div class="container">
@@ -34,8 +35,8 @@ const { heading, lead, buttonLabel, buttonHref } = home!.data;
       </div>
       <div class="home-intro__text">
         <h3>{heading}</h3>
-        <p set:html={lead} />
-        <a class="btn-primary" href={buttonHref}>{buttonLabel}</a>
+        <p set:html={renderInline(lead)} />
+        <a class="btn-primary" href={home.primaryCta.link}>{home.primaryCta.label}</a>
       </div>
     </div>
   </section>

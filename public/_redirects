@@ -1,8 +1,9 @@
+# Generated from redirects.config.mjs — keep in sync (tests/unit/redirects.spec.ts).
 /home / 301
 /home/ / 301
-/uiux /projects/uiux 301
-/uiux/ /projects/uiux 301
-/projects/ui-ux /projects/uiux 301
-/projects/ui-ux/ /projects/uiux 301
-/projects/graphic-design /projects/logo-design 301
-/projects/graphic-design/ /projects/logo-design 301
+/uiux /projects/uiux/ 301
+/uiux/ /projects/uiux/ 301
+/projects/ui-ux /projects/uiux/ 301
+/projects/ui-ux/ /projects/uiux/ 301
+/projects/guidelines /projects/peachless/ 301
+/projects/guidelines/ /projects/peachless/ 301

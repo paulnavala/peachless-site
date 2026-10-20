@@ -1,17 +1,19 @@
 ---
-import { getEntry } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import { getSingleton } from '../lib/content';
 import ContactForm from '../components/islands/ContactForm.vue';
 import FortunePeach from '../components/static/FortunePeach.astro';
 import '../styles/components/contact-form.css';
 import '../styles/components/contact-form-core.css';
 
-const pageData = await getEntry('pages', 'contact');
-const site = await getEntry('site', 'site');
-const { heading, emails } = pageData!.data;
-const { formEndpoint, formHidden } = site!.data;
+const contact = (await getSingleton('contact')).data;
+const { emails } = (await getSingleton('site')).data;
+const form = (await getSingleton('form')).data;
+const { heading } = contact;
+const formEndpoint = form.endpoint;
+const formHidden = form.hidden;
 ---
-<Base title="Contact" description="Get in touch with peachless. — patricia@peachless.design">
+<Base title="Contact" description={contact.seo.description ?? contact.lede ?? heading}>
   <h1 class="sr-only">Contact</h1>
   <section class="section section--light contact-section">
     <div class="container contact-intro">

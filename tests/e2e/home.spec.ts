@@ -1,4 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
+import { readYaml } from './content';
+
+const home = readYaml('pages', 'home.yaml');
 
 test.describe('home page', () => {
   test('animated tagline types the brand line', async ({ page }) => {
@@ -8,13 +11,13 @@ test.describe('home page', () => {
     });
   });
 
-  test('intro section shows live copy and Learn more button', async ({ page }) => {
+  test('intro section shows the manifesto and the main call to action', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.home-intro h3')).toContainText('something you feel');
+    await expect(page.locator('.home-intro h3')).toContainText(home.manifesto.heading);
     await expect(page.locator('.home-intro img')).toBeVisible();
     const btn = page.locator('.home-intro a.btn-primary');
-    await expect(btn).toHaveText('Learn more');
-    await expect(btn).toHaveAttribute('href', '/about');
+    await expect(btn).toHaveText(home.primaryCta.label);
+    await expect(btn).toHaveAttribute('href', home.primaryCta.link);
   });
 
   test('twin gallery has three panels with rewired links', async ({ page }) => {

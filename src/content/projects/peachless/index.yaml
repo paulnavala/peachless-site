@@ -1,0 +1,78 @@
+title: peachless. brand identity
+summary: "My own brand: a peach that hides the letters of its name, a warm colour system and a ten-page brand book."
+disciplines:
+  - graphic-design
+tools: []
+cover:
+  image: lockup.png
+  alt: "The peachless. logo: a stylised peach above the wordmark"
+  panel: paper
+  fit: contain
+featured: true
+hidden: false
+order: 1
+blocks:
+  - type: text
+    heading: The idea
+    body: |-
+      The **peachless.** logo is built around the stylised shape of a peach, symbolising naturalness, freshness and simplicity. The design is minimalist, modern and elegant, with clean lines and balanced geometric elements.
+
+      At the core of the logo, the peach subtly incorporates the letters that form the word **peachless.**, turning the symbol into a unique and memorable brand identity — a clever integration that gives the logo both visual appeal and conceptual depth.
+  - type: logo
+    heading: The mark
+    caption: The full logo combines the wordmark and symbol for a complete, balanced brand mark. The wordmark is set in a classic serif — the period adds a confident, modern touch.
+    variants:
+      - image: lockup.png
+        alt: "Full logotype: the peach symbol above the peachless. wordmark"
+        label: Full logotype
+        panel: paper
+      - image: symbol.svg
+        alt: The peach symbol on its own
+        label: Symbol
+        panel: linen
+  - type: text
+    heading: Colour system
+    body: The colour palette is a curated harmony of soft neutrals and bold contrast — warm peachy tones, cream and muted black that reflect a friendly yet refined tone. Rooted in minimalism, these colours are the foundation for every touchpoint of the brand.
+  - type: palette
+    swatches:
+      - name: Peach
+        hex: "#E1A892"
+      - name: Blush
+        hex: "#F1CFBE"
+      - name: Cream
+        hex: "#FEF0E4"
+      - name: Porcelain
+        hex: "#FDF6F0"
+      - name: Ink
+        hex: "#030303"
+  - type: image
+    image: brand-book-overview.svg
+    alt: All ten pages of the peachless. brand book laid out side by side
+    caption: The brand book at a glance.
+    size: wide
+  - type: guidelines
+    heading: Read the brand book
+    pages:
+      - title: Cover
+        image: guide-01-cover.svg
+      - title: Index
+        image: guide-02-index.svg
+      - title: About
+        image: guide-03-about.svg
+      - title: Logo concept
+        image: guide-04-logo-concept.svg
+      - title: Full logotype
+        image: guide-05-full-logotype.svg
+      - title: Construction
+        image: guide-06-construction.svg
+      - title: Clear space & usage
+        image: guide-07-clear-space.svg
+      - title: Typography
+        image: guide-08-typography.svg
+      - title: Colour system
+        image: guide-09-colour-system.svg
+      - title: Thank you
+        image: guide-10-thank-you.svg
+  - type: quote
+    quote: Every pixel tells a story. Let the world know yours.
+    attribution: peachless.
