@@ -115,13 +115,16 @@ export default defineComponent({
             setTimeout(checkScroll, 650);
         };
 
-        const closeDetail = (fromPopstate = false) => {
+        const closeDetail = ({ fromPopstate = false, restoreFocus = false } = {}) => {
             if (releaseFocusTrap) {
                 releaseFocusTrap();
                 releaseFocusTrap = null;
             }
+            const closedIndex = selectedLogo.value;
             selectedLogo.value = null;
-            focusedIndex.value = -1;
+            // Keep the roving tab stop on the logo that was open: -1 left every
+            // card at tabindex=-1, so the grid was unreachable by keyboard.
+            if (closedIndex !== null) focusedIndex.value = closedIndex;
             setTimeout(checkScroll, 650);
             
             // Restore body scroll and show site header
@@ -141,8 +144,14 @@ export default defineComponent({
                 historyStatePushed.value = false;
             }
             
-            // Blur any focused element to remove highlight
-            if (document.activeElement instanceof HTMLElement) {
+            // Keyboard closes return focus to the card that opened the panel; other
+            // closes blur instead, since :focus swaps the card to its preview image.
+            const card = restoreFocus && closedIndex !== null
+                ? mainContentRef.value?.querySelectorAll<HTMLElement>('.logo-placeholder')[closedIndex]
+                : null;
+            if (card) {
+                card.focus();
+            } else if (document.activeElement instanceof HTMLElement) {
                 document.activeElement.blur();
             }
         };
@@ -152,7 +161,7 @@ export default defineComponent({
             if (selectedLogo.value !== null && historyStatePushed.value) {
                 e.preventDefault();
                 historyStatePushed.value = false;
-                closeDetail(true);
+                closeDetail({ fromPopstate: true });
             }
         };
 
@@ -166,18 +175,25 @@ export default defineComponent({
             if (selectedLogo.value !== null) {
                 if (e.key === 'Escape') {
                     e.preventDefault();
-                    closeDetail();
+                    closeDetail({ restoreFocus: true });
                 }
                 return;
             }
 
-            // Document-level listener: only handle grid navigation when focus
-            // is inside this component, otherwise arrow/Home/End keys are
-            // preventDefault()ed page-wide and keyboard users can't scroll
-            // the page at all.
-            if (!sectionRef.value?.contains(document.activeElement)) return;
+            // Document-level listener: only handle grid navigation while a logo
+            // card has focus. Anywhere else (the page, the scroll cue) arrow/Home/End
+            // must keep their default behavior. Cards handle Enter/Space themselves.
+            const active = document.activeElement;
+            if (
+                !(active instanceof HTMLElement) ||
+                !active.classList.contains('logo-placeholder') ||
+                !sectionRef.value?.contains(active)
+            ) return;
 
-            const cols = window.innerWidth >= 1024 ? 4 : window.innerWidth >= 768 ? 3 : 2;
+            // Read the live column count: the CSS has breakpoints a width-only
+            // guess gets wrong (e.g. 3 columns in ≤900px landscape).
+            const grid = mainContentRef.value?.querySelector('.logo-grid');
+            const cols = grid ? getComputedStyle(grid).gridTemplateColumns.split(' ').length : 2;
             let newIndex = focusedIndex.value;
 
             switch (e.key) {
@@ -197,11 +213,6 @@ export default defineComponent({
                     e.preventDefault();
                     newIndex = Math.max(focusedIndex.value - cols, 0);
                     break;
-                case 'Enter':
-                case ' ':
-                    e.preventDefault();
-                    handleLogoClick(focusedIndex.value);
-                    return;
                 case 'Home':
                     e.preventDefault();
                     newIndex = 0;
@@ -356,16 +367,16 @@ export default defineComponent({
                                 })
                             )
                         ]),
-                        // Scroll Indicator
+                        // Scroll Indicator: pointer-only. It hides itself after the first
+                        // scroll (dropping focus if it had any), and arrow keys already
+                        // scroll the grid to the focused card.
                         h('div', {
                             class: ['scroll-indicator', { 'is-visible': showCue }],
                             onClick: (e: MouseEvent) => {
                                 e.stopPropagation();
                                 scrollDown();
                             },
-                            role: 'button',
-                            'aria-label': 'Scroll down to see more logos',
-                            tabindex: showCue ? 0 : -1
+                            'aria-hidden': 'true'
                         }, [
                             h('span', { class: 'scroll-arrow', 'aria-hidden': 'true' }, '↓')
                         ])
@@ -384,7 +395,8 @@ export default defineComponent({
                                 ref: closeButtonRef,
                                 onClick: (e: MouseEvent) => {
                                     e.stopPropagation();
-                                    closeDetail();
+                                    // detail is 0 when activated from the keyboard
+                                    closeDetail({ restoreFocus: e.detail === 0 });
                                 },
                                 'aria-label': 'Close details panel'
                             }, '×'),
