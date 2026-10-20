@@ -94,7 +94,10 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - Reorder writes `order`. Images are stored next to their entry (`path: '{{slug}}/index'`, `media_folder: ''`).
   - A project's address (`slug`) can only be set at creation.
   - Photo uploads are converted to WebP ≤3840px.
-- **Sign-in:** "Sign in with GitHub" needs the `sveltia-cms-auth` Cloudflare Worker. Until `backend.base_url` is set in `config.yml`, only token sign-in works (setup steps in `docs/EDITING.md`).
+- **Sign-in:** "Sign In with GitHub" goes through the `sveltia-cms-auth` Cloudflare Worker at `https://auth.peachless.design` (`backend.base_url`, which a unit test requires; without it the popup shows Netlify's "Not Found").
+  - It was deployed with wrangler from sveltia/sveltia-cms-auth @ `95733a9811`, after the source was reviewed.
+  - Var `ALLOWED_DOMAINS=peachless.design`. Secrets `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` (GitHub OAuth app "peachless. admin") are set in the Cloudflare dashboard.
+  - Access, secret rotation and redeploy steps are in `docs/EDITING.md`.
 - **Contact form:** the Web3Forms endpoint and `access_key` (public by design) live in `src/content/site/form.yaml`, read-only in the CMS ("Contact form — developer"). The `form` schema fails the build if a Web3Forms endpoint has no `access_key`.
 - **Hidden vs. featured:** `hidden: true` removes a project or photo from every list, the sitemap and next-links, and gives it no page. `featured` puts it on the home page; if none are featured, the first three are shown.
 - **Migration:** `scripts/migrate-v2.mjs` (with `migrate-v2.data.mjs` and `migrate-v2-assets/`) built the v2 content from the v1 content. It is a dry run by default (`--write`, `--prune`). It is history after launch; don't run it against v2 content.

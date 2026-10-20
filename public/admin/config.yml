@@ -9,9 +9,10 @@ backend:
   name: github
   repo: paulnavala/peachless-site
   branch: main
-  # "Sign in with GitHub": the sveltia-cms-auth worker on Cloudflare (setup in
-  # docs/EDITING.md). Until it is deployed, "Sign In with Token" still works.
-  # base_url: https://sveltia-cms-auth.<subdomain>.workers.dev
+  # "Sign In with GitHub" goes through our sveltia-cms-auth worker on
+  # Cloudflare (see docs/EDITING.md). Without base_url the CMS would fall back
+  # to Netlify's sign-in service, which answers "Not Found".
+  base_url: https://auth.peachless.design
   auth_scope: public_repo
   # Each saved change gets a Cloudflare Pages preview; the editor links to it.
   preview_context: Cloudflare Pages

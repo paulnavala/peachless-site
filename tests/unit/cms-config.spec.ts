@@ -209,7 +209,8 @@ describe('admin config ↔ content schema', () => {
     expect(config.publish_mode?.type).toBe('preview');
     expect(config.backend?.preview_context).toBe('Cloudflare Pages');
     expect(config.backend?.branch).toBe('main');
-    if (config.backend?.base_url) expect(config.backend.base_url).toMatch(/^https:\/\//);
+    // Sign-in helper; without it "Sign In with GitHub" opens Netlify's "Not Found".
+    expect(config.backend?.base_url).toBe('https://auth.peachless.design');
   });
 
   it('the checker itself catches drift', () => {
