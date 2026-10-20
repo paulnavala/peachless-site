@@ -27,6 +27,8 @@ export default defineComponent({
         formAction: { type: String, default: '' },
         formMethod: { type: String, default: 'POST' },
         hiddenFields: { type: Object as PropType<Record<string, string>>, default: () => ({}) },
+        // Offered (as a mailto link) when sending fails or the form isn't configured
+        contactEmail: { type: String, default: '' },
     },
     setup(props) {
         const formRef = ref<HTMLFormElement | null>(null);
@@ -56,6 +58,25 @@ export default defineComponent({
                 status.value = 'error';
             } finally {
                 isSubmitting.value = false;
+            }
+        }
+
+        function statusMessage(state: 'sending' | 'success' | 'error' | 'unconfigured') {
+            const email = props.contactEmail;
+            const emailLink = () => h('a', { href: `mailto:${email}` }, email);
+            switch (state) {
+                case 'sending':
+                    return 'Sending…';
+                case 'success':
+                    return 'Message sent — thank you!';
+                case 'error':
+                    return email
+                        ? ['Something went wrong. Please email ', emailLink(), ' instead.']
+                        : 'Something went wrong. Please try again later.';
+                case 'unconfigured':
+                    return email
+                        ? ['The form isn’t configured yet — please email ', emailLink(), '.']
+                        : 'The form isn’t configured yet.';
             }
         }
 
@@ -133,12 +154,7 @@ export default defineComponent({
                         h(
                             'p',
                             { class: ['form-status', `form-status--${status.value}`], role: 'status' },
-                            {
-                                sending: 'Sending…',
-                                success: 'Message sent — thank you!',
-                                error: 'Something went wrong. Please email patricia@peachless.design instead.',
-                                unconfigured: 'The form isn’t configured yet — please email patricia@peachless.design.',
-                            }[status.value]
+                            statusMessage(status.value)
                         ),
                 ]
             );

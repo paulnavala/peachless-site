@@ -29,7 +29,12 @@ const { formEndpoint, formHidden } = site!.data;
 
   <section class="section section--light contact-section">
     <div class="container">
-      <ContactForm client:visible formAction={formEndpoint} hiddenFields={formHidden} />
+      <ContactForm
+        client:visible
+        formAction={formEndpoint}
+        hiddenFields={formHidden}
+        contactEmail={emails?.[0]?.address}
+      />
     </div>
   </section>
 
@@ -90,5 +95,14 @@ const { formEndpoint, formHidden } = site!.data;
     font-weight: 700;
     font-size: 1.08rem;
     padding: 10px 28px;
+  }
+  /* The fortune title is an h2 so the page keeps a single h1 (the sr-only
+     "Contact"), but fortune-peach.css styles `.flw-title h1` — restate that
+     rule so the title renders exactly as the h1 did. */
+  .contact-section :global(.flw-title h2) {
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+    font-size: clamp(28px, 4vw, 48px);
+    margin: 0 0 40px;
+    color: var(--clay);
   }
 </style>

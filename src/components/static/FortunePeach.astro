@@ -6,7 +6,9 @@ import '../../styles/components/fortune-peach.css';
   <div class="flw-stage flw-stage--unopened" id="flwStage">
     <!-- Title Section -->
     <div class="flw-title">
-      <h1>Fortune Peach</h1>
+      <!-- h2: the page owns the h1. fortune-peach.css styles `.flw-title h1`, so the
+           page restates that rule for this h2 (see contact.astro). -->
+      <h2>Fortune Peach</h2>
     </div>
 
     <!-- ========================================================================
@@ -154,7 +156,7 @@ import '../../styles/components/fortune-peach.css';
           <h2>Your Fortune</h2>
 
           <!-- Fortune Quote (populated by JavaScript) -->
-          <p class="flw-quote" id="flwQuote" aria-live="polite">"…"</p>
+          <p class="flw-quote" id="flwQuote">"…"</p>
 
           <!-- Decorative Divider -->
           <div class="flw-divider" aria-hidden="true"></div>
@@ -172,6 +174,10 @@ import '../../styles/components/fortune-peach.css';
       <button class="flw-btn" id="flwAgain">Try Again</button>
     </div>
   </div>
+
+  <!-- Announces the result. The card is filled while it is still hidden, and live
+       regions inside hidden content aren't read, so this one stays outside it. -->
+  <p class="sr-only" role="status" id="flwAnnounce"></p>
 </div>
 
 <script>
@@ -187,6 +193,9 @@ import '../../styles/components/fortune-peach.css';
     quoteEl: HTMLElement;
     ballsEl: HTMLElement;
     particles: HTMLElement;
+    logoBtn: HTMLElement;
+    again: HTMLElement;
+    announcer: HTMLElement;
   };
   
   const FORTUNES: string[] = [
@@ -269,9 +278,12 @@ import '../../styles/components/fortune-peach.css';
     ballsEl.appendChild(ball);
   }
   
-  function crack(elements: Elements) {
-    const { stage, cracking, revealed, quoteEl, ballsEl, particles } = elements;
+  // viaKeyboard: the control that was used is about to be hidden, so move focus on
+  // to the next one instead of letting it fall to <body>.
+  function crack(elements: Elements, viaKeyboard: boolean) {
+    const { stage, cracking, revealed, quoteEl, ballsEl, particles, again, announcer } = elements;
     const pick = randomFortune();
+    announcer.textContent = '';
     setStage('cracking', stage, cracking, revealed);
     spawnParticles(particles);
     let delay: number = TIMING.crackingDuration;
@@ -281,12 +293,16 @@ import '../../styles/components/fortune-peach.css';
       ballsEl.innerHTML = '';
       pick.lucky.forEach((n, idx) => createLuckyBall(n, idx, ballsEl));
       setStage('revealed', stage, cracking, revealed);
+      announcer.textContent = `Your fortune: ${pick.quote} Your lucky numbers: ${pick.lucky.join(', ')}.`;
+      if (viaKeyboard) again.focus();
     }, delay);
   }
-  
-  function reset(elements: Elements) {
-    const { stage, cracking, revealed } = elements;
+
+  function reset(elements: Elements, viaKeyboard: boolean) {
+    const { stage, cracking, revealed, logoBtn, announcer } = elements;
     setStage('unopened', stage, cracking, revealed);
+    announcer.textContent = '';
+    if (viaKeyboard) logoBtn.focus();
   }
   
   function initFortuneLogoWidget(): void {
@@ -302,17 +318,24 @@ import '../../styles/components/fortune-peach.css';
     const quoteEl = document.getElementById('flwQuote') as HTMLElement | null;
     const ballsEl = document.getElementById('flwBalls') as HTMLElement | null;
     const particles = document.getElementById('flwParticles') as HTMLElement | null;
-    if (!logoBtn || !tapBtn || !cracking || !revealed || !again || !quoteEl || !ballsEl || !particles)
+    const announcer = document.getElementById('flwAnnounce') as HTMLElement | null;
+    if (
+      !logoBtn || !tapBtn || !cracking || !revealed || !again || !quoteEl || !ballsEl ||
+      !particles || !announcer
+    )
       return;
-  
-    const elements = { stage, cracking, revealed, quoteEl, ballsEl, particles } as Elements;
-    logoBtn.addEventListener('click', () => crack(elements));
-    tapBtn.addEventListener('click', () => crack(elements));
-    again.addEventListener('click', () => reset(elements));
+
+    const elements = {
+      stage, cracking, revealed, quoteEl, ballsEl, particles, logoBtn, again, announcer,
+    } as Elements;
+    // A click's detail is 0 when Enter/Space on the button produced it
+    logoBtn.addEventListener('click', (e) => crack(elements, e.detail === 0));
+    tapBtn.addEventListener('click', (e) => crack(elements, e.detail === 0));
+    again.addEventListener('click', (e) => reset(elements, e.detail === 0));
     logoBtn.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        crack(elements);
+        crack(elements, true);
       }
     });
     // Defect fix vs the old entry: the listener used to sit on `stage`, but once the
@@ -321,7 +344,8 @@ import '../../styles/components/fortune-peach.css';
     document.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Escape' && stage.classList.contains('flw-stage--revealed')) {
         e.preventDefault();
-        reset(elements);
+        // Only reclaim focus if it was on the card (Try Again), not elsewhere on the page
+        reset(elements, stage.contains(document.activeElement));
       }
     });
   }
