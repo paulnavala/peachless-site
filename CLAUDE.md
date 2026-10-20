@@ -13,7 +13,7 @@ Production site for **https://peachless.design** — a portfolio site built as a
 - `npm run preview` — serve `dist/` at `http://localhost:4321`
 - `npm run check` — `astro check` (expect 0 errors; a few known unused-var hints)
 - `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, happy-dom)
-- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, 34 tests, `retries: 1`). **Run `npm run build` first** — the Playwright webServer runs `npm run preview` against whatever is in `dist/`, so a stale build silently tests old code.
+- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, 40 tests, `retries: 1`). **Run `npm run build` first** — the Playwright webServer runs `npm run preview` against whatever is in `dist/`, so a stale build silently tests old code.
 
 ## Architecture
 

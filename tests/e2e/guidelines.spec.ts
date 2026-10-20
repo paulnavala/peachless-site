@@ -38,3 +38,30 @@ test.describe('/projects/guidelines', () => {
     await expect(viewer.locator('.close-viewer-button')).toBeFocused();
   });
 });
+
+test.describe('/projects/guidelines on a touch screen', () => {
+  test.use({ hasTouch: true });
+
+  test('a one-finger drag pans a zoomed page', async ({ page }) => {
+    await page.goto('/projects/guidelines');
+    await waitForIsland(page, '.guideline-page');
+    await page.locator('.brand-card').first().click();
+    const viewer = page.locator('.svg-viewer-modal');
+    await viewer.getByRole('button', { name: 'Zoom In (+)' }).click();
+    const wrapper = viewer.locator('.svg-wrapper');
+    await expect(wrapper).toHaveAttribute('style', /scale\(1\.5\)/);
+    // Drag one finger 100px right and 40px down
+    await viewer.locator('.svg-display').evaluate((el) => {
+      const touch = (x: number, y: number) =>
+        new Touch({ identifier: 1, target: el, clientX: x, clientY: y, screenX: x, screenY: y });
+      const fire = (type: string, changed: Touch, active: Touch[]) =>
+        el.dispatchEvent(
+          new TouchEvent(type, { touches: active, changedTouches: [changed], bubbles: true, cancelable: true })
+        );
+      fire('touchstart', touch(300, 300), [touch(300, 300)]);
+      fire('touchmove', touch(400, 340), [touch(400, 340)]);
+      fire('touchend', touch(400, 340), []);
+    });
+    await expect(wrapper).toHaveAttribute('style', /translate\(100px, 40px\) scale\(1\.5\)/);
+  });
+});

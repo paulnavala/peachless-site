@@ -37,6 +37,23 @@ test.describe('site chrome', () => {
     await expect(page.locator('.site-header__burger')).toBeFocused();
   });
 
+  test('every page has exactly one h1', async ({ page }) => {
+    for (const path of [
+      '/',
+      '/about',
+      '/contact',
+      '/photography',
+      '/projects',
+      '/projects/uiux',
+      '/projects/logo-design',
+      '/projects/guidelines',
+      '/projects/cern',
+    ]) {
+      await page.goto(path);
+      await expect(page.locator('h1'), path).toHaveCount(1);
+    }
+  });
+
   test('404 page renders for unknown URLs', async ({ page }) => {
     const response = await page.goto('/does-not-exist');
     expect(response?.status()).toBe(404);

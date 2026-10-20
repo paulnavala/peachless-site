@@ -172,7 +172,7 @@ export default defineComponent({
             }
         };
 
-        const doPan = (e: MouseEvent) => {
+        const doPan = (e: { clientX: number; clientY: number }) => {
             if (isDragging.value) {
                 const deltaX = e.clientX - lastMouseX.value;
                 const deltaY = e.clientY - lastMouseY.value;
@@ -187,13 +187,25 @@ export default defineComponent({
             isDragging.value = false;
         };
 
-        // Touch Handlers (Swipe)
+        // Touch Handlers: swipe between pages, or drag one finger to pan when zoomed
         const handleTouchStart = (e: TouchEvent) => {
             touchStartX.value = e.changedTouches[0].screenX;
+            if (zoomLevel.value > 1 && e.touches.length === 1) {
+                isDragging.value = true;
+                lastMouseX.value = e.touches[0].clientX;
+                lastMouseY.value = e.touches[0].clientY;
+            }
+        };
+
+        const handleTouchMove = (e: TouchEvent) => {
+            if (!isDragging.value || e.touches.length !== 1) return;
+            e.preventDefault(); // pan the page, not the viewport
+            doPan(e.touches[0]);
         };
 
         const handleTouchEnd = (e: TouchEvent) => {
             touchEndX.value = e.changedTouches[0].screenX;
+            endPan();
             handleSwipe();
         };
 
@@ -340,9 +352,14 @@ export default defineComponent({
                         // SVG Display Area
                         h('div', {
                             class: ['svg-display', { 'is-zoomed': zoomLevel.value > 1 }],
+                            // While zoomed, touch drags pan the page instead of the browser
+                            // scrolling or zooming the viewport
+                            style: { touchAction: zoomLevel.value > 1 ? 'none' : undefined },
                             onMousedown: startPan,
                             onTouchstart: handleTouchStart,
-                            onTouchend: handleTouchEnd
+                            onTouchmove: handleTouchMove,
+                            onTouchend: handleTouchEnd,
+                            onTouchcancel: endPan
                         }, [
                             isLoading.value ? h('div', { class: 'loading-spinner' }) : null,
 

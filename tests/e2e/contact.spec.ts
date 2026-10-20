@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForIsland } from './utils';
 
 test.describe('/contact', () => {
   test('shows heading and both email addresses', async ({ page }) => {
@@ -47,5 +48,40 @@ test.describe('/contact', () => {
     await expect(page.locator('#flwQuote')).not.toBeEmpty();
     await page.keyboard.press('Escape');
     await expect(page.locator('#flwStage')).toHaveClass(/flw-stage--unopened/);
+  });
+
+  test('fortune peach announces the result and keeps keyboard focus in the widget', async ({ page }) => {
+    await page.goto('/contact');
+    await page.locator('#flwLogoBtn').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#flwStage')).toHaveClass(/flw-stage--revealed/, { timeout: 8_000 });
+    await expect(page.locator('#flwAnnounce')).toContainText('Your fortune:');
+    await expect(page.locator('#flwAgain')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#flwStage')).toHaveClass(/flw-stage--unopened/);
+    await expect(page.locator('#flwLogoBtn')).toBeFocused();
+    await expect(page.locator('#flwAnnounce')).toBeEmpty();
+  });
+
+  test('a failed submission offers the contact email instead', async ({ page }) => {
+    // Stubbed failure: never let a test POST to the real endpoint.
+    await page.route('https://api.web3forms.com/**', (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: false }),
+      })
+    );
+    await page.goto('/contact');
+    const form = page.locator('.contact-form-container form');
+    await form.scrollIntoViewIfNeeded();
+    await waitForIsland(page, '.contact-form-container');
+    await form.locator('input[name="name"]').fill('Test');
+    await form.locator('input[name="email"]').fill('test@example.com');
+    await form.locator('textarea[name="message"]').fill('Hello');
+    await form.locator('button[type="submit"]').click();
+    await expect(
+      page.locator('.form-status a[href="mailto:patricia@peachless.design"]')
+    ).toBeVisible();
   });
 });
