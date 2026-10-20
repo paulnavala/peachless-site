@@ -37,6 +37,43 @@ test.describe('/photography', () => {
     await page.unrouteAll({ behavior: 'ignoreErrors' });
   });
 
+  test('arrow navigation swaps photos without a square placeholder box', async ({ page }) => {
+    await page.goto('/photography');
+    await waitForIsland(page, '.pg-masonry');
+    await page.locator('.pg-masonry__item').first().click();
+    await expect(page.locator('.pg-modal__close')).toBeFocused();
+    // Record every aspect ratio the lightbox box takes on (none of the photos is square)
+    await page.locator('.pg-modal__view').evaluate((el) => {
+      const seen: string[] = [];
+      (window as any).__ratios = seen;
+      new MutationObserver(() => seen.push(el.style.getPropertyValue('--m-ratio').trim())).observe(el, {
+        attributes: true,
+        attributeFilter: ['style'],
+      });
+    });
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('.pg-modal .image-compare img').first()).toHaveAttribute('src', /cave_angel/);
+    expect(await page.evaluate(() => (window as any).__ratios)).not.toContain('1');
+  });
+
+  test('a photo slower than the preload timeout still gets its real aspect ratio', async ({ page }) => {
+    await page.goto('/photography');
+    await waitForIsland(page, '.pg-masonry');
+    await page.locator('.pg-masonry__item').first().click();
+    await expect(page.locator('.pg-modal__close')).toBeFocused();
+    // Hold the next photo's images past the 400ms preload timeout
+    await page.route('**/_astro/**', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await route.continue().catch(() => {});
+    });
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('.pg-modal .image-compare img').first()).toHaveAttribute('src', /cave_angel/);
+    await expect
+      .poll(() => page.locator('.pg-modal__view').evaluate((el) => el.style.getPropertyValue('--m-ratio').trim()))
+      .not.toBe('1');
+    await page.unrouteAll({ behavior: 'ignoreErrors' });
+  });
+
   test('before/after handle keeps its position when the viewport resizes', async ({ page }) => {
     await page.goto('/photography');
     await waitForIsland(page, '.pg-masonry');

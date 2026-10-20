@@ -37,6 +37,10 @@ export default defineComponent({
     // overtaken (rapid arrow keys, a second tile click, a close) drops its
     // now-stale result instead of applying it.
     let openSeq = 0;
+    // Photo an in-flight openModal is preloading. Arrow navigation keeps the
+    // current photo up until the next is ready, so rapid presses step on from
+    // here rather than from the photo still showing.
+    let pendingIndex: number | null = null;
 
 
 
@@ -83,8 +87,8 @@ export default defineComponent({
       const item = normalizedItems.value[index];
       if (!item) return;
       const seq = ++openSeq;
+      pendingIndex = index;
 
-      modalRatio.value = 1;
       // Arrow navigation re-runs openModal while the modal is already open; at
       // that point activeElement is inside the modal, so only capture the
       // restore target on the closed→open transition.
@@ -92,51 +96,52 @@ export default defineComponent({
         lastScrollY = window.scrollY;
         lastFocusEl.value = (document.activeElement as HTMLElement) || null;
       }
-      activeIndex.value = index;
 
       // Preload main image before opening modal to prevent empty flash
       const urls = [item.modalAfter, item.modalBefore].filter(Boolean) as string[];
-      let ratio = 1;
-
-      if (urls.length > 0) {
-        try {
-          const dims: Array<{ w: number; h: number }> = [];
-          
-          // Preload images with a timeout fallback
-          await Promise.race([
-            Promise.all(
-              urls.map((src) => {
-                return new Promise<void>((resolve) => {
-                  const img = new Image();
-                  (img as any).decoding = 'async';
-                  img.onload = () => {
-                    if (img.naturalWidth && img.naturalHeight) {
-                      dims.push({ w: img.naturalWidth, h: img.naturalHeight });
-                    }
-                    resolve();
-                  };
-                  img.onerror = () => resolve();
-                  img.src = src;
-                });
-              })
-            ),
-            // Timeout after 400ms - don't make user wait too long
-            new Promise<void>((resolve) => setTimeout(resolve, 400))
-          ]);
-
-          if (dims.length > 0) {
-            const small = dims.reduce((a, b) => (a.w * a.h <= b.w * b.h ? a : b));
-            ratio = small.w / small.h;
-          }
-        } catch {
-          // Continue with default ratio
-        }
-      }
+      const dims: Array<{ w: number; h: number }> = [];
+      const ratioFromDims = () => {
+        if (!dims.length) return null;
+        const small = dims.reduce((a, b) => (a.w * a.h <= b.w * b.h ? a : b));
+        return small.w / small.h;
+      };
+      const loaded = Promise.all(
+        urls.map(
+          (src) =>
+            new Promise<void>((resolve) => {
+              const img = new Image();
+              (img as any).decoding = 'async';
+              img.onload = () => {
+                if (img.naturalWidth && img.naturalHeight) {
+                  dims.push({ w: img.naturalWidth, h: img.naturalHeight });
+                }
+                resolve();
+              };
+              img.onerror = () => resolve();
+              img.src = src;
+            })
+        )
+      );
+      // Timeout after 400ms - don't make user wait too long
+      await Promise.race([loaded, new Promise<void>((resolve) => setTimeout(resolve, 400))]);
 
       // Superseded while preloading: applying this now would show the wrong
       // photo's ratio, or reopen a modal the user just closed.
       if (seq !== openSeq) return;
-      modalRatio.value = ratio;
+      pendingIndex = null;
+      // Swap the photo and the box's shape in one render. Switching the photo
+      // before the preload (with a placeholder ratio of 1) flashed it in a
+      // square box on every arrow press.
+      activeIndex.value = index;
+      modalRatio.value = ratioFromDims() ?? 1;
+      if (!dims.length) {
+        // Timed out before the size was known: reshape the box once the
+        // images arrive, if this photo is still the one showing.
+        void loaded.then(() => {
+          const ratio = ratioFromDims();
+          if (ratio && seq === openSeq) modalRatio.value = ratio;
+        });
+      }
 
       // Open modal after preloading (or timeout)
       modalOpen.value = true;
@@ -177,6 +182,7 @@ export default defineComponent({
 
     function closeModal() {
       openSeq++; // cancel any openModal still preloading
+      pendingIndex = null;
       if (!modalOpen.value) return;
 
       if (releaseFocusTrap) {
@@ -257,17 +263,15 @@ export default defineComponent({
     });
 
     function nextPhoto() {
-      if (activeIndex.value < 0) return;
-      activeIndex.value = (activeIndex.value + 1) % normalizedItems.value.length;
-      modalRatio.value = 1;
-      openModal(activeIndex.value);
+      const from = pendingIndex ?? activeIndex.value;
+      if (from < 0) return;
+      openModal((from + 1) % normalizedItems.value.length);
     }
 
     function prevPhoto() {
-      if (activeIndex.value < 0) return;
-      activeIndex.value = (activeIndex.value - 1 + normalizedItems.value.length) % normalizedItems.value.length;
-      modalRatio.value = 1;
-      openModal(activeIndex.value);
+      const from = pendingIndex ?? activeIndex.value;
+      if (from < 0) return;
+      openModal((from - 1 + normalizedItems.value.length) % normalizedItems.value.length);
     }
 
     function onKeydown(e: KeyboardEvent) {
