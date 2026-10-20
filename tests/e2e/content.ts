@@ -58,3 +58,15 @@ export const publishedProjects = () => published(allProjects());
 export const hiddenProjects = () => allProjects().filter((p) => p.data.hidden);
 export const nextOf = (id: string) => nextProject(publishedProjects(), id);
 export const publishedPhotos = () => published(entries<PhotoData>('photos'));
+
+/** Every public page, for checks that sweep the whole site. */
+export const allRoutes = () => [
+  '/',
+  '/projects/',
+  '/projects/graphic-design/',
+  '/projects/uiux/',
+  ...publishedProjects().map((p) => `/projects/${p.id}/`),
+  '/photography/',
+  '/about/',
+  '/contact/',
+];

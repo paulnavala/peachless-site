@@ -82,6 +82,10 @@ const path = Astro.url.pathname;
     box-shadow: 0 1px 0 var(--color-border);
     -webkit-backdrop-filter: saturate(1.4) blur(14px);
     backdrop-filter: saturate(1.4) blur(14px);
+    /* Keep the header's footprint constant. If condensing pulled the page up,
+       scroll anchoring would pull the scroll position back past the sentinel
+       and the header would flicker between states every frame. */
+    margin-block-end: calc(var(--header-h) - var(--header-h-condensed));
   }
 
   .site-header__inner {
@@ -147,7 +151,8 @@ const path = Astro.url.pathname;
     .site-header {
       transition:
         background-color var(--duration-base) var(--ease-standard),
-        box-shadow var(--duration-base) var(--ease-standard);
+        box-shadow var(--duration-base) var(--ease-standard),
+        margin-block-end var(--duration-base) var(--ease-standard);
     }
 
     .site-header__inner {

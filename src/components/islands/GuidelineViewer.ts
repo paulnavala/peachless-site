@@ -208,7 +208,8 @@ export default defineComponent({
       return h('div', { class: 'gv' }, [
         h(
           'ol',
-          { class: 'gv-thumbs', role: 'list' },
+          // The list names the set, so each link's name is just what it shows ("01 Cover").
+          { class: 'gv-thumbs', role: 'list', 'aria-label': `${props.label} pages` },
           props.pages.map((p, i) =>
             h(
               'li',
@@ -218,7 +219,6 @@ export default defineComponent({
                 {
                   class: 'gv-thumb',
                   href: p.src,
-                  'aria-label': `${props.label}, page ${i + 1}: ${p.title}`,
                   onClick: (e: MouseEvent) => open(i, e),
                 },
                 [

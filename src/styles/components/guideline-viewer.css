@@ -220,7 +220,12 @@
 
 .gv-menu__item[aria-current] {
   background: rgb(var(--linen-rgb) / 0.12);
-  color: var(--clay);
+  box-shadow: inset 3px 0 0 var(--clay);
+  font-weight: var(--weight-semibold);
+}
+
+.gv-menu__item[aria-current] .gv-menu__num {
+  color: inherit;
 }
 
 .gv-menu__num {
