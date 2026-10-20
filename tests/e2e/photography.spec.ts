@@ -20,6 +20,8 @@ test.describe('/photography', () => {
     await expect(page.locator('.pg-modal .image-compare')).toBeVisible(); // first photo has a before image
     await page.keyboard.press('Escape');
     await expect(page.locator('.pg-modal')).toBeHidden();
+    // Focus returns to the tile that opened it (Safari doesn't focus buttons on click).
+    await expect(page.locator('.pg-masonry__media').first()).toBeFocused();
   });
 
   test('Escape right after an arrow key does not reopen the lightbox', async ({ page }) => {

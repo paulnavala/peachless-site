@@ -72,13 +72,18 @@ test.describe('site chrome', () => {
     await expect(toggle).toBeFocused();
   });
 
-  test('mobile menu keeps Tab inside the dialog', async ({ page }) => {
+  test('mobile menu keeps Tab inside the dialog', async ({ page, browserName }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     await page.locator('[data-menu-open]').click();
     for (let i = 0; i < 12; i++) {
       await page.keyboard.press('Tab');
-      expect(await page.evaluate(() => !!document.activeElement?.closest('#mobile-menu'))).toBe(true);
+      const where = await page.evaluate(() =>
+        document.activeElement === document.body ? 'body' : document.activeElement?.closest('#mobile-menu') ? 'menu' : 'behind'
+      );
+      // Never the page behind. Safari's Tab skips links by default, so focus
+      // passes through the browser's own UI (<body>) on its way round.
+      expect(where === 'menu' || (browserName === 'webkit' && where === 'body'), where).toBe(true);
     }
   });
 

@@ -74,6 +74,7 @@ test.describe('brand guidelines viewer', () => {
     await page.mouse.up();
     await expect(image).toHaveAttribute('style', /translate\(100px, 40px\) scale\(1\.5\)/);
     await page.keyboard.press('0');
-    await expect(image).toHaveAttribute('style', /translate\(0px, 0px\) scale\(1\)/);
+    // Firefox writes translate(0px, 0px) as translate(0px).
+    await expect(image).toHaveAttribute('style', /translate\(0px(, 0px)?\) scale\(1\)/);
   });
 });

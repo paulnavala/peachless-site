@@ -86,14 +86,16 @@ export default defineComponent({
       colCount.value = Number.isFinite(n) && n > 0 ? n : 1;
     };
 
-    async function openModal(index: number) {
+    // `trigger`: the tile that opened the lightbox, which gets focus back on
+    // close. Not simply activeElement: Safari doesn't focus buttons on click.
+    async function openModal(index: number, trigger?: HTMLElement) {
       const item = items.value[index];
       if (!item) return;
       const seq = ++openSeq;
       pendingIndex = index;
       if (!modalOpen.value) {
         lastScrollY = window.scrollY;
-        lastFocusEl = document.activeElement as HTMLElement | null;
+        lastFocusEl = trigger ?? (document.activeElement as HTMLElement | null);
       }
 
       // Preload before swapping, so the photo and its box change together.
@@ -309,7 +311,7 @@ export default defineComponent({
                   onFocus: () => prefetch(index),
                   onKeydown: (e: KeyboardEvent) => onTileKeydown(e, index),
                   // click (not mouseup): only the primary button opens the lightbox
-                  onClick: () => openModal(index),
+                  onClick: (e: MouseEvent) => openModal(index, e.currentTarget as HTMLElement),
                 },
                 [
                   h('picture', [

@@ -99,7 +99,10 @@ export default defineComponent({
       const dialog = dialogRef.value;
       if (!dialog) return; // not hydrated yet: the link opens the page image instead
       e?.preventDefault();
-      opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      // Focus goes back to the thumbnail that opened the viewer. Not simply
+      // activeElement: Safari doesn't focus links on click.
+      const trigger = e?.currentTarget ?? document.activeElement;
+      opener = trigger instanceof HTMLElement ? trigger : null;
       go(i);
       isOpen.value = true;
       dialog.showModal();
