@@ -16,14 +16,11 @@ const projects = await getPublishedProjects();
 const items = await Promise.all(
   entries.map(async (e) => {
     // `width` pins the fallback <img src> to a sensible variant; without it
-    // Astro would point at the full-size original.
-    const grid = await getImage({
-      src: e.data.image,
-      width: 1200,
-      widths: [480, 800, 1200],
-      sizes: '(min-width: 64em) 24rem, (min-width: 36em) 45vw, 92vw',
-      format: 'webp',
-    });
+    // Astro would point at the full-size original. AVIF first (photos are
+    // roughly half the bytes), WebP for older browsers.
+    const gridOptions = { src: e.data.image, width: 1200, widths: [480, 640, 800, 1200] };
+    const grid = await getImage({ ...gridOptions, format: 'webp' });
+    const gridAvif = await getImage({ ...gridOptions, format: 'avif' });
     const after = await getImage({ src: e.data.image, width: Math.min(e.data.image.width, 2400), format: 'webp' });
     const before = e.data.before
       ? await getImage({ src: e.data.before, width: Math.min(e.data.before.width, 2400), format: 'webp' })
@@ -36,6 +33,7 @@ const items = await Promise.all(
       location: e.data.location,
       src: grid.src,
       srcset: grid.srcSet.attribute,
+      avifSrcset: gridAvif.srcSet.attribute,
       width: Number(grid.attributes.width),
       height: Number(grid.attributes.height),
       modalAfter: after.src,

@@ -11,7 +11,8 @@ export interface PhotoItem {
   caption?: string;
   location?: string;
   src: string; // grid image
-  srcset: string;
+  srcset: string; // WebP
+  avifSrcset?: string;
   width: number; // grid image's intrinsic size, so tiles never reflow
   height: number;
   modalAfter: string; // large image for the lightbox
@@ -20,6 +21,8 @@ export interface PhotoItem {
 
 // A caption line plus the gap below a photo, as a fraction of the column width.
 const CAPTION_ALLOWANCE = 0.18;
+// Matches the grid columns in photo-gallery.css.
+const GRID_SIZES = '(min-width: 64em) 24rem, (min-width: 36em) 45vw, 92vw';
 
 const icon = (d: string) =>
   h(
@@ -293,7 +296,7 @@ export default defineComponent({
       const grid = h(
         'ul',
         { ref: listRef, class: 'pg-masonry', role: 'list' },
-        ordered.value.map(({ item, index, columnStart }, position) =>
+        ordered.value.map(({ item, index, columnStart }) =>
           h('li', { key: item.id, class: ['pg-masonry__item', columnStart && 'pg-masonry__item--column-start'] }, [
             h('figure', { class: 'pg-masonry__figure' }, [
               h(
@@ -309,17 +312,23 @@ export default defineComponent({
                   onClick: () => openModal(index),
                 },
                 [
-                  h('img', {
-                    class: 'pg-masonry__img',
-                    src: item.src,
-                    srcset: item.srcset,
-                    sizes: '(min-width: 64em) 24rem, (min-width: 36em) 45vw, 92vw',
-                    width: item.width,
-                    height: item.height,
-                    alt: item.alt,
-                    decoding: 'async',
-                    loading: position < 6 ? 'eager' : 'lazy',
-                  }),
+                  h('picture', [
+                    item.avifSrcset && h('source', { type: 'image/avif', srcset: item.avifSrcset, sizes: GRID_SIZES }),
+                    h('img', {
+                      class: 'pg-masonry__img',
+                      src: item.src,
+                      srcset: item.srcset,
+                      sizes: GRID_SIZES,
+                      width: item.width,
+                      height: item.height,
+                      alt: item.alt,
+                      decoding: 'async',
+                      // The first photo is the page's largest paint; the rest
+                      // load as they near the viewport.
+                      loading: index === 0 ? 'eager' : 'lazy',
+                      fetchpriority: index === 0 ? 'high' : undefined,
+                    }),
+                  ]),
                   item.modalBefore && h('span', { class: 'pg-masonry__tag' }, 'Before / After'),
                   h('span', { class: 'sr-only' }, ' — open full screen'),
                 ]

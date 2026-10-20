@@ -49,6 +49,10 @@
   cursor: zoom-in;
 }
 
+.pg-masonry__media picture {
+  display: block;
+}
+
 .pg-masonry__img {
   width: 100%;
   height: auto;
