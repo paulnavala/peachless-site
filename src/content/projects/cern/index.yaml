@@ -3,6 +3,7 @@ summary: A bilingual website concept for CERN — homepage, news and mission pag
 disciplines:
   - uiux
 year: 2025
+client: Concept project
 tools:
   - figma
 cover:
@@ -15,8 +16,11 @@ hidden: false
 order: 4
 blocks:
   - type: text
-    heading: The brief
+    heading: The idea
     body: "A concept for CERN’s website: a homepage that surfaces the latest news, experiments and research, a news section filtered by topic, and an about page built around CERN’s mission — in English and French."
+  - type: text
+    heading: The approach
+    body: I designed with CERN’s own words — its mission statement and a real news story — so every layout had to carry real-length text rather than placeholder copy. The homepage leads with one story and four ways in — latest news, experiments, research and Explore CERN. Every page has a French twin, and the homepage has a phone layout too.
   - type: gallery
     heading: The pages
     images:

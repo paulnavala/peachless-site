@@ -2,6 +2,7 @@ title: The World of Biologi
 summary: A botanical wordmark for The World of Biologi, with vines growing through the letters.
 disciplines:
   - graphic-design
+year: 2025
 tools: []
 cover:
   image: logo.png
@@ -13,8 +14,8 @@ hidden: false
 order: 8
 blocks:
   - type: text
-    heading: The brief
-    body: A wordmark for The World of Biologi, where the type grows its own leaves.
+    heading: The idea
+    body: Vintage display lettering wrapped in green vines, so the type grows its own leaves.
   - type: logo
     heading: The mark
     variants:

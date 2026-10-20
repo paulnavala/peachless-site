@@ -12,7 +12,7 @@ const { title, summary, disciplines, year, client, role, tools, cover } = projec
 const meta = [
   { term: disciplines.length > 1 ? 'Disciplines' : 'Discipline', value: disciplines.map((d) => DISCIPLINE_LABELS[d]).join(', ') },
   { term: 'Year', value: year },
-  { term: 'Client', value: client },
+  { term: 'Context', value: client },
   { term: 'My role', value: role },
   { term: 'Tools', value: tools.map((t) => TOOL_LABELS[t]).join(', ') },
 ].filter((m) => m.value);

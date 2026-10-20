@@ -1,7 +1,8 @@
 title: Fish & Seafood
-summary: A bold wordmark for a seafood supplier, with fish swimming through the letters.
+summary: A bold wordmark for Fish & Seafood, with fish swimming through the letters.
 disciplines:
   - graphic-design
+year: 2025
 tools: []
 cover:
   image: logo.png
@@ -13,8 +14,8 @@ hidden: false
 order: 6
 blocks:
   - type: text
-    heading: The brief
-    body: Fish & Seafood is a premium seafood supplier delivering fresh quality daily.
+    heading: The idea
+    body: A heavy black wordmark on a tilted blue panel, with small yellow fish swimming through the letters of *Fish* and a light *Seafood* set underneath.
   - type: logo
     heading: The mark
     variants:

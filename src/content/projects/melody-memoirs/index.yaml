@@ -1,9 +1,10 @@
 title: Melody Memoirs
-summary: Logo and app prototype for Melody Memoirs — an open book that turns into a musical note.
+summary: "A community for the stories behind the music that moved you: the logo and a working app prototype."
 disciplines:
   - graphic-design
   - uiux
 year: 2025
+client: Concept project
 tools:
   - figma
 cover:
@@ -17,7 +18,7 @@ order: 3
 blocks:
   - type: text
     heading: The idea
-    body: "Melody Memoirs brings music and memory together: the mark is an open book whose pages hold a single note."
+    body: "Melody Memoirs is a place to write down the moments when a piece of music moved you — in a concert hall or somewhere much quieter — and to read other people’s. The mark says it in a single shape: an open book whose pages hold a note."
   - type: logo
     heading: The mark
     variants:
@@ -29,6 +30,14 @@ blocks:
         alt: Melody Memoirs logo redrawn in the peachless. palette
         label: In the peachless. palette
         panel: linen
+  - type: text
+    heading: The prototype
+    body: |-
+      The prototype is a working app built in Figma Make rather than a click-through. Anyone can read the stories; members write their own — up to 500 words, with photos and a genre — and appreciate and save other people’s.
+
+      - **Fifteen genres**, from Baroque to the 21st century, give a way in when you don’t know what you’re looking for.
+      - **Every story in eight languages**, translated on demand.
+      - **Light and dark mode**, and a profile for your own stories and favourites.
   - type: prototype
     url: https://www.figma.com/make/BQtydWnM0aJYReMTqpOiaB/Melody-Memoirs--Community-?node-id=0-1&p=f&t=18eWXd6TlkRVcn16-0&fullscreen=1
     label: Try the Melody Memoirs prototype

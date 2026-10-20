@@ -4,8 +4,11 @@ disciplines:
   - graphic-design
   - uiux
 year: 2025
+client: Concept project
+role: "Sole designer: research, UX/UI, prototype and testing"
 tools:
   - figma
+  - miro
 cover:
   image: logo.png
   alt: "The TON logo: a wordmark with a musical note rising from the O"
@@ -16,8 +19,17 @@ hidden: false
 order: 2
 blocks:
   - type: text
-    heading: The brief
-    body: TON helps students of the Faculty of Music at Transilvania University of Brașov find a free practice room — piano, guitar, violin and more — and reserve it straight from their phone.
+    heading: The problem
+    body: |-
+      Music students find out whether a practice room is free by walking to it. In my survey of 12 current and recent music students, every one had found a room occupied when they expected it to be free, and 42% run into it often. Availability lives in people’s heads, so nobody can answer the one question that matters: *is it free right now?*
+
+      TON is a booking app for the Faculty of Music at Transilvania University of Brașov, designed around that question.
+  - type: text
+    heading: What I learned
+    body: |-
+      - **Occupancy is discovered too late.** Every workaround I found was a present-tense check, made on foot.
+      - **Booking is a habit, not an event.** The typical journey is a re-booking: same room, same weekday, same slot, squeezed between classes.
+      - **Trust is borrowed from the institution.** A reservation only means something if the person holding it can be identified — and none of the three booking tools I compared (Skedda, Robin and TeamUp) handled that.
   - type: logo
     heading: The mark
     caption: The O doubles as a power symbol, crowned with a musical note.
@@ -46,8 +58,19 @@ blocks:
         alt: List of upcoming practice sessions with dates and times
         caption: Upcoming sessions
   - type: text
-    heading: The flow
-    body: Students see recommended rooms and whether they are free, pick a date and a time, and find every upcoming session in one list. The prototype also covers booking a past room again, temporarily closed rooms and switching between English and Romanian.
+    heading: Three decisions
+    body: |-
+      1. **Room state first, calendar second.** Every room card says whether the room is available, reserved or temporarily closed; date and time move to the room’s own screen, where you have already chosen it.
+      2. **Recommendations first, not search first.** Home opens on the rooms you are likely to want, and *Booking again* repeats a previous reservation in one step — built for the fifth booking, not the first.
+      3. **University email only.** Signing in with an institutional address means a held room always has a name attached, which is what makes *Reserved* believable.
+
+      The prototype has 18 screens in English and Romanian, light and dark — including the states that are easy to skip: temporarily closed rooms, cancelling a booking and signing out.
+  - type: text
+    heading: What the test showed
+    body: In a first-contact test with no walkthrough, people booked a room in about two minutes — and several went on to cancel it without being asked, a sign the flow felt safe to explore. It was a small test, so I read it as a direction rather than a benchmark.
+  - type: text
+    heading: What I’d do differently
+    body: A contrast audit showed that my most important signal was my least readable element — the green *Available* chip measured 1.89:1 against the 4.5:1 it needs. I specified re-toned status colours for both themes, and every status carries a word as well as a colour. Next time I would check contrast while choosing the palette, not after the prototype is finished.
   - type: prototype
     url: https://www.figma.com/proto/RBhMF1Cg9vQJDEg2iTsJoO/Project-TON-ui-ux?node-id=1-54&p=f&t=AZlMwB4kDwuTqA2X-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=1%3A3&show-proto-sidebar=1
     label: Try the TON prototype

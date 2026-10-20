@@ -1,7 +1,8 @@
 title: InTouch
-summary: Identity for InTouch, a communication platform — the word “touch” held inside the curve of “in”.
+summary: A logo for InTouch — the word “touch” held inside the curve of “in”.
 disciplines:
   - graphic-design
+year: 2025
 tools: []
 cover:
   image: logo.png
@@ -13,8 +14,8 @@ hidden: false
 order: 7
 blocks:
   - type: text
-    heading: The brief
-    body: InTouch is a communication platform connecting people worldwide.
+    heading: The idea
+    body: The name as one gesture — a bold *in* whose curve holds the word *touch*, set vertically, so the two words stay connected.
   - type: logo
     heading: The mark
     variants:
