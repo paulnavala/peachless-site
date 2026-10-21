@@ -4,10 +4,14 @@ import { renderMarkdown } from '../../lib/markdown';
 interface Props {
   heading?: string;
   body: string;
+  /** Chapter anchor (src/lib/chapters.ts). */
+  id?: string;
+  /** The story's opening: its first paragraph is set large, in the serif. */
+  lead?: boolean;
 }
-const { heading, body } = Astro.props;
+const { heading, body, id, lead = false } = Astro.props;
 ---
-<section class="text-block is-wide">
+<section class:list={['text-block is-wide', { 'text-block--lead': lead }]} id={id}>
   {heading && <h2 class="block-heading text-block__heading">{heading}</h2>}
   <div class="text-block__body flow" set:html={renderMarkdown(body)} />
 </section>
@@ -27,6 +31,14 @@ const { heading, body } = Astro.props;
 
   .text-block__body :global(p) {
     text-wrap: pretty;
+  }
+
+  /* Serif at 23px and up only: --step-2 starts at 23.04px. */
+  .text-block--lead .text-block__body > :global(p:first-child) {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: var(--leading-snug);
+    color: var(--color-heading);
   }
 
   @media (min-width: 64em) {

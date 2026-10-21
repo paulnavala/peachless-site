@@ -12,11 +12,12 @@ const site = await getEntry('site', 'site');
 const { nav, emails, tagline, socials, cta, siteName } = site!.data;
 const year = new Date().getFullYear();
 ---
-<footer class="site-footer" data-surface="inverse">
+<footer class="site-footer sheet" data-surface="inverse">
   {showCta && cta && (
     <section class="site-footer__cta container" aria-labelledby="footer-cta-title">
       {cta.eyebrow && <p class="eyebrow eyebrow--rule">{cta.eyebrow}</p>}
-      <h2 id="footer-cta-title" class="site-footer__cta-title t-display-2">{cta.heading}</h2>
+      <h2 id="footer-cta-title" class="site-footer__cta-title">{cta.heading}</h2>
+      <svg class="site-footer__swash" viewBox="0 0 320 24" aria-hidden="true" focusable="false"><path d="M3 17C64 6 132 4 196 11s96 9 121 1" /></svg>
       <div class="cluster site-footer__cta-actions">
         <a class="btn btn--accent btn--lg" href={cta.buttonLink}>
           {cta.buttonLabel}
@@ -100,7 +101,53 @@ const year = new Date().getFullYear();
   }
 
   .site-footer__cta-title {
-    max-width: 16ch;
+    max-width: 13ch;
+    font-size: var(--text-statement);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+  }
+
+  /* A hand-drawn underline that wipes in as the invitation arrives. */
+  .site-footer__swash {
+    display: block;
+    inline-size: min(70%, 20rem);
+    block-size: auto;
+    margin-block-start: calc(-1 * var(--space-xs));
+    overflow: visible;
+    color: var(--color-accent-text);
+  }
+
+  .site-footer__swash path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .site-footer__cta {
+        view-timeline-name: --cta;
+        view-timeline-axis: block;
+        view-timeline-inset: 0px;
+      }
+
+      .site-footer__swash {
+        animation: swash linear both;
+        animation-timeline: --cta;
+        animation-range: entry 10% entry 100%;
+      }
+
+      @keyframes swash {
+        from {
+          clip-path: inset(0 100% 0 0);
+        }
+
+        to {
+          clip-path: inset(0 0 0 0);
+        }
+      }
+    }
   }
 
   .site-footer__cta-actions {

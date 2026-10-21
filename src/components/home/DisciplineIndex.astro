@@ -1,0 +1,209 @@
+---
+// "What I do" as an editorial index: one large row per craft. On wide screens
+// with a fine pointer, a preview of the work appears beside the row on hover or
+// focus; elsewhere it is a small thumbnail that is always there.
+import type { ImageMetadata } from 'astro';
+import Media from '../ui/Media.astro';
+import Icon from '../ui/Icon.astro';
+
+export interface DisciplineEntry {
+  title: string;
+  description: string;
+  href: string;
+  count: string;
+  image?: { image: ImageMetadata; panel: string; fit: 'cover' | 'contain' };
+  /** Colour atmosphere of the project the preview comes from. */
+  theme?: Record<string, string>;
+}
+
+interface Props {
+  entries: DisciplineEntry[];
+}
+const { entries } = Astro.props;
+---
+<ol class="disciplines" role="list">
+  {
+    entries.map((entry, i) => (
+      <li class="discipline card" data-reveal style={{ '--reveal-index': i, ...entry.theme }}>
+        <span class="discipline__num" aria-hidden="true">
+          {String(i + 1).padStart(2, '0')}
+        </span>
+        <h3 class="discipline__title">
+          <a class="card__link" href={entry.href}>
+            {entry.title}
+          </a>
+        </h3>
+        <p class="discipline__text">{entry.description}</p>
+        <p class="discipline__count">{entry.count}</p>
+        <span class="discipline__arrow" aria-hidden="true">
+          <Icon name="arrow-right" />
+        </span>
+        {entry.image && (
+          <div class="discipline__preview card__media" data-panel={entry.image.panel}>
+            <Media image={entry.image.image} alt="" sizes="(min-width: 64em) 13rem, 5rem" fit={entry.image.fit} />
+          </div>
+        )}
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .disciplines {
+    margin: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .discipline {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr) 4.5rem;
+    grid-template-areas:
+      'num title preview'
+      'num text preview'
+      'num count count';
+    align-items: start;
+    gap: var(--space-3xs) var(--space-s);
+    padding-block: var(--space-m);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .discipline__num {
+    grid-area: num;
+    padding-block-start: 0.55em;
+    font-size: var(--text-small);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-caps);
+    color: var(--color-accent-text);
+  }
+
+  .discipline__title {
+    grid-area: title;
+    font-size: var(--step-4);
+    line-height: var(--leading-heading);
+  }
+
+  .discipline__text {
+    grid-area: text;
+    max-width: 40ch;
+    color: var(--color-text-secondary);
+  }
+
+  .discipline__count {
+    grid-area: count;
+    font-size: var(--text-small);
+    font-weight: var(--weight-medium);
+    color: var(--color-accent-text);
+  }
+
+  .discipline__arrow {
+    display: none;
+    grid-area: arrow;
+  }
+
+  .discipline__preview {
+    grid-area: preview;
+    --ratio: 1;
+    --panel-pad: 14%;
+    border-radius: var(--radius-md);
+  }
+
+  .discipline__preview :global(picture) {
+    height: 100%;
+  }
+
+  .discipline:hover .discipline__title,
+  .discipline:focus-within .discipline__title {
+    color: var(--color-link-hover);
+  }
+
+  @media (min-width: 64em) {
+    .discipline {
+      grid-template-columns: 4rem minmax(0, 5fr) minmax(0, 4fr) 13rem minmax(7rem, auto) 2.75rem;
+      grid-template-areas: 'num title text preview count arrow';
+      align-items: center;
+      column-gap: var(--space-m);
+      padding-block: var(--space-l);
+    }
+
+    .discipline__num {
+      padding-block-start: 0;
+    }
+
+    .discipline__title {
+      font-size: var(--step-5);
+    }
+
+    .discipline__count {
+      justify-self: end;
+    }
+
+    .discipline__arrow {
+      display: grid;
+      place-items: center;
+      width: 2.75rem;
+      height: 2.75rem;
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-pill);
+    }
+
+    .discipline__arrow :global(svg) {
+      width: 1.1rem;
+      height: 1.1rem;
+    }
+
+    .discipline:hover .discipline__arrow,
+    .discipline:focus-within .discipline__arrow {
+      background: var(--espresso);
+      border-color: var(--espresso);
+      color: var(--linen);
+    }
+
+    .discipline__preview {
+      --ratio: 4 / 3;
+      position: relative;
+      z-index: var(--z-raised);
+      margin-block: calc(-1 * var(--space-m));
+      box-shadow: var(--shadow-md);
+      pointer-events: none;
+    }
+  }
+
+  /* Hover devices: the preview waits for the row. Hidden with opacity (not a
+     clip), so its lazy image still loads before the first hover. */
+  @media (min-width: 64em) and (hover: hover) and (pointer: fine) {
+    .discipline__preview {
+      opacity: 0;
+      scale: 0.9;
+      rotate: -4deg;
+    }
+
+    .discipline:is(:hover, :focus-within) .discipline__preview {
+      opacity: 1;
+      scale: 1;
+      rotate: -2deg;
+    }
+  }
+
+  @media (min-width: 64em) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .discipline__preview {
+      transition:
+        opacity var(--duration-base) var(--ease-out),
+        scale var(--duration-slow) var(--ease-out),
+        rotate var(--duration-slow) var(--ease-out);
+    }
+
+    .discipline__title,
+    .discipline__arrow {
+      transition:
+        color var(--duration-fast) var(--ease-standard),
+        background-color var(--duration-fast) var(--ease-standard),
+        border-color var(--duration-fast) var(--ease-standard),
+        translate var(--duration-base) var(--ease-out);
+    }
+
+    .discipline:is(:hover, :focus-within) .discipline__title {
+      translate: 0.35rem 0;
+    }
+  }
+</style>

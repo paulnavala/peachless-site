@@ -5,6 +5,7 @@ import Base from '../layouts/Base.astro';
 import Media from '../components/ui/Media.astro';
 import CtaBand from '../components/CtaBand.astro';
 import ArrowLink from '../components/ui/ArrowLink.astro';
+import LitStatement from '../components/ui/LitStatement.astro';
 import { getSingleton } from '../lib/content';
 import { personLd } from '../lib/structured-data';
 
@@ -17,7 +18,7 @@ const portraitShare = await getImage({ src: portrait, width: 800, format: 'jpg' 
 <Base title="About" description={seo.description ?? statement} jsonLd={[personLd(site, Astro.site!, portraitShare.src)]}>
   <section class="section about">
     <div class="container about__inner">
-      <div class="about__portrait">
+      <div class="about__portrait about-portrait">
         <Media image={portrait} alt={portraitAlt} sizes="(min-width: 64em) 30rem, 90vw" priority />
       </div>
       <div class="about__text">
@@ -27,7 +28,7 @@ const portraitShare = await getImage({ src: portrait, width: 800, format: 'jpg' 
         <div class="about__body flow">
           <Content />
         </div>
-        {closing && <p class="about__closing kicker">{closing}</p>}
+        {closing && <LitStatement tag="p" class="about__closing" text={closing} />}
       </div>
     </div>
   </section>
@@ -44,11 +45,12 @@ const portraitShare = await getImage({ src: portrait, width: 800, format: 'jpg' 
     gap: var(--space-xl);
   }
 
+  /* An arch, like the home page's portrait (they morph into each other). */
   .about__portrait {
     width: min(100%, 26rem);
     aspect-ratio: 4 / 5;
     overflow: clip;
-    border-radius: var(--radius-xl);
+    border-radius: 50% 50% var(--radius-lg) var(--radius-lg) / 40% 40% var(--radius-lg) var(--radius-lg);
     box-shadow: var(--shadow-md);
   }
 
@@ -77,8 +79,15 @@ const portraitShare = await getImage({ src: portrait, width: 800, format: 'jpg' 
     color: var(--color-text-secondary);
   }
 
+  /* The page ends on the tagline, lit word by word as it scrolls up. */
   .about__closing {
-    font-size: var(--step-2);
+    max-width: 18ch;
+    margin-block-start: var(--space-l);
+    font-family: var(--font-display);
+    font-size: var(--text-display-2);
+    font-style: italic;
+    line-height: var(--leading-heading);
+    color: var(--color-accent-text);
   }
 
   @media (min-width: 64em) {

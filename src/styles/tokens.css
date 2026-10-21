@@ -54,6 +54,7 @@
   --color-backdrop: rgb(var(--espresso-rgb) / 0.8);
   --color-scrim: rgb(var(--espresso-rgb) / 0.55);
   --color-header-bg: rgb(var(--linen-rgb) / 0.86);
+  --color-text-dim: var(--taupe);           /* unlit words of a scroll-lit statement: large text only, never on blush */
   --focus-ring: var(--terracotta);
   --focus-width: 2px;
   --focus-offset: 3px;
@@ -71,10 +72,12 @@
   --step-5: clamp(2.4883rem, 2.1734rem + 1.3999vw, 3.4332rem);
   --step-6: clamp(2.986rem, 2.5508rem + 1.9341vw, 4.2915rem);
   --step-7: clamp(3.5832rem, 2.9894rem + 2.6389vw, 5.3644rem);
-  --text-hero: clamp(2.75rem, 1.8333rem + 4.0741vw, 5.5rem);
-  --text-h1: clamp(2.4883rem, 1.8872rem + 2.6714vw, 4.2915rem);
+  --text-hero: clamp(2.75rem, 1.5rem + 5.5556vw, 6.5rem);
+  --text-display: clamp(3.25rem, 1.75rem + 6.6667vw, 7.75rem);       /* short project titles */
+  --text-statement: clamp(2.25rem, 1.25rem + 4.4444vw, 5.25rem);     /* manifesto, footer invitation */
+  --text-h1: clamp(2.5rem, 1.75rem + 3.3333vw, 4.75rem);
   --text-display-2: clamp(2.0736rem, 1.6204rem + 2.0143vw, 3.4332rem);
-  --text-h2: clamp(1.728rem, 1.3885rem + 1.509vw, 2.7466rem);
+  --text-h2: clamp(1.75rem, 1.25rem + 2.2222vw, 3.25rem);
   --text-h3: var(--step-2);
   --text-quote: clamp(1.44rem, 1.1876rem + 1.1219vw, 2.1973rem);
   --text-h4: var(--step-1);
@@ -138,10 +141,22 @@
   --radius-lg: 1.25rem;
   --radius-xl: 2rem;
   --radius-pill: 999px;
+  --radius-sheet: clamp(1.25rem, 0.5rem + 1.6667vw, 2rem);
+  --sheet-inset: clamp(0.75rem, 0.25rem + 1.1111vw, 1.25rem);       /* .sheet bands float this far from the edges */
   --shadow-sm: 0 1px 2px rgb(var(--espresso-rgb) / 0.06), 0 2px 8px rgb(var(--espresso-rgb) / 0.05);
   --shadow-md: 0 2px 4px rgb(var(--espresso-rgb) / 0.05), 0 10px 24px rgb(var(--espresso-rgb) / 0.08);
   --shadow-lg: 0 4px 8px rgb(var(--espresso-rgb) / 0.05), 0 18px 40px rgb(var(--espresso-rgb) / 0.1),
     0 40px 80px rgb(var(--espresso-rgb) / 0.06);
+
+  /* ── Texture ─────────────────────────────────────────────────────────── */
+  /* A fine paper grain for [data-surface] bands. Speck colour and peak alpha
+     sit in the feColorMatrix (last row: alpha = 0.12·noise − 0.06, so at most
+     6% espresso on paper, 8% linen on espresso); tokens.spec.ts proves every
+     text pair still passes on the darkest (or lightest) pixel. No grain on
+     linen or blush: their contrast headroom is under 3%. Keep the URI free of
+     raw semicolons and hashes. */
+  --grain-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .18 0 0 0 0 .14 0 0 0 0 .12 0 0 0 .12 -.06'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  --grain-inverse: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .94 0 0 0 0 .88 0 0 0 0 .83 0 0 0 .16 -.08'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
 
   /* ── Motion ──────────────────────────────────────────────────────────── */
   --duration-instant: 100ms;
@@ -168,10 +183,12 @@
 [data-surface='paper'] {
   --color-bg: var(--paper);
   --color-surface: var(--linen);
+  --grain: var(--grain-paper);
 }
 [data-surface='blush'] {
   --color-bg: var(--blush);
   --color-surface: var(--paper);
+  --grain: none;
 }
 [data-surface='inverse'] {
   --color-bg: var(--espresso);
@@ -187,4 +204,13 @@
   --color-border-strong: var(--sand);
   --focus-ring: var(--clay);
   --mark-outline: var(--linen);
+  --grain: var(--grain-inverse);
+}
+
+/* Texture is decoration: drop it for visitors who ask for more contrast,
+   for forced colours and for print. (After the surfaces: same specificity.) */
+@media (prefers-contrast: more), (forced-colors: active), print {
+  [data-surface] {
+    --grain: none;
+  }
 }

@@ -10,7 +10,7 @@ interface Props {
 }
 const { eyebrow, heading, body, tone = 'blush', id = 'next-step-title' } = Astro.props;
 ---
-<section class="cta-band" data-surface={tone} data-next-step aria-labelledby={id}>
+<section class="cta-band sheet" data-surface={tone} data-next-step aria-labelledby={id}>
   <div class="container cta-band__inner">
     <div class="cta-band__text">
       {eyebrow && <p class="eyebrow eyebrow--rule">{eyebrow}</p>}

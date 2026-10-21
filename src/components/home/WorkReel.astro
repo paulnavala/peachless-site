@@ -1,0 +1,158 @@
+---
+// The hero's work reel: a row of real work that drifts sideways as the hero
+// scrolls away. It previews the Work index, so it is hidden from assistive
+// technology and the tab order ("See my work" is its accessible equivalent);
+// pointer visitors can still open any tile. Tiles of projects shown nowhere
+// else on the page carry their view-transition name, so they morph into the
+// project's hero.
+import type { ImageMetadata } from 'astro';
+import Media from '../ui/Media.astro';
+
+export interface ReelTile {
+  href: string;
+  label: string;
+  image: ImageMetadata;
+  fit: 'cover' | 'contain';
+  panel: string;
+  /** Tile shape, e.g. "4 / 3". */
+  ratio: string;
+  /** view-transition name (work-<id>) when the project appears nowhere else on the page. */
+  vt?: string;
+  /** Project colour atmosphere (src/lib/project-theme.ts). */
+  theme?: Record<string, string>;
+}
+
+interface Props {
+  tiles: ReelTile[];
+}
+const { tiles } = Astro.props;
+const ratioOf = (ratio: string) => {
+  const [w, h] = ratio.split('/').map(Number);
+  return w / h;
+};
+// Tile heights: 12rem on phones, up to 21rem on wide screens.
+const sizesFor = (ratio: string) => `(min-width: 48em) ${Math.round(ratioOf(ratio) * 336)}px, ${Math.round(ratioOf(ratio) * 192)}px`;
+---
+<div class="reel" aria-hidden="true">
+  <ul class="reel__track" role="list">
+    {
+      tiles.map((tile, i) => (
+        <li class="reel__tile" style={{ '--i': i, '--ratio': tile.ratio, ...tile.theme }}>
+          <a class="reel__link" href={tile.href} tabindex="-1">
+            <div class:list={['reel__frame card__media', { 'work-media': tile.vt }]} data-panel={tile.panel} style={tile.vt ? { '--vt': tile.vt } : undefined}>
+              <Media image={tile.image} alt="" sizes={sizesFor(tile.ratio)} fit={tile.fit} />
+            </div>
+            <span class="reel__label">{tile.label}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .reel {
+    --reel-h: clamp(12rem, min(9rem + 14vw, 34svh), 21rem);
+    --reel-drift: -45vw;
+    container-type: inline-size;
+    overflow-x: clip;
+    padding-block: var(--space-2xs) var(--space-s);
+    /* A soft right edge: there is more beyond it. */
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - var(--space-2xl)), transparent);
+    mask-image: linear-gradient(to right, black calc(100% - var(--space-2xl)), transparent);
+  }
+
+  @media (min-width: 48em) {
+    .reel {
+      --reel-drift: -30vw;
+    }
+  }
+
+  .reel__track {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-s);
+    inline-size: max-content;
+    margin: 0;
+    /* The first tile lines up with the tagline. */
+    padding-inline: max(var(--gutter), (100cqi - var(--container-max)) / 2);
+  }
+
+  .reel__tile {
+    flex: none;
+  }
+
+  .reel__link {
+    display: grid;
+    gap: var(--space-2xs);
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  .reel__frame {
+    block-size: var(--reel-h);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .reel__frame :global(picture) {
+    height: 100%;
+  }
+
+  .reel__label {
+    font-size: var(--text-small);
+    font-weight: var(--weight-medium);
+  }
+
+  .reel__link:hover .reel__label {
+    color: var(--color-text);
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .reel__frame :global(.media) {
+      transition: scale 600ms var(--ease-out);
+    }
+
+    .reel__link:hover .reel__frame :global(.media) {
+      scale: var(--hover-scale);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* First visit of the session only, while the tagline types. */
+    :global(html:not([data-tagline-seen])) .reel__tile {
+      animation: reel-in var(--duration-slower) var(--ease-out) both;
+      animation-delay: calc(400ms + var(--i) * var(--stagger));
+    }
+
+    @keyframes reel-in {
+      from {
+        opacity: 0;
+        translate: 0 1.5rem;
+      }
+    }
+  }
+
+  /* The reel drifts while the hero scrolls away (timeline: .home-hero). It
+     stops short of its own end, so no empty space ever opens on the right. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .reel__track {
+        animation: reel-drift linear both;
+        animation-timeline: --hero;
+        animation-range: exit 0% exit 100%;
+      }
+
+      @keyframes reel-drift {
+        to {
+          transform: translateX(clamp(var(--reel-drift), 100cqi - 100%, 0px));
+        }
+      }
+    }
+  }
+
+  @media print {
+    .reel {
+      display: none;
+    }
+  }
+</style>

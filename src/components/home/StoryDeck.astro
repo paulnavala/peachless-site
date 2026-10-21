@@ -1,0 +1,279 @@
+---
+// Selected work as a deck of stories: on screens with room for it, each card
+// sticks under the header while the next one slides over it, and the covered
+// card recedes. Phones, short or zoomed screens get a plain list.
+import type { Project } from '../../lib/content';
+import { DISCIPLINE_LABELS } from '../../lib/content-schema';
+import { projectTheme } from '../../lib/project-theme';
+import Media from '../ui/Media.astro';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  projects: Project[];
+  headingLevel?: 2 | 3;
+}
+const { projects, headingLevel = 3 } = Astro.props;
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+<ol class="deck" role="list">
+  {
+    projects.map((project, i) => {
+      const { title, summary, disciplines, year, cover, accent } = project.data;
+      const meta = [disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · '), year].filter(Boolean).join(' — ');
+      return (
+        <li class="deck__item" style={{ '--i': i }}>
+          <article class="deck-card card" data-testid="work-card" style={projectTheme(accent)}>
+            <div class="deck-card__sheet">
+              <div
+                class="deck-card__media card__media work-media"
+                data-panel={cover.panel}
+                data-reveal
+                data-scroll="unveil"
+                style={{ '--vt': `work-${project.id}` }}
+              >
+                <Media image={cover.image} alt="" sizes="(min-width: 64em) 44rem, 100vw" fit={cover.fit} />
+              </div>
+              <div class="deck-card__body">
+                <p class="deck-card__count" aria-hidden="true">
+                  {pad(i + 1)}
+                  <span>/ {pad(projects.length)}</span>
+                </p>
+                <p class="deck-card__meta">{meta}</p>
+                <Heading class="deck-card__title work-title" style={{ '--vt-title': `work-title-${project.id}` }}>
+                  <a class="card__link" href={`/projects/${project.id}/`}>
+                    {title}
+                  </a>
+                </Heading>
+                <p class="deck-card__summary">{summary}</p>
+                <span class="deck-card__cta" aria-hidden="true">
+                  Read the story
+                  <Icon name="arrow-right" />
+                </span>
+              </div>
+            </div>
+          </article>
+        </li>
+      );
+    })
+  }
+</ol>
+
+<style>
+  .deck {
+    --deck-top: calc(var(--header-h-condensed) + var(--space-s));
+    --deck-peek: var(--space-s);
+    --deck-gap: var(--space-xl);
+    --deck-h: min(34rem, 100svh - var(--deck-top) - var(--space-xl));
+    --deck-step: calc(var(--deck-h) + var(--deck-gap) - var(--deck-peek));
+    /* A flex column, not a grid: a sticky grid item can't leave its own area. */
+    display: flex;
+    flex-direction: column;
+    gap: var(--deck-gap);
+    margin: 0;
+  }
+
+  .deck-card__sheet {
+    position: relative;
+    display: grid;
+    overflow: clip;
+    border-radius: var(--radius-xl);
+    background: var(--project-tint, var(--color-surface));
+    box-shadow: var(--shadow-lg);
+    transform-origin: 50% 0;
+  }
+
+  /* Dims a card once the next one covers it (scroll-linked, below). */
+  .deck-card__sheet::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-raised);
+    background: var(--color-scrim);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .deck-card__media {
+    --ratio: 4 / 3;
+    --panel-pad: 16%;
+    border-radius: 0;
+  }
+
+  .deck-card__media :global(picture) {
+    height: 100%;
+  }
+
+  .deck-card__body {
+    display: grid;
+    align-content: end;
+    justify-items: start;
+    gap: var(--space-xs);
+    padding: var(--space-m) var(--space-m-xl) var(--space-l);
+  }
+
+  .deck-card__count {
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    line-height: 1;
+    color: var(--project-ink, var(--color-accent-text));
+  }
+
+  .deck-card__count span {
+    font-size: 0.5em;
+    color: var(--color-text-secondary);
+  }
+
+  .deck-card__meta {
+    font-size: var(--text-micro);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+  }
+
+  .deck-card__title {
+    font-size: var(--text-h2);
+    line-height: var(--leading-heading);
+  }
+
+  .deck-card__title a {
+    color: inherit;
+  }
+
+  .deck-card__summary {
+    max-width: 42ch;
+    color: var(--color-text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .deck-card__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    margin-block-start: var(--space-2xs);
+    font-size: var(--text-ui);
+    font-weight: var(--weight-medium);
+  }
+
+  .deck-card__cta :global(svg) {
+    width: 1em;
+    height: 1em;
+  }
+
+  @media (min-width: 64em) {
+    .deck-card__sheet {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+
+    .deck-card__media {
+      aspect-ratio: auto;
+      min-block-size: 26rem;
+    }
+
+    .deck-card__body {
+      padding: var(--space-xl);
+    }
+  }
+
+  /* The deck: only where a whole card fits under the header. The height query
+     also switches it off at 200% zoom and with large default text. */
+  @media (min-width: 48em) and (min-height: 40em) {
+    .deck__item {
+      position: sticky;
+      top: calc(var(--deck-top) + var(--i) * var(--deck-peek));
+    }
+
+    /* A focused card comes to the front, so focus is never hidden (WCAG 2.4.11). */
+    .deck__item:focus-within {
+      z-index: var(--z-raised);
+    }
+
+    .deck-card__sheet {
+      block-size: var(--deck-h);
+      grid-template-rows: minmax(0, 1fr) auto;
+    }
+
+    /* A wide, short strip above the text: panel padding is measured against
+       the width, so keep its vertical share small or a logo has no room. */
+    .deck-card__media {
+      --panel-pad: 4% 18%;
+      aspect-ratio: auto;
+      min-block-size: 0;
+    }
+  }
+
+  @media (min-width: 64em) and (min-height: 40em) {
+    .deck-card__sheet {
+      grid-template-rows: none;
+    }
+
+    .deck-card__media {
+      --panel-pad: 14%;
+    }
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .deck-card__media :global(.media) {
+      transition: scale 600ms var(--ease-out);
+    }
+
+    .deck-card:hover .deck-card__media :global(.media) {
+      scale: var(--hover-scale);
+    }
+
+    .deck-card__cta :global(svg) {
+      transition: translate var(--duration-base) var(--ease-out);
+    }
+
+    .deck-card:hover .deck-card__cta :global(svg) {
+      translate: 0.25em 0;
+    }
+  }
+
+  /* Depth: a card recedes and dims while the next one slides over it. Driven by
+     the list's own (non-sticky) timeline with exact offsets: card i starts when
+     card i+1 reaches its bottom edge and finishes when card i+1 sticks. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) and (min-width: 48em) and (min-height: 40em) {
+      .deck {
+        view-timeline-name: --deck;
+        view-timeline-axis: block;
+        view-timeline-inset: var(--deck-top) 0px;
+      }
+
+      .deck__item:not(:last-child) .deck-card__sheet,
+      .deck__item:not(:last-child) .deck-card__sheet::after {
+        animation: deck-recede linear both;
+        animation-timeline: --deck;
+        animation-range:
+          exit-crossing calc(var(--i) * var(--deck-step) + var(--deck-gap))
+          exit-crossing calc((var(--i) + 1) * var(--deck-step));
+      }
+
+      .deck__item:not(:last-child) .deck-card__sheet::after {
+        animation-name: deck-dim;
+      }
+
+      .deck__item:focus-within .deck-card__sheet,
+      .deck__item:focus-within .deck-card__sheet::after {
+        animation: none;
+      }
+
+      @keyframes deck-recede {
+        to {
+          transform: scale(0.94);
+        }
+      }
+
+      @keyframes deck-dim {
+        to {
+          opacity: 0.45;
+        }
+      }
+    }
+  }
+</style>

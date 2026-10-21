@@ -20,6 +20,24 @@
     padding-block: var(--section-pad-tight);
   }
 
+  /* A surface band that floats as a rounded sheet from tablet width up (opt-in:
+     nested surfaces such as cards inside a band stay as they are). */
+  @media (min-width: 48em) {
+    .sheet {
+      margin-inline: var(--sheet-inset);
+      border-radius: var(--radius-sheet);
+    }
+
+    .sheet + .sheet {
+      margin-block-start: var(--sheet-inset);
+    }
+
+    main > .sheet:last-child,
+    .site-footer.sheet {
+      margin-block-end: var(--sheet-inset);
+    }
+  }
+
   /* Story-block layout: children sit in a readable `content` column and can
      break out to `wide` (container width) or `full` (edge to edge). */
   .content-grid {

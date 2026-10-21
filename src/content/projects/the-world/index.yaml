@@ -7,8 +7,9 @@ tools: []
 cover:
   image: logo.png
   alt: "The World of Biologi logo: vintage lettering wrapped in green vines"
-  panel: paper
+  panel: accent
   fit: contain
+accent: "#3F7823"
 featured: false
 hidden: false
 order: 8
@@ -22,7 +23,7 @@ blocks:
       - image: logo.png
         alt: The World of Biologi logo in its original colours
         label: Original colours
-        panel: paper
+        panel: accent
       - image: logo-peach.png
         alt: The World of Biologi logo redrawn in the peachless. palette
         label: In the peachless. palette

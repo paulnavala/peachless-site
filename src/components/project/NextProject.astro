@@ -1,6 +1,10 @@
 ---
+// The next story, in its own colour: a band that hands the reader on. Its
+// title and cover carry the next project's view-transition names, so they
+// morph into that project's hero.
 import type { Project } from '../../lib/content';
 import { DISCIPLINE_LABELS } from '../../lib/content-schema';
+import { projectTheme } from '../../lib/project-theme';
 import ArrowLink from '../ui/ArrowLink.astro';
 import Media from '../ui/Media.astro';
 
@@ -8,21 +12,28 @@ interface Props {
   project: Project;
 }
 const { project } = Astro.props;
-const { title, summary, disciplines, cover } = project.data;
+const { title, summary, disciplines, cover, accent } = project.data;
 ---
-<section class="next-project" data-surface="paper" data-next-step aria-labelledby="next-project-title">
+<section class="next-project sheet" data-next-step aria-labelledby="next-project-title" style={projectTheme(accent)}>
   <div class="container next-project__inner">
     <div class="next-project__text">
-      <p class="eyebrow eyebrow--rule">Next project</p>
-      <h2 id="next-project-title" class="next-project__title">
+      <p class="eyebrow eyebrow--rule">Next story</p>
+      <h2 id="next-project-title" class="next-project__title work-title" style={{ '--vt-title': `work-title-${project.id}` }}>
         <a class="next-project__link" href={`/projects/${project.id}/`} data-testid="next-project">{title}</a>
       </h2>
       <p class="next-project__meta">{disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · ')}</p>
       <p class="next-project__summary">{summary}</p>
       <ArrowLink class="next-project__all" href="/projects/">All work</ArrowLink>
     </div>
-    <a class="next-project__media work-media" href={`/projects/${project.id}/`} tabindex="-1" aria-hidden="true" data-panel={cover.panel} style={`--vt: work-${project.id}`}>
-      <Media image={cover.image} alt="" sizes="(min-width: 64em) 36rem, 100vw" fit={cover.fit} />
+    <a
+      class="next-project__media work-media"
+      href={`/projects/${project.id}/`}
+      tabindex="-1"
+      aria-hidden="true"
+      data-panel={cover.panel}
+      style={{ '--vt': `work-${project.id}` }}
+    >
+      <Media image={cover.image} alt="" sizes="(min-width: 64em) 44rem, 100vw" fit={cover.fit} />
     </a>
   </div>
 </section>
@@ -30,6 +41,7 @@ const { title, summary, disciplines, cover } = project.data;
 <style>
   .next-project {
     padding-block: var(--space-xl-3xl);
+    background: var(--project-tint, var(--blush));
   }
 
   .next-project__inner {
@@ -45,8 +57,9 @@ const { title, summary, disciplines, cover } = project.data;
   }
 
   .next-project__title {
-    font-size: var(--text-h1);
+    font-size: var(--text-hero);
     line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
   }
 
   .next-project__link {
@@ -79,8 +92,8 @@ const { title, summary, disciplines, cover } = project.data;
     display: block;
     aspect-ratio: 4 / 3;
     overflow: clip;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
     --panel-pad: 16%;
   }
 
@@ -90,7 +103,7 @@ const { title, summary, disciplines, cover } = project.data;
 
   @media (min-width: 64em) {
     .next-project__inner {
-      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
       gap: var(--space-2xl);
     }
   }

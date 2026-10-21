@@ -1,26 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, INK_LUMINANCE, PAPER_LUMINANCE, relativeLuminance } from '../../src/lib/color';
+import { contrastRatio, hexToRgb, INK_LUMINANCE, PAPER_LUMINANCE, relativeLuminance } from '../../src/lib/color';
+import { parseRootTokens, resolveToken } from '../../src/lib/tokens-parse';
 
-const css = readFileSync(join(__dirname, '..', '..', 'src', 'styles', 'tokens.css'), 'utf8').replace(
-  /\/\*[\s\S]*?\*\//g,
-  ''
-);
-const rootBlock = css.match(/:root\s*{([\s\S]*?)\n}/)![1];
-const tokens = new Map<string, string>(
-  [...rootBlock.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()])
-);
-
-/** Resolve a token to its literal value, following var() references. */
-function resolve(name: string, seen = new Set<string>()): string {
-  const v = tokens.get(name);
-  if (v === undefined) throw new Error(`Unknown token ${name}`);
-  const ref = v.match(/^var\((--[\w-]+)\)$/);
-  if (!ref) return v;
-  if (seen.has(ref[1])) throw new Error(`Cycle at ${ref[1]}`);
-  return resolve(ref[1], new Set([...seen, name]));
-}
+const tokens = parseRootTokens(readFileSync(join(__dirname, '..', '..', 'src', 'styles', 'tokens.css'), 'utf8'));
+const resolve = (name: string) => resolveToken(tokens, name);
 
 // [foreground, background, minimum ratio, where it's used]
 const PAIRS: [string, string, number, string][] = [
@@ -51,12 +36,46 @@ const PAIRS: [string, string, number, string][] = [
   ['--taupe', '--blush', 3, 'control borders on tinted bands (non-text)'],
   ['--terracotta', '--paper', 3, 'focus ring on cards (non-text)'],
   ['--clay', '--espresso-raised', 3, 'focus ring on raised inverse (non-text)'],
+  ['--color-text-dim', '--paper', 3, 'unlit words of a scroll-lit statement (large text)'],
+  ['--color-text-dim', '--linen', 3, 'unlit words of a scroll-lit statement (large text)'],
+];
+
+// Grain textures and the surface each one sits on. Every pair on that surface
+// must still pass on the most-covered pixel (speck colour at peak alpha).
+const GRAINS: [string, string][] = [
+  ['--grain-paper', '--paper'],
+  ['--grain-inverse', '--espresso'],
 ];
 
 describe('design tokens', () => {
   for (const [fg, bg, min, use] of PAIRS) {
     it(`${fg} on ${bg} meets ${min}:1 (${use})`, () => {
       expect(contrastRatio(resolve(fg), resolve(bg))).toBeGreaterThanOrEqual(min);
+    });
+  }
+
+  for (const [grain, surface] of GRAINS) {
+    it(`${grain} keeps every pair on ${surface} readable at its strongest pixel`, () => {
+      const uri = resolve(grain);
+      expect(uri, 'filter colours must be sRGB, or they come out far too light').toContain(
+        "color-interpolation-filters='sRGB'"
+      );
+      const values = uri.match(/feColorMatrix values='([^']+)'/)?.[1].trim().split(/\s+/).map(Number) ?? [];
+      expect(values).toHaveLength(20);
+      // Row 4 is alpha: sum of positive channel weights (noise is 0..1) plus the offset.
+      const alpha = values.slice(15, 19).reduce((n, w) => n + Math.max(w, 0), 0) + values[19];
+      expect(alpha).toBeGreaterThan(0);
+      const speck = [values[4], values[9], values[14]].map((c) => c * 255);
+      const pixel =
+        '#' +
+        hexToRgb(resolve(surface))
+          .map((c, i) => Math.round(c * (1 - alpha) + speck[i] * alpha).toString(16).padStart(2, '0'))
+          .join('');
+      const pairs = PAIRS.filter(([, bg]) => bg === surface);
+      expect(pairs.length).toBeGreaterThan(0);
+      for (const [fg, , min, use] of pairs) {
+        expect(contrastRatio(resolve(fg), pixel), `${fg} (${use}) on ${pixel}`).toBeGreaterThanOrEqual(min);
+      }
     });
   }
 

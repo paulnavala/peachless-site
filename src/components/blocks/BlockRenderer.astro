@@ -1,7 +1,10 @@
 ---
 // Renders a project's story: each block type maps to one component. Blocks
 // sit on the .content-grid, so each can be content-, wide- or full-width.
+// Every block with a heading is a numbered chapter with an anchor
+// (src/lib/chapters.ts); the first text block opens the story in the serif.
 import type { Project } from '../../lib/content';
+import type { Chapter } from '../../lib/chapters';
 import TextBlock from './TextBlock.astro';
 import ImageBlock from './ImageBlock.astro';
 import GalleryBlock from './GalleryBlock.astro';
@@ -16,29 +19,33 @@ type Block = Project['data']['blocks'][number];
 
 interface Props {
   blocks: Block[];
+  chapters: Chapter[];
   projectTitle: string;
   cover: Project['data']['cover'];
 }
-const { blocks, projectTitle, cover } = Astro.props;
+const { blocks, chapters, projectTitle, cover } = Astro.props;
+const idOf = (i: number) => chapters.find((c) => c.block === i)?.id;
+const lead = blocks.findIndex((b) => b.type === 'text');
 ---
 <div class="story content-grid">
   {
-    blocks.map((block) => {
+    blocks.map((block, i) => {
+      const id = idOf(i);
       switch (block.type) {
         case 'text':
-          return <TextBlock heading={block.heading} body={block.body} />;
+          return <TextBlock id={id} heading={block.heading} body={block.body} lead={i === lead} />;
         case 'image':
           return <ImageBlock image={block.image} alt={block.alt} caption={block.caption} size={block.size} />;
         case 'gallery':
-          return <GalleryBlock heading={block.heading} images={block.images} />;
+          return <GalleryBlock id={id} heading={block.heading} images={block.images} frame={block.frame} />;
         case 'quote':
           return <QuoteBlock quote={block.quote} attribution={block.attribution} />;
         case 'logo':
-          return <LogoBlock heading={block.heading} caption={block.caption} variants={block.variants} />;
+          return <LogoBlock id={id} heading={block.heading} caption={block.caption} variants={block.variants} />;
         case 'palette':
-          return <PaletteBlock heading={block.heading} swatches={block.swatches} />;
+          return <PaletteBlock id={id} heading={block.heading} swatches={block.swatches} />;
         case 'guidelines':
-          return <GuidelinesBlock heading={block.heading} pages={block.pages} projectTitle={projectTitle} />;
+          return <GuidelinesBlock id={id} heading={block.heading} pages={block.pages} projectTitle={projectTitle} />;
         case 'prototype':
           return (
             <PrototypeEmbed
@@ -47,6 +54,7 @@ const { blocks, projectTitle, cover } = Astro.props;
               poster={block.poster || undefined}
               fallback={cover}
               projectTitle={projectTitle}
+              frame={block.frame}
             />
           );
         case 'before-after':
@@ -58,6 +66,26 @@ const { blocks, projectTitle, cover } = Astro.props;
 
 <style>
   .story {
+    counter-reset: chapter;
     padding-block: var(--space-l-2xl) var(--space-2xl-4xl);
+  }
+
+  /* Chapter numbers: decoration only (the "/ ''" keeps them out of the
+     accessible name), in the project's own ink. */
+  .story :global(.block-heading)::before {
+    counter-increment: chapter;
+    content: counter(chapter, decimal-leading-zero) / '';
+    display: block;
+    margin-block-end: var(--space-2xs);
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
+    font-variant-numeric: tabular-nums;
+    color: var(--project-ink, var(--color-accent-text));
+  }
+
+  .story > :global([id]) {
+    scroll-margin-block-start: var(--space-m);
   }
 </style>

@@ -12,8 +12,9 @@ tools:
 cover:
   image: logo.png
   alt: "The TON logo: a wordmark with a musical note rising from the O"
-  panel: paper
+  panel: accent
   fit: contain
+accent: "#909CA8"
 featured: true
 hidden: false
 order: 2
@@ -37,13 +38,14 @@ blocks:
       - image: logo.png
         alt: TON logo in its original colours
         label: Original colours
-        panel: paper
+        panel: accent
       - image: logo-peach.png
         alt: TON logo redrawn in the peachless. palette
         label: In the peachless. palette
         panel: linen
   - type: gallery
     heading: The app
+    frame: phone
     images:
       - image: screen-landing.webp
         alt: TON splash screen showing the logo
@@ -74,3 +76,5 @@ blocks:
   - type: prototype
     url: https://www.figma.com/proto/RBhMF1Cg9vQJDEg2iTsJoO/Project-TON-ui-ux?node-id=1-54&p=f&t=AZlMwB4kDwuTqA2X-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=1%3A3&show-proto-sidebar=1
     label: Try the TON prototype
+    poster: screen-home.webp
+    frame: phone

@@ -1,7 +1,9 @@
 ---
 import type { Project } from '../../lib/content';
 import { DISCIPLINE_LABELS } from '../../lib/content-schema';
+import { projectTheme } from '../../lib/project-theme';
 import Media from '../ui/Media.astro';
+import Icon from '../ui/Icon.astro';
 
 interface Props {
   project: Project;
@@ -9,25 +11,39 @@ interface Props {
   /** Layout width hint for the cover image. */
   sizes?: string;
   priority?: boolean;
-  /** Larger, wider treatment (first card of the featured grid). */
-  feature?: boolean;
+  /** Position in the index (1-based), shown as a decorative number. */
+  index?: number;
 }
-const { project, headingLevel = 2, sizes = '(min-width: 64em) 38rem, (min-width: 36em) 50vw, 100vw', priority = false, feature = false } =
-  Astro.props;
-const { title, summary, disciplines, year, cover } = project.data;
+const { project, headingLevel = 2, sizes = '(min-width: 64em) 38rem, (min-width: 36em) 50vw, 100vw', priority = false, index } = Astro.props;
+const { title, summary, disciplines, year, cover, accent } = project.data;
 const Heading = `h${headingLevel}` as 'h2' | 'h3';
 const meta = [disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · '), year].filter(Boolean).join(' — ');
 ---
-<article class:list={['project-card card', { 'project-card--feature': feature }]} data-testid="work-card">
-  <div class="card__media project-card__media work-media" data-panel={cover.panel} style={`--vt: work-${project.id}`}>
-    <Media image={cover.image} alt="" sizes={sizes} fit={cover.fit} priority={priority} />
+<article class="project-card card" data-testid="work-card" style={projectTheme(accent)}>
+  <div
+    class="card__media project-card__media work-media"
+    data-panel={cover.panel}
+    data-fit={cover.fit}
+    data-scroll={cover.fit === 'cover' ? 'parallax' : undefined}
+    style={{ '--vt': `work-${project.id}` }}
+  >
+    <div class="project-card__drift" data-scroll={cover.fit === 'contain' ? 'drift' : undefined}>
+      <Media image={cover.image} alt="" sizes={sizes} fit={cover.fit} priority={priority} />
+    </div>
   </div>
   <div class="project-card__body">
-    <p class="project-card__meta">{meta}</p>
-    <Heading class="project-card__title">
+    <p class="project-card__meta">
+      {index !== undefined && <span class="project-card__num" aria-hidden="true">{String(index).padStart(2, '0')}</span>}
+      {meta}
+    </p>
+    <Heading class="project-card__title work-title" style={{ '--vt-title': `work-title-${project.id}` }}>
       <a class="card__link" href={`/projects/${project.id}/`}>{title}</a>
     </Heading>
     <p class="project-card__summary">{summary}</p>
+    <span class="project-card__cta" aria-hidden="true">
+      View case study
+      <Icon name="arrow-right" />
+    </span>
   </div>
 </article>
 
@@ -44,21 +60,28 @@ const meta = [disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · '), year].f
     box-shadow: var(--shadow-sm);
   }
 
-  .project-card--feature .project-card__media {
-    --ratio: 3 / 2;
-    --panel-pad: 12%;
+  /* Scroll effects move this wrapper (a logo floats in its panel; a photo
+     drifts inside its frame); the hover zoom stays on the image itself. */
+  .project-card__drift {
+    --drift: 0.75rem;
+    height: 100%;
   }
 
-  .project-card__media :global(picture) {
+  .project-card__drift :global(picture) {
     height: 100%;
   }
 
   .project-card__body {
     display: grid;
     gap: var(--space-2xs);
+    justify-items: start;
   }
 
   .project-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.9em;
     font-size: var(--text-micro);
     font-weight: var(--weight-semibold);
     letter-spacing: var(--tracking-caps);
@@ -66,13 +89,14 @@ const meta = [disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · '), year].f
     color: var(--color-accent-text);
   }
 
+  .project-card__num {
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-muted);
+  }
+
   .project-card__title {
     font-size: var(--step-3);
     line-height: var(--leading-heading);
-  }
-
-  .project-card--feature .project-card__title {
-    font-size: var(--step-4);
   }
 
   .project-card__summary {
@@ -82,6 +106,31 @@ const meta = [disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · '), year].f
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  .project-card__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: var(--text-ui);
+    font-weight: var(--weight-medium);
+    color: var(--color-text);
+  }
+
+  .project-card__cta :global(svg) {
+    width: 1em;
+    height: 1em;
+  }
+
+  /* On hover devices the cue waits for the card. */
+  @media (hover: hover) {
+    .project-card__cta {
+      opacity: 0;
+    }
+
+    .project-card:is(:hover, :focus-within) .project-card__cta {
+      opacity: 1;
+    }
   }
 
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
@@ -100,6 +149,17 @@ const meta = [disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · '), year].f
 
     .project-card:hover .project-card__title :global(a) {
       background-size: 100% 1px;
+    }
+
+    .project-card__cta {
+      translate: -0.5rem 0;
+      transition:
+        opacity var(--duration-base) var(--ease-out),
+        translate var(--duration-base) var(--ease-out);
+    }
+
+    .project-card:is(:hover, :focus-within) .project-card__cta {
+      translate: 0 0;
     }
   }
 </style>

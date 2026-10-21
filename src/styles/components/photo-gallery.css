@@ -39,6 +39,9 @@
 }
 
 .pg-masonry__media {
+  /* The unveil finishes early, so photos in the first screen are already open. */
+  --unveil-inset: 8% 3% 0;
+  --scroll-range: entry 0% entry 35%;
   position: relative;
   display: block;
   width: 100%;

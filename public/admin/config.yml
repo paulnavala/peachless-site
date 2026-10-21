@@ -153,12 +153,13 @@ collections:
             required: false
             options:
               - { label: None — the image fills the card, value: none }
+              - { label: Project colour (a soft tint), value: accent }
               - { label: Linen, value: linen }
               - { label: Paper, value: paper }
               - { label: Blush, value: blush }
               - { label: Clay, value: clay }
               - { label: Espresso (dark), value: espresso }
-            hint: For logos and other artwork with a transparent background.
+            hint: For logos and other artwork with a transparent background. “Project colour” is a soft tint of the colour you choose under Project colour.
           - name: fit
             label: Fit
             widget: select
@@ -168,10 +169,11 @@ collections:
               - { label: Fill the card (photos and screenshots), value: cover }
               - { label: Show the whole image (logos), value: contain }
       - name: accent
-        label: Accent colour
+        label: Project colour
         widget: color
         allowInput: true
         required: false
+        hint: A colour from the project’s own brand, usually the main colour of its logo. The site makes soft tints from it for the top of the project page, its card and the “Next project” band, and always keeps the text readable. Leave it empty for the site’s peach tones.
         pattern: ['^#[0-9A-Fa-f]{6}$', 'Use a six-digit hex colour, like #D29A84']
       - name: featured
         label: Feature on the home page
@@ -248,6 +250,16 @@ collections:
             summary: '{{heading}}'
             fields:
               - { name: heading, label: Heading, widget: string, maxlength: 80, required: false }
+              - name: frame
+                label: Device frame
+                widget: select
+                default: none
+                required: false
+                options:
+                  - { label: None, value: none }
+                  - { label: Phone, value: phone }
+                  - { label: Browser window, value: browser }
+                hint: Phone shows app screens inside a phone; Browser window shows web pages inside a browser window. Upload the screens without a frame — the site draws it.
               - name: images
                 label: Images
                 label_singular: image
@@ -295,6 +307,7 @@ collections:
                     required: false
                     options:
                       - { label: None, value: none }
+                      - { label: Project colour (a soft tint), value: accent }
                       - { label: Linen, value: linen }
                       - { label: Paper, value: paper }
                       - { label: Blush, value: blush }
@@ -352,7 +365,17 @@ collections:
                 pattern: ['^https:\/\/(www\.)?figma\.com\/(proto|design|file|make|board)\/', 'Paste a figma.com prototype or design link']
                 hint: In Figma, click Share → Copy link (the prototype must be viewable by anyone with the link).
               - { name: label, label: Button text, widget: string, maxlength: 40, required: false, hint: e.g. “Try the app”. }
-              - { name: poster, label: Preview image, widget: image, choose_url: false, required: false, hint: Shown until a visitor starts the prototype. Defaults to the cover. }
+              - { name: poster, label: Preview image, widget: image, choose_url: false, required: false, hint: 'Shown until a visitor starts the prototype. Defaults to the cover. For a phone frame, use one of the app’s screens.' }
+              - name: frame
+                label: Device frame
+                widget: select
+                default: none
+                required: false
+                options:
+                  - { label: None, value: none }
+                  - { label: Phone, value: phone }
+                  - { label: Browser window, value: browser }
+                hint: Shows the prototype inside a phone (for apps) or a browser window (for websites).
           - name: before-after
             label: Before & after
             description: A slider that compares two images, e.g. a photo before and after editing.

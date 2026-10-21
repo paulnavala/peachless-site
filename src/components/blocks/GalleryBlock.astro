@@ -1,34 +1,88 @@
 ---
+// A set of images. Plain galleries pair landscape images and line portrait
+// ones up; with a device frame, app screens become a row of phones (a swipeable
+// rail on small screens) and web pages a cascade of browser windows.
 import type { ImageMetadata } from 'astro';
+import type { Frame } from '../../lib/content-schema';
 import Media from '../ui/Media.astro';
+import DeviceFrame from '../ui/DeviceFrame.astro';
 
 interface Props {
   heading?: string;
   images: { image: ImageMetadata; alt: string; caption?: string }[];
+  frame?: Frame;
+  /** Chapter anchor (src/lib/chapters.ts). */
+  id?: string;
 }
-const { heading, images } = Astro.props;
+const { heading, images, frame = 'none', id } = Astro.props;
 // Phone screens sit four (or three) across; landscape screenshots pair up.
 const portrait = images.every((i) => i.image.height > i.image.width);
 const columns = portrait ? Math.min(images.length, 4) : 2;
 const sizes = portrait ? '(min-width: 64em) 18rem, 45vw' : '(min-width: 64em) 37rem, 100vw';
+const ratioOf = (image: ImageMetadata) => `${image.width} / ${image.height}`;
+const lead = images.length % 2 === 1;
 ---
-<section class="gallery-block is-wide">
-  {heading && <h2 class="block-heading">{heading}</h2>}
-  <ul class:list={['gallery-block__grid', { 'is-portrait': portrait }]} role="list" style={`--columns: ${columns}`}>
-    {
-      images.map((item, i) => (
-        <li class:list={{ 'is-lead': !portrait && images.length % 2 === 1 && i === 0 }}>
-          <figure class="gallery-block__item">
-            <div class="gallery-block__frame">
-              <Media image={item.image} alt={item.alt} sizes={sizes} />
-            </div>
-            {item.caption && <figcaption class="block-caption">{item.caption}</figcaption>}
-          </figure>
-        </li>
-      ))
-    }
-  </ul>
-</section>
+{
+  frame === 'phone' ? (
+    <section class="gallery-block gallery-block--phone" id={id}>
+      {heading && <h2 class="block-heading">{heading}</h2>}
+      <div class="gallery-block__rail" role="region" aria-label={`${heading ?? 'Screens'}: ${images.length} screens`} tabindex="0" data-rail>
+        <ul class="gallery-block__grid" role="list" style={{ '--columns': columns }}>
+          {images.map((item, i) => (
+            <li data-scroll="drift" style={{ '--drift': i % 2 ? '-1.25rem' : '1.25rem' }}>
+              <DeviceFrame frame="phone" tag="figure" ratio={ratioOf(item.image)} caption={item.caption}>
+                <Media image={item.image} alt={item.alt} sizes="(min-width: 64em) 15rem, 62vw" />
+              </DeviceFrame>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  ) : frame === 'browser' ? (
+    <section class="gallery-block gallery-block--browser is-wide" id={id}>
+      {heading && <h2 class="block-heading">{heading}</h2>}
+      <ul class="gallery-block__grid" role="list">
+        {images.map((item, i) => (
+          <li
+            class:list={{ 'is-lead': lead && i === 0 }}
+            data-scroll={lead && i === 0 ? undefined : 'drift'}
+            style={{ '--drift': i % 2 ? '1.5rem' : '-1rem' }}
+          >
+            <DeviceFrame frame="browser" tag="figure" ratio={ratioOf(item.image)} caption={item.caption}>
+              <Media image={item.image} alt={item.alt} sizes={lead && i === 0 ? '(min-width: 64em) 62rem, 100vw' : '(min-width: 64em) 37rem, 100vw'} />
+            </DeviceFrame>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ) : (
+    <section class="gallery-block is-wide" id={id}>
+      {heading && <h2 class="block-heading">{heading}</h2>}
+      <ul class:list={['gallery-block__grid', { 'is-portrait': portrait }]} role="list" style={{ '--columns': columns }}>
+        {images.map((item, i) => (
+          <li class:list={{ 'is-lead': !portrait && lead && i === 0 }}>
+            <figure class="gallery-block__item">
+              <div class="gallery-block__frame">
+                <Media image={item.image} alt={item.alt} sizes={sizes} />
+              </div>
+              {item.caption && <figcaption class="block-caption">{item.caption}</figcaption>}
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<script>
+  // A phone rail only scrolls on narrow screens: keep it in the tab order only then.
+  document.querySelectorAll<HTMLElement>('[data-rail]').forEach((rail) => {
+    const sync = () => {
+      rail.tabIndex = rail.scrollWidth > rail.clientWidth + 1 ? 0 : -1;
+    };
+    new ResizeObserver(sync).observe(rail);
+  });
+</script>
 
 <style>
   .gallery-block {
@@ -75,6 +129,103 @@ const sizes = portrait ? '(min-width: 64em) 18rem, 45vw' : '(min-width: 64em) 37
 
     .is-lead {
       grid-column: 1 / -1;
+    }
+  }
+
+  /* ── Phones: a rail on small screens, a staggered row on wide ones ─────── */
+  .gallery-block--phone {
+    /* Edge to edge, so the rail can scroll under the gutters (no negative margins). */
+    grid-column: full;
+  }
+
+  .gallery-block--phone > .block-heading {
+    padding-inline: var(--gutter);
+  }
+
+  .gallery-block__rail {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    padding: var(--space-xs) var(--gutter) var(--space-m);
+    scrollbar-width: thin;
+  }
+
+  .gallery-block--phone .gallery-block__grid {
+    grid-auto-flow: column;
+    grid-auto-columns: min(62vw, 15rem);
+    grid-template-columns: none;
+    gap: var(--space-m);
+    inline-size: max-content;
+  }
+
+  .gallery-block--phone li {
+    scroll-snap-align: center;
+  }
+
+  /* No drift inside a sideways scroller. */
+  @media (width < 48em) {
+    .gallery-block--phone li {
+      animation: none;
+    }
+  }
+
+  @media (min-width: 48em) {
+    .gallery-block--phone {
+      grid-column: wide;
+    }
+
+    .gallery-block--phone > .block-heading {
+      padding-inline: 0;
+    }
+
+    .gallery-block__rail {
+      overflow: visible;
+      padding: 0;
+    }
+
+    .gallery-block--phone .gallery-block__grid {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+      inline-size: auto;
+      gap: var(--space-l);
+      align-items: start;
+      padding-block-end: var(--space-2xl);
+    }
+
+    .gallery-block--phone li:nth-child(even) {
+      margin-block-start: var(--space-2xl);
+    }
+  }
+
+  /* ── Browser windows: a lead page, the next one overlapping its foot ───── */
+  .gallery-block--browser .gallery-block__grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 48em) {
+    .gallery-block--browser .gallery-block__grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: var(--space-l) var(--space-m);
+    }
+
+    .gallery-block--browser li {
+      grid-column: span 6;
+    }
+
+    .gallery-block--browser .is-lead {
+      grid-column: 2 / span 10;
+    }
+
+    .gallery-block--browser .is-lead + li {
+      position: relative;
+      z-index: var(--z-raised);
+      margin-block-start: calc(-1 * var(--space-2xl));
+    }
+
+    .gallery-block--browser .is-lead + li + li {
+      margin-block-start: var(--space-l);
     }
   }
 </style>

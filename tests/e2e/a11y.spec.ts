@@ -14,7 +14,10 @@ const audit = async (page: Page) => {
   return violations.map((v) => `${v.id} (${v.impact}): ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`);
 };
 
-test.use({ contextOptions: { reducedMotion: 'reduce' } });
+// Final states (reduced motion) and no paper grain (prefers-contrast: more): with
+// a background texture axe could only report text contrast as "incomplete".
+// tests/unit/tokens.spec.ts proves the grain itself keeps every pair readable.
+test.use({ contextOptions: { reducedMotion: 'reduce', contrast: 'more' } });
 
 for (const width of [1280, 390]) {
   test.describe(`accessibility at ${width}px`, () => {

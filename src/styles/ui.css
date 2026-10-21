@@ -377,6 +377,12 @@
     object-fit: contain;
   }
 
+  /* The project's own colour, softened (set by src/lib/project-theme.ts on the
+     card or page; without a project around it, a clay-light panel). */
+  [data-panel='accent'] {
+    background-color: var(--project-tint-deep, var(--clay-light));
+  }
+
   [data-panel='linen'] {
     background-color: var(--linen);
   }

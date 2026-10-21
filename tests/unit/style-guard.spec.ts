@@ -18,6 +18,8 @@ const LEGACY_FILES = new Set<string>([]);
 const EXCLUDED = [/^src\/styles\/tokens\.css$/, /^src\/content\//, /\.d\.ts$/];
 const IMPORTANT_ALLOWED = new Set(['src/styles/reset.css', 'src/styles/base.css', 'src/styles/primitives.css']);
 const BREAKPOINTS = new Set(['36em', '48em', '64em']);
+// The scroll-linked effects src/styles/motion.css defines.
+const SCROLL_EFFECTS = new Set(['unveil', 'parallax', 'drift', 'lit']);
 
 function walk(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
@@ -85,6 +87,14 @@ function violations(rel: string, raw: string): string[] {
     for (const _ of css.matchAll(/!important/g)) found.push('!important');
   }
   for (const m of code.matchAll(/['"`]#[0-9a-fA-F]{3,8}['"`]/g)) found.push(`hex colour ${m[0]} in script`);
+  if (!rel.endsWith('.css')) {
+    const markup = text.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    for (const m of markup.matchAll(/data-scroll['"]?\s*[=:]\s*["'`]([^"'`]*)["'`]/g)) {
+      for (const effect of m[1].split(/\s+/).filter(Boolean)) {
+        if (!SCROLL_EFFECTS.has(effect)) found.push(`unknown data-scroll effect "${effect}"`);
+      }
+    }
+  }
   for (const m of code.matchAll(/font-family\s*:\s*['"]/g)) found.push(`font-family in script ${m[0]}`);
 
   return found;

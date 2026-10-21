@@ -7,8 +7,9 @@ tools: []
 cover:
   image: logo.png
   alt: "The InTouch logo: the word touch set vertically inside a bold letter n"
-  panel: paper
+  panel: accent
   fit: contain
+accent: "#18B3B3"
 featured: false
 hidden: false
 order: 7
@@ -22,7 +23,7 @@ blocks:
       - image: logo.png
         alt: InTouch logo in its original colours
         label: Original colours
-        panel: paper
+        panel: accent
       - image: logo-peach.png
         alt: InTouch logo redrawn in the peachless. palette
         label: In the peachless. palette

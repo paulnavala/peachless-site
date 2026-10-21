@@ -31,6 +31,7 @@ export interface ProjectData {
   disciplines: string[];
   year?: number;
   cover: { image: string; alt: string; panel?: string; fit?: string };
+  accent?: string;
   featured?: boolean;
   hidden?: boolean;
   order?: number;

@@ -1,0 +1,24 @@
+---
+// A statement that lights up word by word as it scrolls through the screen
+// (data-scroll="lit" in src/styles/motion.css). The words stay ordinary inline
+// text, so the element reads, wraps and kerns like any heading or paragraph;
+// without scroll timelines, or under reduced motion, it is simply lit.
+// Unlit words use --color-text-dim (3:1 at best), so use it for large text only.
+interface Props {
+  text: string;
+  tag?: 'h2' | 'p';
+  id?: string;
+  class?: string;
+  /** Passed through, so a parent's scoped styles reach the element. */
+  [attr: string]: unknown;
+}
+const { text, tag = 'h2', id, class: className, ...rest } = Astro.props;
+const Tag = tag;
+const escape = (s: string) =>
+  s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+const words: string[] = text.trim().split(/\s+/);
+// Built as one string: template whitespace between the spans would be collapsed
+// or dropped by HTML compression.
+const html = words.map((word, i) => `<span style="--w:${i}">${escape(word)}</span>`).join(' ');
+---
+<Tag {...rest} id={id} class:list={['lit', className]} data-reveal data-scroll="lit" style={{ '--lit-n': words.length }} set:html={html} />

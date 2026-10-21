@@ -1,0 +1,150 @@
+---
+// Draws a device around a screen: a phone for app screens, a browser window for
+// web pages. The screen is the slot. Editors upload screens without a frame
+// (the "Device frame" option in the CMS); the frame is pure CSS.
+import type { Frame } from '../../lib/content-schema';
+
+interface Props {
+  frame: Exclude<Frame, 'none'>;
+  /** The screen's proportions (width / height), e.g. "412 / 917". */
+  ratio?: string;
+  /** Render as a <figure>; the caption then sits in the window bar (browser) or below the phone. */
+  tag?: 'div' | 'figure';
+  caption?: string;
+  class?: string;
+  /** Passed through, so a parent's scoped styles reach the device. */
+  [attr: string]: unknown;
+}
+const { frame, ratio, tag = 'div', caption, class: className, ...rest } = Astro.props;
+const Root = tag;
+const screenStyle = ratio ? { '--screen': ratio } : undefined;
+const figcaption = Root === 'figure' && caption;
+---
+{
+  frame === 'phone' ? (
+    <Root {...rest} class:list={['device device--phone', className]}>
+      <div class="device__body">
+        <div class="device__screen" style={screenStyle}>
+          <slot />
+        </div>
+      </div>
+      {figcaption && <figcaption class="device__caption block-caption">{caption}</figcaption>}
+    </Root>
+  ) : (
+    <Root {...rest} class:list={['device device--browser', className]}>
+      {figcaption ? (
+        <figcaption class="device__bar">
+          <span class="device__dots" aria-hidden="true" />
+          <span class="device__title">{caption}</span>
+        </figcaption>
+      ) : (
+        <div class="device__bar" aria-hidden="true">
+          <span class="device__dots" />
+          {caption && <span class="device__title">{caption}</span>}
+        </div>
+      )}
+      <div class="device__screen" style={screenStyle}>
+        <slot />
+      </div>
+    </Root>
+  )
+}
+
+<style>
+  .device {
+    container-type: inline-size;
+    margin: 0;
+  }
+
+  .device__screen {
+    position: relative;
+    overflow: clip;
+    background: var(--paper);
+  }
+
+  .device__screen > :global(*) {
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  /* ── Phone: an espresso body, a pill-shaped island, rounded glass ──────── */
+  .device--phone {
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .device--phone .device__body {
+    position: relative;
+    padding: 3cqi;
+    border-radius: 14cqi;
+    background: var(--espresso);
+    box-shadow:
+      var(--shadow-lg),
+      inset 0 0 0 0.6cqi var(--espresso-raised);
+  }
+
+  .device--phone .device__body::before {
+    content: '';
+    position: absolute;
+    z-index: var(--z-raised);
+    inset-block-start: 5.5cqi;
+    inset-inline-start: 50%;
+    translate: -50% 0;
+    inline-size: 24cqi;
+    block-size: 6.5cqi;
+    border-radius: var(--radius-pill);
+    background: var(--espresso);
+  }
+
+  .device--phone .device__screen {
+    aspect-ratio: var(--screen, 9 / 19.5);
+    border-radius: 11cqi;
+  }
+
+  /* ── Browser: a window with a bar and three dots ───────────────────────── */
+  .device--browser {
+    overflow: clip;
+    border-radius: var(--radius-md);
+    background: var(--paper);
+    box-shadow:
+      var(--shadow-lg),
+      0 0 0 1px rgb(var(--espresso-rgb) / 0.08);
+  }
+
+  .device__bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    min-block-size: 2.25rem;
+    padding-inline: var(--space-s);
+    border-block-end: 1px solid var(--color-border);
+    background: var(--linen);
+    color: var(--color-text-secondary);
+    font-size: var(--text-small);
+  }
+
+  .device__dots {
+    flex: none;
+    inline-size: 2.4em;
+    block-size: 0.8em;
+    color: var(--taupe);
+    background: radial-gradient(circle, currentColor 0 0.25em, transparent 0.27em) 0 50% / 0.8em 0.8em repeat-x;
+  }
+
+  .device__title {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .device--browser .device__screen {
+    aspect-ratio: var(--screen, 16 / 10);
+  }
+
+  @media (forced-colors: active) {
+    .device--phone .device__body,
+    .device--browser {
+      border: 1px solid CanvasText;
+    }
+  }
+</style>

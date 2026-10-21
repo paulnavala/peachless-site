@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 import { publishedPhotos, publishedProjects, readYaml } from './content';
-import { featured } from '../../src/lib/project-order';
+import { featured, reelPicks } from '../../src/lib/project-order';
 
 const home = readYaml('pages', 'home.yaml');
 const work = readYaml('pages', 'work.yaml');
@@ -51,5 +51,52 @@ test.describe('home page', () => {
 
     await expect(page.locator('#about-teaser-title')).toHaveText(home.about.heading);
     await expect(page.locator('main [data-next-step]')).toHaveCount(1);
+  });
+
+  test('the hero reel previews work the page doesn’t show yet, out of the way of assistive tech', async ({ page }) => {
+    await page.goto('/');
+    const projects = publishedProjects();
+    const photos = publishedPhotos();
+    const picks = reelPicks(projects, featured(projects), photos, featured(photos, 5).slice(0, 5));
+    test.skip(picks.length < 3, 'too little work for a reel');
+    const reel = page.locator('.reel');
+    await expect(reel).toHaveAttribute('aria-hidden', 'true');
+    const links = reel.locator('a');
+    await expect(links).toHaveCount(picks.length);
+    for (const [i, pick] of picks.entries()) {
+      await expect(links.nth(i)).toHaveAttribute('tabindex', '-1');
+      await expect(links.nth(i)).toHaveAttribute('href', pick.kind === 'project' ? `/projects/${pick.entry.id}/` : '/photography/');
+    }
+  });
+
+  for (const width of [320, 1280]) {
+    test(`nothing scrolls sideways at ${width}px while the reel drifts`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto('/');
+      await page.mouse.wheel(0, 700);
+      await page.waitForTimeout(300);
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  }
+
+  test('a focused story in the deck comes to the front', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+    const cards = page.locator('.selected-work').getByTestId('work-card');
+    const count = await cards.count();
+    // Scroll to where the whole deck is stacked, then focus each story in turn.
+    await page.locator('.selected-work .deck__item').last().scrollIntoViewIfNeeded();
+    await page.mouse.wheel(0, 400);
+    for (let i = 0; i < count; i++) {
+      const link = cards.nth(i).locator('a.card__link');
+      await link.focus();
+      const onTop = await link.evaluate((a) => {
+        const box = a.getBoundingClientRect();
+        const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+        return !!hit && hit.closest('[data-testid="work-card"]') === a.closest('[data-testid="work-card"]');
+      });
+      expect(onTop, `story ${i + 1} is visible when focused`).toBe(true);
+    }
   });
 });
