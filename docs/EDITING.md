@@ -68,9 +68,10 @@ You can always check your change before anyone sees it.
    - **Year**, **Client or context** (a client's name, or "Concept project", "University coursework"…), **My role**, **Tools used**: all optional, but they help tell the story.
 3. **The address.** When you create a project you also choose its web address, e.g. `peachless.design/projects/fish-seafood`. Use lowercase letters, numbers and dashes. **It can't be changed later**, because people may link to it, so pick something short and lasting.
 4. **Cover image**: the picture on the Work page and at the top of the project page (see [Images](#6-images)).
-   - **Background colour** and **Fit**: for a logo with a transparent background, choose a background (Linen, Paper, Blush, Clay or Espresso) and **Show the whole image**. For a photo or screenshot, choose **None** and **Fill the card**.
-5. **Story**: add the sections that tell the project (next chapter).
-6. **Save** → **View Preview** → **Publish**.
+   - **Background colour** and **Fit**: for a logo with a transparent background, choose a background and **Show the whole image**. **Project colour** (a soft tint of the colour below) usually looks best; Linen, Paper, Blush, Clay and Espresso are there too. For a photo or screenshot, choose **None** and **Fill the card**.
+5. **Project colour**: pick the main colour of the logo (CERN's navy, Fish & Seafood's blue…) or type its code, like `#0071BC`. The site makes soft tints from it for the top of the project page, its card and the "Next project" band, so each project has its own atmosphere. Any colour is safe: the site always keeps the text readable. Leave it empty for the site's peach tones.
+6. **Story**: add the sections that tell the project (next chapter).
+7. **Save** → **View Preview** → **Publish**.
 
 A new project appears **first** on the Work page. To move it, use **Reorder Entries** on the Projects list.
 
@@ -82,16 +83,18 @@ The **Story** is a list of sections. Add them with the **+** button, drag them t
 
 **The brief** (what was the challenge?) → **The idea** → **The process** → **The result**.
 
+**Chapters.** Every section with a heading becomes a numbered chapter (01, 02…). With three or more, an **In this story** list at the top of the page links to each one, so short headings like "The brief" or "The app" work best.
+
 | Section | Use it for | Tips |
 |---|---|---|
 | **Text** | A heading and a few paragraphs | Headings like "The brief", "The idea", "The result". Keep paragraphs short. |
 | **Image** | One image with an optional caption | **Width**: *Text width*, *Wide*, or *Full width (edge to edge)*. Wide and full-width images need at least 2000 px. |
-| **Gallery** | 2–12 images in a grid: screens, details, sketches | Portrait images (phone screens) sit up to four across, landscape ones two across. |
-| **Quote** | A short, large quotation | Add **Who said it** for client feedback. |
+| **Gallery** | 2–12 images in a grid: screens, details, sketches | **Device frame**: *Phone* shows app screens inside phones (a swipeable row on phones, a staggered row on computers); *Browser window* shows web pages inside browser windows; *None* is a plain grid, with portrait images up to four across and landscape ones two across. Upload the screens without a frame — the site draws it. |
+| **Quote** | A short, large quotation that lights up word by word as visitors scroll past | Add **Who said it** for client feedback. |
 | **Logo** | Logo versions side by side | Each version gets its own background colour and an optional label ("Primary", "Monochrome"). |
 | **Colour palette** | Brand colours visitors can copy | A name and a six-digit hex colour, like `#D29A84`. |
 | **Brand guidelines** | The pages of a brand book, readable full screen | Export each page as a PNG (about 2400 px wide) or an SVG **with text converted to outlines**. Otherwise visitors see the wrong fonts. |
-| **Figma prototype** | An interactive prototype visitors can try | In Figma: **Share → Copy link**, with access set to "Anyone with the link". Add a **Preview image**, or the cover is used. |
+| **Figma prototype** | An interactive prototype visitors can try | In Figma: **Share → Copy link**, with access set to "Anyone with the link". **Device frame**: for an app choose *Phone* and use one of its screens as the **Preview image**; for a website choose *Browser window*. Without a preview image, the cover is used. |
 | **Before & after** | A slider comparing two images | Both images must have the **same size and crop**. |
 
 ---
@@ -106,6 +109,8 @@ The **Story** is a list of sections. Add them with the **+** button, drag them t
 | Wide or full-width story images | At least 2000 px wide |
 | Logos | Transparent PNG or SVG |
 | Brand book pages | PNG about 2400 px wide, or SVG with outlined text |
+| Phone screens (Device frame: Phone) | The screen only, no phone around it, exported at 2× (about 800 px wide) |
+| Website screenshots (Device frame: Browser window) | The page only, no browser bar, about 2000 px wide |
 | Share image (Search & sharing) | 1200 × 630 px |
 | Photos | Any size: large uploads are resized automatically |
 
@@ -126,7 +131,7 @@ One sentence is plenty.
 | Switch | What it does |
 |---|---|
 | **Hide from site** | The project (or photo) disappears everywhere: no page, no card, not in Google. Use it for work in progress, or to retire something without deleting it. Switch it off to bring it back. |
-| **Feature on the home page** | Projects appear under "Selected work" on the home page; photos appear in the photography strip. With nothing featured, the first three projects and the first five photos are shown. Three projects and five photos look best. |
+| **Feature on the home page** | Projects appear under "Selected work" on the home page; photos appear in the photography strip. With nothing featured, the first three projects and the first five photos are shown. Three projects and five photos look best. The row of work at the top of the home page shows the rest: projects and photos that aren't featured. |
 
 **Prefer hiding to deleting.** A deleted project's address stops working, and anyone who saved or shared the link lands on the "page not found" page.
 

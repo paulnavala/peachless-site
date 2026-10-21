@@ -12,6 +12,12 @@ History:
   - one page per project
   - a single token-driven design system
   - an editor-friendly admin
+- **v2.1 (October 2026), "editorial chapters":** a visual-storytelling polish:
+  - scroll-linked motion
+  - a project colour per project
+  - device frames
+  - numbered chapters
+  - a home page told as a story
 
 Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep it in step with the admin).
 
@@ -21,23 +27,40 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 - `npm run build` — static build to `dist/`. Zod validates all content, and the build fails on schema violations, reserved or colliding slugs, or a missing image.
 - `npm run preview` — serve `dist/` at `http://localhost:4321`
 - `npm run check` — `astro check` (expect 0 errors, 0 warnings)
-- `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, ~195 tests)
+- `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, ~640 tests, most of them project-tint accents)
 - `npm run budgets` — per-page gzipped JS / island / CSS / font-preload budgets on `dist/` (`scripts/check-budgets.mjs`). CI runs it between build and e2e. Raise a budget only with a reason.
-- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~120 tests, `retries: 1`). **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
+  - Project pages are closest to the limit (about 13.4 of 14 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
+- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~140 tests, `retries: 1`). **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
 - `node scripts/capture-screens.mjs <base-url> docs/reference/screens/v2` — full-page reference screenshots (10 pages × 1440/768/390).
 
 ## Architecture
 
 - **Pages** (`src/pages/`):
-  - `index.astro`: the home story (hero → manifesto → what I do → selected work → photo strip → about teaser).
+  - `index.astro`: the home story, in `components/home/`:
+    1. the hero: the typed tagline plus `WorkReel`, a drifting row of work the rest of the page doesn't show yet (`reelPicks`)
+    2. a `LitStatement` manifesto
+    3. `DisciplineIndex` (what I do)
+    4. `StoryDeck` (selected work)
+    5. the `PhotoStrip` collage
+    6. the about teaser
   - `projects/index.astro`, `graphic-design.astro`, `uiux.astro` and `logo-design.astro` are thin wrappers around `components/work/WorkIndex.astro`. `logo-design` is an **alias page** with `rel=canonical` to graphic-design. It is deliberately not a redirect, because browsers cache 301s and a reverse redirect would loop.
-  - `projects/[slug].astro`: one page per **published** project (hero → story blocks → next project).
+  - `projects/[slug].astro`: one page per **published** project:
+    - an `article.project` carrying the project theme
+    - a reading-progress line
+    - the hero: a tint band, credits and "In this story"
+    - story blocks
+    - the next-story band
   - `photography.astro`, `about.astro`, `contact.astro`, `404.astro`.
 - **Data access:** `src/lib/content.ts` is the **only** place that reads the `projects` and `photos` collections (a unit test enforces this), so hidden entries can't leak. Ordering and visibility rules (`hidden`, `featured`, `order`, next-project wrap) live in `src/lib/project-order.ts` and are reused by e2e specs.
 - **Content model:** `src/lib/content-schema.ts` holds the zod schemas and constants (disciplines, tools, panels, reserved ids, regexes). It is imported by `src/content.config.ts`, Vitest and Playwright.
   - Collections: `projects`, `photos` (one folder per entry: `<id>/index.yaml` plus its images), and singletons `home`, `work`, `about` (markdown), `contact`, `photographyPage`, `site`, `form`.
   - Folder name = id. `folderId()` throws on invalid or reserved ids (`graphic-design`, `uiux`, `logo-design`, …).
   - Project pages are built from `blocks`, a discriminated union: text, image, gallery, quote, logo, palette, guidelines, prototype, before-after. `components/blocks/BlockRenderer.astro` maps each type to a component. Markdown in blocks is rendered at build time with `marked` (`src/lib/markdown.ts`).
+  - **Chapters** (`src/lib/chapters.ts`): every headed block is a numbered chapter (CSS counter) anchored on its block `<section>`. Its heading isn't the anchor because it is sticky. Ids are slugs, deduped against reserved page ids. 3+ chapters (`TOC_MIN_CHAPTERS`) get an "In this story" list.
+  - **Project colour:** `accent` → `projectTheme()` (`src/lib/project-theme.ts`) gives `--project-tint` (bands), `--project-tint-deep` (behind logos, panel value `accent`) and `--project-ink` (numbers, progress line).
+    - `projectTint()` in `color.ts` rebuilds the accent in OKLCH, then walks toward a safe colour until every text pair passes. `project-tint.spec` proves it for 400+ accents.
+    - Set the theme with `style={projectTheme(...)}` on the article, card or band. **Never** set it on `<body>` (it leaks into the next-story band) or in a `:root --color-*` token.
+  - **Device frames:** `frame: none|phone|browser` on gallery and prototype blocks; the frame is drawn by `components/ui/DeviceFrame.astro`. A phone gallery is a scroll-snap rail below 48em (focusable only while it overflows).
 - **Islands** (`src/components/islands/`):
   - Vue 3 **render-function components** (`defineComponent` + `h()` in plain `.ts`, **not** SFCs), each paired with a 4-line `.vue` wrapper so Astro's Vue renderer picks it up.
   - All four (PhotographyGallery, ContactForm, GuidelineViewer, BeforeAfterSlider) are `client:visible` and import their own CSS from `src/styles/components/`.
@@ -48,10 +71,13 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - `static/FortunePeach.astro`.
   - `chrome/Header.astro` (sticky, condenses via an IntersectionObserver sentinel) and `chrome/MobileMenu.astro` (`<dialog>`).
 - **`src/lib/`:**
+  - `tokens.ts`: reads `tokens.css?raw` for build-time colour maths. `tokens-parse.ts` is shared with `tokens.spec`. Playwright can't import `tokens.ts`.
+  - `color.ts`: contrast helpers, OKLab/OKLCH and `projectTint`. `project-theme.ts` wraps `projectTint` as CSS custom properties.
+  - `chapters.ts`: story chapters and anchors.
+  - `project-order.ts`: also `reelPicks`.
   - `dom.ts`: `trapFocus`, ref-counted `lockScroll`, reduced-motion helpers.
   - `reveal.ts`: one observer for `[data-reveal]`.
   - `nav.ts`: `navCurrent`.
-  - `color.ts`: contrast helpers.
   - `masonry.ts`: the photo-column dealing.
   - `structured-data.ts`: JSON-LD builders.
 - **SEO:** `components/Seo.astro` emits the title, description, canonical, Open Graph tags and one JSON-LD `@graph` per page (WebSite + Person on home, Person on about, CreativeWork + breadcrumbs on projects). The project share image is `getImage` 1200×630 of a photographic cover.
@@ -60,20 +86,41 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 
 - **Tokens only:**
   - `src/styles/tokens.css` is the only file allowed colour literals, font names and raw z-index values. Everything else uses tokens: semantic `--color-*` first, raw palette only where no semantic token fits.
-  - Surfaces switch via `[data-surface=paper|blush|inverse]`.
+  - Surfaces switch via `[data-surface=paper|blush|inverse]`. `.sheet` (opt-in) floats a surface band as a rounded inset sheet from 48em: CtaBand, the next-story band, the footer, the home bands.
+  - **Grain:** paper and inverse surfaces carry a fine grain (`--grain-*` tokens, inline SVG). It is never on linen or blush (no contrast headroom) and is off under `prefers-contrast: more`, forced colours and print. `tokens.spec` checks every pair on the strongest pixel. axe runs with `contrast: 'more'`, so it measures text, not texture.
   - `tests/unit/style-guard.spec.ts` fails CI on violations.
   - `tests/unit/tokens.spec.ts` checks the documented contrast pairs (e.g. terracotta `#8a523e` is the text-safe accent; clay `#d29a84` is decorative or a fill, never text on linen) and the clamp ratios.
 - **Breakpoints:** only `36em`, `48em` and `64em` (mirrored in `src/lib/breakpoints.ts`). Range syntax (`width < 64em`) is fine. Prefer container queries inside components.
+  - One documented height query: the home `StoryDeck` only stacks at `(min-width: 48em) and (min-height: 40em)`. Sticky cards taller than the screen would hide content; being in em, the query also switches off at 200% zoom.
 - **Cascade:** `global.css` declares `@layer reset, base, primitives, ui`. Component and page `<style>` blocks are unlayered, so they win without specificity hacks. `!important` is allowed only in reset, base and primitives.
 - **Type:**
   - Crimson Pro (display serif, look-alike of the brand book's Minion) and Inter (body/UI, look-alike of Neue Haas Grotesk).
   - Both are self-hosted through the Astro Fonts API `local()` provider from pinned `@fontsource-variable/*` packages.
   - Serif only at 23px and up; h4 and below, eyebrows and UI text are Inter. `font-synthesis: none`.
   - `Base.astro` preloads Inter normal plus one Crimson face (`preloadSerif`).
-- **Motion:**
+- **Motion** (`src/styles/motion.css`):
   - Base styles are the **final state**. Animation and transition live only inside `@media (prefers-reduced-motion: no-preference)`. There is no global kill switch; e2e checks that nothing runs under reduced motion.
-  - Scroll reveal is opt-in via `data-reveal`, never on the hero or the LCP element.
-  - Page transitions are native cross-document View Transitions (`@view-transition`). The card ↔ hero morph uses `--vt: work-<slug>`, and names must be unique per page. **No `<ClientRouter>`**: it breaks module scripts, focus traps and the gallery's history handling.
+  - **Two systems:**
+    - `data-reveal` is the one-shot entrance (`reveal.ts`); it works everywhere and is the only effect allowed to fade text.
+    - `data-scroll="unveil | parallax | drift | lit"` is scrubbed by the visitor's scroll and is decoration only. It lives inside `@supports (animation-timeline: view())`; Chrome/Edge and Safari 26+ have it, Firefox gets the still version.
+    - An element with both is a progressive replacement: with scroll timelines, its reveal is off.
+    - The style guard allows only those four values.
+    - `structure.spec` checks that every effect comes to rest by the bottom of each page.
+  - **Property ownership:** scroll keyframes animate `transform`, `clip-path` and `color`; hovers, transitions and reveals own `translate`, `scale`, `rotate` and `opacity`. `unveil` and `parallax` move the frame's first child, so the frame (often what tests click) holds still.
+  - **Gotchas:**
+    - Always set `view-timeline-inset`, since `auto` picks up `scroll-padding-top`.
+    - Write `animation-timeline` and `animation-range` after the `animation` shorthand.
+    - Never put `overflow: hidden` or `auto` between an effect (or a sticky element) and the root; use `clip`.
+  - **Neither system goes on the hero or the LCP element.** (The project hero's cover and the About portrait are LCPs.)
+  - **Page transitions** are native cross-document View Transitions (`@view-transition`): a fade-through for the page. Names must be unique per page:
+    - `work-<id>` (card media ↔ hero, via `--vt`)
+    - `work-title-<id>` (`.work-title` with `--vt-title`)
+    - `chip-<key>` and `filter-indicator` (the sliding pill)
+    - `about-portrait`
+    - `site-header`
+
+    The reel only names projects that are not also in the deck. **No `<ClientRouter>`**: it breaks module scripts, focus traps and the gallery's history handling.
+  - **Scoped styles:** a component receiving `class` from a parent must spread `...rest` onto its root (see `LitStatement`, `DeviceFrame`, `ArrowLink`), or the parent's scoped styles won't reach it.
 - **Header:** the sticky header keeps a constant footprint when it condenses (`margin-block-end` makes up the height difference). Without that, scroll anchoring and the sentinel fight, and the header flickers every frame near the top of the page.
 - **Accessibility:**
   - One visible h1 per page, sequential heading levels.
@@ -81,7 +128,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - Modal UI uses native `<dialog>` plus `trapFocus` and `lockScroll`.
   - axe (WCAG 2.2 AA) runs on every route at 1280 and 390px, plus the open overlays.
 - **Links:** internal hrefs use the trailing-slash form (`/projects/`). Cloudflare answers the bare form with a redirect.
-- **Visual reference:** `docs/reference/screens/v2/` is the signed-off look; recapture and compare after visual changes. `v1-parity/` is the retired v1 contract, kept for history.
+- **Visual reference:** `docs/reference/screens/v2/` is the signed-off look (recaptured for v2.1). Recapture and compare after visual changes; the captures use reduced motion, so they show final states. Review motion itself on the Cloudflare preview. `v1-parity/` is the retired v1 contract, kept for history.
 
 ## Content & CMS
 
@@ -115,7 +162,8 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 
 - **Never POST to the real Web3Forms endpoint:** each submission emails the owner. `tests/e2e/fixtures.ts` aborts `api.web3forms.com` for every spec, and specs that exercise the form add their own `page.route` stub. Every spec must import `test` from `./fixtures`; a unit test enforces this.
 - **Expectations come from content:** e2e specs read counts, order, slugs and labels from the content files via `tests/e2e/content.ts` (reusing `project-order.ts`), so routine CMS edits don't turn CI red. Don't hardcode content in specs.
-- **Reduced motion** is set with `test.use({ contextOptions: { reducedMotion: 'reduce' } })`. A bare `test.use({ reducedMotion })` is **silently ignored**.
+- **Reduced motion** is set with `test.use({ contextOptions: { reducedMotion: 'reduce' } })`. A bare `test.use({ reducedMotion })` is **silently ignored**. `a11y.spec` also sets `contrast: 'more'` (no grain).
+- **Vitest and CSS:** Vitest blanks CSS imports, so `vitest.config.ts` lets `tokens.css` through (`css.include`) for the `?raw` import in `src/lib/tokens.ts`.
 - **Islands:** specs that drive an island should first `await waitForIsland(page, selector)` (`tests/e2e/utils.ts`), because `client:visible` islands ignore input until hydrated.
 - **Figma:** prototype specs stub `https://www.figma.com/**`. Never wait on `networkidle` with a live Figma embed, because its telemetry never goes idle.
 - **Windows:** Git Bash rewrites `/path` arguments, so prefix commands with `MSYS_NO_PATHCONV=1` when passing site paths. Kill a stray `astro preview` with `taskkill //PID <pid> //T //F`.
