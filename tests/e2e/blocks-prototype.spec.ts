@@ -20,6 +20,12 @@ test.describe('Figma prototype block', () => {
     await block.locator('[data-proto-launch]').click();
     await expect(block.locator('iframe.proto__iframe')).toHaveAttribute('src', /figma\.com\/embed/);
     await expect(block.locator('a[href*="figma.com"]').first()).toBeVisible();
+    // In a device frame the prototype runs inside the device, and the launch card goes.
+    const frame = project!.data.blocks.find((b) => b.type === 'prototype')?.frame;
+    if (frame && frame !== 'none') {
+      await expect(block.locator('.device__screen iframe.proto__iframe')).toHaveCount(1);
+      await expect(block.locator('[data-proto-facade]')).toHaveCount(0);
+    }
   });
 
   test('fullscreen opens a modal dialog that keeps focus, and Escape returns to the button', async ({ page }) => {

@@ -307,6 +307,9 @@ export default defineComponent({
                   type: 'button',
                   class: 'pg-masonry__media',
                   'aria-haspopup': 'dialog',
+                  // The photo (the first child) opens like a window as it scrolls
+                  // in; the button itself holds still (src/styles/motion.css).
+                  'data-scroll': 'unveil',
                   onMouseenter: () => prefetch(index),
                   onFocus: () => prefetch(index),
                   onKeydown: (e: KeyboardEvent) => onTileKeydown(e, index),

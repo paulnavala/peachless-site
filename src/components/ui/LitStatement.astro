@@ -9,8 +9,10 @@ interface Props {
   tag?: 'h2' | 'p';
   id?: string;
   class?: string;
+  /** Passed through, so a parent's scoped styles reach the element. */
+  [attr: string]: unknown;
 }
-const { text, tag = 'h2', id, class: className } = Astro.props;
+const { text, tag = 'h2', id, class: className, ...rest } = Astro.props;
 const Tag = tag;
 const escape = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
@@ -19,4 +21,4 @@ const words: string[] = text.trim().split(/\s+/);
 // or dropped by HTML compression.
 const html = words.map((word, i) => `<span style="--w:${i}">${escape(word)}</span>`).join(' ');
 ---
-<Tag id={id} class:list={['lit', className]} data-reveal data-scroll="lit" style={{ '--lit-n': words.length }} set:html={html} />
+<Tag {...rest} id={id} class:list={['lit', className]} data-reveal data-scroll="lit" style={{ '--lit-n': words.length }} set:html={html} />

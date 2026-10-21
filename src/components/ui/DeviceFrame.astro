@@ -12,15 +12,17 @@ interface Props {
   tag?: 'div' | 'figure';
   caption?: string;
   class?: string;
+  /** Passed through, so a parent's scoped styles reach the device. */
+  [attr: string]: unknown;
 }
-const { frame, ratio, tag = 'div', caption, class: className } = Astro.props;
+const { frame, ratio, tag = 'div', caption, class: className, ...rest } = Astro.props;
 const Root = tag;
 const screenStyle = ratio ? { '--screen': ratio } : undefined;
 const figcaption = Root === 'figure' && caption;
 ---
 {
   frame === 'phone' ? (
-    <Root class:list={['device device--phone', className]}>
+    <Root {...rest} class:list={['device device--phone', className]}>
       <div class="device__body">
         <div class="device__screen" style={screenStyle}>
           <slot />
@@ -29,7 +31,7 @@ const figcaption = Root === 'figure' && caption;
       {figcaption && <figcaption class="device__caption block-caption">{caption}</figcaption>}
     </Root>
   ) : (
-    <Root class:list={['device device--browser', className]}>
+    <Root {...rest} class:list={['device device--browser', className]}>
       {figcaption ? (
         <figcaption class="device__bar">
           <span class="device__dots" aria-hidden="true" />

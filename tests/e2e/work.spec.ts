@@ -24,6 +24,18 @@ test.describe('Work index', () => {
     await expect(chips).toHaveCount(4);
     await expect(chips.first()).toHaveAttribute('aria-current', 'page');
     await expect(chips.nth(3)).toHaveAttribute('href', '/photography/');
+    // One pill, in the current chip: it slides between the filtered pages.
+    await expect(page.locator('.filter-chips .chip__indicator')).toHaveCount(1);
+    await expect(page.locator('.filter-chips a[aria-current="page"] .chip__indicator')).toHaveCount(1);
+  });
+
+  test('each card invites a visit without adding words to its link', async ({ page }) => {
+    await page.goto('/projects/');
+    await expect(page.locator('.project-card__cta')).toHaveCount(projects.length);
+    await expect(page.locator('a.card__link .project-card__cta')).toHaveCount(0);
+    for (const card of await page.getByTestId('work-card').all()) {
+      await expect(card).toHaveAttribute('style', /--project-tint:/);
+    }
   });
 
   for (const [path, discipline, title] of [

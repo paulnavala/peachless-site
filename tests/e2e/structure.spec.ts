@@ -51,6 +51,41 @@ test.describe('every page', () => {
   });
 });
 
+test('scroll-linked effects come to rest by the bottom of every page', async ({ page }) => {
+  test.setTimeout(60_000);
+  for (const path of routes) {
+    await page.goto(path);
+    if (!(await page.evaluate(() => CSS.supports('animation-timeline: view()')))) continue;
+    // Step down the page so every timeline sees a real scroll, then settle.
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.documentElement.scrollHeight; y += 400) {
+        window.scrollTo(0, y);
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+      window.scrollTo(0, document.documentElement.scrollHeight);
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    });
+    const unfinished = await page.evaluate(() => {
+      const left: string[] = [];
+      for (const el of document.querySelectorAll('[data-scroll~="unveil"] > :first-child')) {
+        const t = getComputedStyle(el).transform;
+        if (t !== 'none' && t !== 'matrix(1, 0, 0, 1, 0, 0)') left.push(`unveil in .${el.parentElement?.classList[0]}: ${t}`);
+      }
+      for (const statement of document.querySelectorAll('[data-scroll~="lit"]')) {
+        const lit = getComputedStyle(statement).color;
+        for (const word of statement.children) {
+          if (getComputedStyle(word).color !== lit) left.push(`unlit word "${word.textContent}"`);
+        }
+      }
+      for (const swash of document.querySelectorAll('.site-footer__swash')) {
+        if (getComputedStyle(swash).clipPath.includes('100%')) left.push('footer underline');
+      }
+      return left;
+    });
+    expect(unfinished, path).toEqual([]);
+  }
+});
+
 test.describe('reduced motion', () => {
   test.use({ contextOptions: { reducedMotion: 'reduce' } });
 
