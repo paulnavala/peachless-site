@@ -79,9 +79,11 @@ const portraitShare = await getImage({ src: portrait, width: 800, format: 'jpg' 
     color: var(--color-text-secondary);
   }
 
-  /* The page ends on the tagline, lit word by word as it scrolls up. */
+  /* The page ends on the tagline, lit word by word as it scrolls up: balanced,
+     and wide enough to break between its two sentences. */
   .about__closing {
-    max-width: 18ch;
+    max-width: 22ch;
+    text-wrap: balance;
     margin-block-start: var(--space-l);
     font-family: var(--font-display);
     font-size: var(--text-display-2);

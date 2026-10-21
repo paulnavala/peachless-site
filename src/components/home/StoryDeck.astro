@@ -158,10 +158,6 @@ const pad = (n: number) => String(n).padStart(2, '0');
   .deck-card__summary {
     max-width: 42ch;
     color: var(--color-text-secondary);
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
   }
 
   .deck-card__cta {
@@ -217,6 +213,17 @@ const pad = (n: number) => String(n).padStart(2, '0');
       --panel-pad: 4% 18%;
       aspect-ratio: auto;
       min-block-size: 0;
+    }
+  }
+
+  /* Only the stacked card above the text has a fixed height to share: there,
+     a long summary stops at four lines so the cover keeps its strip. */
+  @media (min-width: 48em) and (width < 64em) and (min-height: 40em) {
+    .deck-card__summary {
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
   }
 

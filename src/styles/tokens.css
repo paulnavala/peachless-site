@@ -108,7 +108,6 @@
   --space-xl: clamp(3rem, 2.875rem + 0.5556vw, 3.375rem);
   --space-2xl: clamp(4rem, 3.8333rem + 0.7407vw, 4.5rem);
   --space-3xl: clamp(6rem, 5.75rem + 1.1111vw, 6.75rem);
-  --space-s-l: clamp(1rem, 0.5833rem + 1.8519vw, 2.25rem);
   --space-m-xl: clamp(1.5rem, 0.875rem + 2.7778vw, 3.375rem);
   --space-l-2xl: clamp(2rem, 1.1667rem + 3.7037vw, 4.5rem);
   --space-xl-3xl: clamp(3rem, 1.75rem + 5.5556vw, 6.75rem);
@@ -118,7 +117,6 @@
   --container-max: 75rem;
   --container-wide: 90rem;
   --gutter: clamp(1.25rem, 0.6667rem + 2.5926vw, 3rem);
-  --grid-gap: var(--space-s-l);
   --section-pad: var(--space-xl-3xl);
   --section-pad-tight: var(--space-l-2xl);
   --block-gap: var(--space-l-2xl);

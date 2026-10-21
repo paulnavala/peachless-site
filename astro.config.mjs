@@ -1,7 +1,30 @@
+import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig, fontProviders } from 'astro/config';
 import vue from '@astrojs/vue';
 import sitemap from '@astrojs/sitemap';
 import { REDIRECTS } from './redirects.config.mjs';
+import { glueDashesInHtml } from './src/lib/typography.ts';
+
+// Every built page is typeset once more: a spaced dash is glued to the word
+// before it, so no line starts with "—" (src/lib/typography.ts). CMS text,
+// markdown and captions all get it; the admin is left alone.
+const typeset = {
+  name: 'peachless-typeset',
+  hooks: {
+    'astro:build:done': async ({ dir }) => {
+      const root = fileURLToPath(dir);
+      for (const file of await readdir(root, { recursive: true })) {
+        if (!file.endsWith('.html') || file.startsWith('admin')) continue;
+        const path = join(root, file);
+        const html = await readFile(path, 'utf8');
+        const set = glueDashesInHtml(html);
+        if (set !== html) await writeFile(path, set);
+      }
+    },
+  },
+};
 
 // Fonts come from pinned @fontsource-variable packages through the local
 // provider, so builds are deterministic and need no font CDN. Cormorant
@@ -27,6 +50,7 @@ export default defineConfig({
     // The logo-design alias page carries a canonical link to graphic-design;
     // only the canonical URL belongs in the sitemap.
     sitemap({ filter: (url) => !url.endsWith('/projects/logo-design/') }),
+    typeset,
   ],
   redirects: REDIRECTS,
   // A project folder named like a static page fails the build instead of

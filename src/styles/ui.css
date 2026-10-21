@@ -253,11 +253,6 @@
     color: var(--color-text-muted);
   }
 
-  .hint {
-    font-size: var(--text-small);
-    color: var(--color-text-muted);
-  }
-
   .error {
     font-size: var(--text-small);
     font-weight: var(--weight-medium);
