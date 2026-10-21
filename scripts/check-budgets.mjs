@@ -21,16 +21,21 @@ import { gzipSync } from 'node:zlib';
 const DIST = process.argv[2] ?? fileURLToPath(new URL('../dist/', import.meta.url));
 const KB = 1024;
 
-// First match wins. Budgets are in KB (gzipped). Raised in v2.2, with reasons:
-// - Project CSS 14 → 15: BlockRenderer puts every story block's CSS on every
-//   project page, and the shared overlay/interaction motion took the last KB.
-// - Photography JS 4 → 5: inline scripts are measured since v2.2 (the loop
-//   used to read their attributes), and this page inlines Astro's island
+// First match wins. Budgets are in KB (gzipped). Raised, with reasons:
+// - Project CSS 14 → 15 (v2.2): BlockRenderer puts every story block's CSS on
+//   every project page, and the shared overlay/interaction motion took the
+//   last KB.
+// - Photography JS 4 → 5 (v2.2): inline scripts are measured since v2.2 (the
+//   loop used to read their attributes), and this page inlines Astro's island
 //   bootstrap (~2 KB).
+// - Project CSS 15 → 16 (v2.3): fit fixes in the story blocks (the prototype's
+//   launch button under small stills, the brand-book viewer's page fit, dock
+//   and thumbnail columns, the palette's chip-sized names) and the balanced
+//   contents line, after removing ~0.1 KB of dead CSS.
 const BUDGETS = [
   { name: 'Home', match: /^\/$/, js: 4, islands: 0, css: 14 },
   { name: 'Work', match: /^\/projects\/(graphic-design\/|uiux\/|logo-design\/)?$/, js: 4, islands: 0, css: 14 },
-  { name: 'Project', match: /^\/projects\/[^/]+\/$/, js: 6, islands: 40, css: 15 },
+  { name: 'Project', match: /^\/projects\/[^/]+\/$/, js: 6, islands: 40, css: 16 },
   { name: 'Photography', match: /^\/photography\/$/, js: 5, islands: 40, css: 14 },
   { name: 'Contact', match: /^\/contact\/$/, js: 6, islands: 40, css: 14 },
   { name: 'Page', match: /./, js: 4, islands: 0, css: 14 },

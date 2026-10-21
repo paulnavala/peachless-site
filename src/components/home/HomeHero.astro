@@ -80,6 +80,12 @@ const { eyebrow, line1, line2, lede, primary, secondary, reel } = Astro.props;
     --cluster-gap: var(--space-xs) var(--space-s);
   }
 
+  /* Only takes effect once the buttons wrap (the narrowest phones): then each
+     fills its line, so they stack at one width. */
+  .home-hero__actions .btn {
+    flex-grow: 1;
+  }
+
   @media (min-width: 64em) {
     .home-hero__foot {
       grid-template-columns: minmax(0, 1fr) auto;

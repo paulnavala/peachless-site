@@ -25,6 +25,7 @@ const { eyebrow, heading, body, tone = 'blush', id = 'next-step-title' } = Astro
 
 <style>
   .cta-band {
+    container-type: inline-size;
     padding-block: var(--space-xl-3xl);
   }
 
@@ -48,5 +49,13 @@ const { eyebrow, heading, body, tone = 'blush', id = 'next-step-title' } = Astro
 
   .cta-band__actions {
     --cluster-gap: var(--space-s) var(--space-l);
+  }
+
+  /* On a phone the links are a list, rather than a row that leaves one behind. */
+  @container (width < 30rem) {
+    .cta-band__actions {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 </style>

@@ -69,9 +69,11 @@ const DRIFT = ['0rem', '2.5rem', '-1.5rem', '-1rem', '3rem'];
       padding-block: var(--space-m);
     }
 
+    /* The lead ends on the same line as Sunset and Stairway: the collage's
+       foot is one clean edge, its top a deliberate stagger. */
     .photo-strip[data-count='5'] > :nth-child(1) {
       grid-column: 1 / 6;
-      grid-row: 1 / 11;
+      grid-row: 1 / 12;
     }
 
     .photo-strip[data-count='5'] > :nth-child(2) {
@@ -96,6 +98,7 @@ const DRIFT = ['0rem', '2.5rem', '-1.5rem', '-1rem', '3rem'];
   }
 
   .photo-strip__link {
+    container-type: inline-size;
     position: relative;
     display: block;
     height: 100%;
@@ -125,6 +128,15 @@ const DRIFT = ['0rem', '2.5rem', '-1.5rem', '-1rem', '3rem'];
     color: var(--ink-strong);
     font-size: var(--text-small);
     font-weight: var(--weight-medium);
+  }
+
+  /* A small tile (the narrowest phones) gets a smaller label, still on one line. */
+  @container (width < 10rem) {
+    .photo-strip__title {
+      left: var(--space-2xs);
+      bottom: var(--space-2xs);
+      font-size: var(--text-micro);
+    }
   }
 
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {

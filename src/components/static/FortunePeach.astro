@@ -242,6 +242,7 @@ const { heading, intro, fortunes } = Astro.props;
 
   /* ── Revealed ─────────────────────────────────────────────────────────── */
   .fortune__card {
+    container-type: inline-size;
     display: grid;
     justify-items: center;
     gap: var(--space-s);
@@ -267,6 +268,14 @@ const { heading, intro, fortunes } = Astro.props;
     flex-wrap: wrap;
     justify-content: center;
     gap: var(--space-2xs);
+  }
+
+  /* Where six don't fit on one line: two rows of three, never five and one. */
+  @container (width < 17.5rem) {
+    .fortune__balls {
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+    }
   }
 
   .fortune__balls :global(.fortune__ball) {

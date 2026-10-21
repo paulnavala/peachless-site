@@ -80,6 +80,7 @@ const { entries } = Astro.props;
 
   .discipline__count {
     grid-area: count;
+    margin-block-start: var(--space-2xs);
     font-size: var(--text-small);
     font-weight: var(--weight-medium);
     color: var(--color-accent-text);
@@ -106,8 +107,10 @@ const { entries } = Astro.props;
   }
 
   @media (min-width: 64em) {
+    /* The title column never narrows below its longest word, so a title like
+       "Photography" can't break mid-word. */
     .discipline {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) 13rem minmax(7rem, auto) 2.75rem;
+      grid-template-columns: minmax(min-content, 5fr) minmax(0, 4fr) 13rem minmax(7rem, auto) 2.75rem;
       grid-template-areas: 'title text preview count arrow';
       align-items: center;
       column-gap: var(--space-m);
@@ -116,6 +119,7 @@ const { entries } = Astro.props;
 
     .discipline__count {
       justify-self: end;
+      margin-block-start: 0;
     }
 
     .discipline__arrow {
