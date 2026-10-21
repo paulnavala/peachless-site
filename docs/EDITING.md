@@ -105,16 +105,18 @@ The **Story** is a list of sections. Add them with the **+** button, drag them t
 
 | Image | Size |
 |---|---|
-| Cover | At least 1600 px wide |
+| Cover | At least 2400 px wide (it fills the top of the project page) |
 | Wide or full-width story images | At least 2000 px wide |
-| Logos | Transparent PNG or SVG |
+| Logos | Transparent PNG at least 2000 px wide, or SVG |
 | Brand book pages | PNG about 2400 px wide, or SVG with outlined text |
 | Phone screens (Device frame: Phone) | The screen only, no phone around it, exported at 2× (about 800 px wide) |
 | Website screenshots (Device frame: Browser window) | The page only, no browser bar, about 2000 px wide |
 | Share image (Search & sharing) | 1200 × 630 px |
 | Photos | Any size: large uploads are resized automatically |
 
-You don't need to shrink or compress anything: the site makes small, fast versions of every image for each screen size. File names don't matter either; they're tidied up automatically.
+You don't need to shrink or compress anything: the site makes small, fast versions of every image for each screen size. File names don't matter either; they're tidied up automatically. Smaller originals look soft on sharp (retina) screens.
+
+**Screenshots keep their top.** At the top of a project page, a cover set to **Fill the card** (and a prototype's preview image) is cropped from the bottom, so the top of the picture stays in view, like a browser window showing the top of a page. Put what matters near the top.
 
 **Describe the image.** Every image has a short description for people who can't see it (screen readers) and for Google. Write what someone should know about the image:
 

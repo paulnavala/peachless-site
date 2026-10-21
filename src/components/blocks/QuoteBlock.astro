@@ -32,6 +32,11 @@ const { quote, attribution } = Astro.props;
     color: var(--color-heading);
   }
 
+  /* Centred lines read best when they're even. */
+  .quote-block__quote :global(p) {
+    text-wrap: balance;
+  }
+
   .quote-block__quote :global(p)::before {
     content: '“';
     color: var(--project-ink, var(--color-accent-text));

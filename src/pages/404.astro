@@ -50,6 +50,10 @@ const suggestions = (await getFeaturedProjects()).slice(0, 3);
     font-size: var(--text-h1);
   }
 
+  .not-found__inner .lede {
+    text-wrap: balance;
+  }
+
   .not-found__actions {
     justify-content: center;
     --cluster-gap: var(--space-xs) var(--space-s);

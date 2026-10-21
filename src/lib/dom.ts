@@ -129,11 +129,13 @@ let scrollLocks = 0;
 /**
  * Lock page scrolling while a dialog, menu or lightbox is open. Ref-counted, so
  * nested overlays release correctly; the returned function is idempotent.
- * `scrollbar-gutter: stable` on <html> keeps the layout from shifting.
+ * `scrollbar-gutter: stable` on <html> keeps the layout from shifting. The
+ * reserved gutter shows the root's background, which no overlay can cover, so
+ * a dark overlay passes `'dark'` and the gutter turns dark with it.
  */
-export function lockScroll(): () => void {
+export function lockScroll(tone?: 'dark'): () => void {
   scrollLocks += 1;
-  document.documentElement.dataset.scrollLocked = '';
+  document.documentElement.dataset.scrollLocked = tone ?? '';
   let released = false;
   return () => {
     if (released) return;

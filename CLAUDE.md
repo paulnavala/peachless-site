@@ -23,6 +23,10 @@ History:
   - quiet sentence-case labels; numbers only on real sequences
   - one motion language: overlays, images, focus and links never pop
   - a "View" / "Open" label that follows the pointer over work
+- **v2.3 (October 2026), "fit and finish":** every element fits, at every width:
+  - full summaries, two-line titles, and rows that never strand one item
+  - overlays, the brand-book viewer and the prototype phone fit short and narrow windows
+  - sharper images, and screenshot covers cropped from the bottom
 
 Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep it in step with the admin).
 
@@ -32,11 +36,11 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 - `npm run build` — static build to `dist/`. Zod validates all content, and the build fails on schema violations, reserved or colliding slugs, or a missing image.
 - `npm run preview` — serve `dist/` at `http://localhost:4321`
 - `npm run check` — `astro check` (expect 0 errors, 0 warnings)
-- `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, ~650 tests, most of them project-tint accents)
+- `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, ~670 tests, most of them project-tint accents)
 - `npm run budgets` — per-page gzipped JS / island / CSS / font-preload budgets on `dist/` (`scripts/check-budgets.mjs`). CI runs it between build and e2e. Raise a budget only with a reason, written next to the number.
-  - Project pages are closest to the limit (about 14.7 of 15 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
+  - Project pages are closest to the limit (about 15.1 of 16 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
   - JS on load includes inline scripts (Astro inlines small ones, and its ~2 KB island bootstrap on island pages). Keep comments out of `is:inline` scripts: they ship as written.
-- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~150 tests, `retries: 1`). **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
+- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~180 tests, `retries: 1`). **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
 - `node scripts/capture-screens.mjs <base-url> docs/reference/screens/v2` — full-page reference screenshots (10 pages × 1440/768/390).
 
 ## Architecture
@@ -81,8 +85,11 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - `color.ts`: contrast helpers, OKLab/OKLCH and `projectTint`. `project-theme.ts` wraps `projectTint` as CSS custom properties.
   - `chapters.ts`: story chapters and anchors.
   - `project-order.ts`: also `reelPicks`.
-  - `dom.ts`: `trapFocus`, ref-counted `lockScroll`, reduced-motion helpers.
+  - `dom.ts`: `trapFocus`, ref-counted `lockScroll` (`lockScroll('dark')` for dark overlays), reduced-motion helpers.
   - `reveal.ts`: one observer for `[data-reveal]`.
+  - `media.ts`: `srcsetWidths`, the widths `Media.astro` offers (the steps below the source, plus the source's own width up to 2400).
+  - `grid.ts`: `evenColumns`, column counts that never strand a tile on the last row (the brand-book thumbnails).
+  - `typography.ts`: `glueDashes` and `glueDashesInHtml` (see Type).
   - `cursor-label.ts`: the pointer's "View" / "Open" label over `[data-cursor]` media.
   - `nav.ts`: `navCurrent`.
   - `masonry.ts`: the photo-column dealing.
@@ -107,6 +114,10 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - Cormorant's x-height is small, so the serif tokens run 1.12× the scale, and the serif is **never below `--text-h3`** (about 26px; `tokens.spec` checks). Weights: 500 from `--text-h2` up (`--weight-display`), 600 at `--text-h3` / `--text-title` (`--weight-display-sm`), italic 400 for the hero and quotes. Headings use old-style figures; counters use lining tabular ones. h4 and below, labels and UI text are Inter. `font-synthesis: none`.
   - The "peachless." wordmark is `ui/Wordmark.astro`: Crimson Pro 600 outlined with HarfBuzz (the brand book's Minion stand-in), so it never follows the display face. Another CMS site name falls back to live text.
   - Labels (`.eyebrow`) are sentence case and quiet; the style guard forbids `text-transform: uppercase`. Numbers mark real sequences only (chapters, "In this story", the deck); arrows only point somewhere (back, forward links, external, top).
+  - **Line breaks:**
+    - headings balance (reset); centred paragraphs set `text-wrap: balance` themselves. Nothing is truncated with "…" except a browser frame's title bar and the story deck's summary in its fixed-height stacked mode.
+    - a spaced dash (" — ", " – ") never starts a line: the `typeset` integration in `astro.config.mjs` glues it to the word before (`lib/typography.ts`) in every built page's body text, never in the head, attributes or scripts. The dev server shows plain spaces.
+    - a grid column holding a display title is `minmax(min-content, …)`, so a long word never splits; long next-story titles scale with their column (`cqi`).
   - `Base.astro` preloads Inter normal plus one Cormorant face (`preloadSerif`).
 - **Motion** (`src/styles/motion.css`):
   - Base styles are the **final state**. Animation and transition live only inside `@media (prefers-reduced-motion: no-preference)`. There is no global kill switch; e2e checks that nothing runs under reduced motion.
@@ -123,8 +134,9 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
     - Never put `overflow: hidden` or `auto` between an effect (or a sticky element) and the root; use `clip`.
   - **Neither system goes on the hero or the LCP element.** (The project hero's cover and the About portrait are LCPs.) The home hero's own first-visit entrance (eyebrow, lede, actions; never the h1) shares the tagline's session flag.
   - **One vocabulary** (header of `motion.css`): enter with `--ease-out` (base/slow), exit with `--ease-in` (fast), state changes with `--ease-standard` (fast), travel with `--ease-in-out`. No raw durations.
-  - **Overlays** fade with CSS only: `dialog` (and the lightbox's `[hidden]`) transition `opacity` plus `display`/`overlay` with `allow-discrete` and an `@starting-style`, so `open`/`hidden`, the `close` event and focus return stay synchronous (tests rely on it). Keep an overlay's content rendered while it closes. Dialogs are `position: fixed` with `--z-modal` in the reset, so a closing one stays put where `overlay` isn't supported. The mobile menu is a curtain (`clip-path`).
+  - **Overlays** fade with CSS only: `dialog` (and the lightbox's `[hidden]`) transition `opacity` plus `display`/`overlay` with `allow-discrete` and an `@starting-style`, so `open`/`hidden`, the `close` event and focus return stay synchronous (tests rely on it). Keep an overlay's content rendered while it closes. Dialogs are `position: fixed` with `--z-modal` in the reset, so a closing one stays put where `overlay` isn't supported. The mobile menu is a curtain (`clip-path`). A dark overlay locks scroll with `lockScroll('dark')`: no overlay can paint over the reserved scrollbar gutter (classic scrollbars), where the root's background shows, so `base.css` darkens the root while it's open.
   - **Media own their motion:** `.media` (and `.pg-masonry__img`) carries the zoom and fade transitions; components only set `scale`, on `:hover` and keyboard focus alike. Lazy images fade in via the inline `img-fade` script in `Base.astro`'s `<head>` (it must stay inline there: `load` doesn't bubble and fires early). Eager/LCP images never fade.
+  - **Cropped screenshots keep their top:** a `fit: cover` image in the project hero or a prototype still has `object-position: top` (they're screenshots; the page's own header stays in view). Cards and photos crop from the centre.
   - **Icons lean** the way they point: `Icon.astro` sets `--nudge` / `--turn` per icon; one `ui.css` rule applies them on hover and focus.
   - **Cursor label:** `data-cursor="View"` on work media opts in (`lib/cursor-label.ts`, CSS in `styles/components/cursor-label.css`). Mouse, motion and no forced colours only; `pointer-events: none`, `aria-hidden`, `--z-overlay`.
   - **Page transitions** are native cross-document View Transitions (`@view-transition`): a fade-through for the page. Names must be unique per page:
@@ -181,6 +193,8 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 - **Vitest and CSS:** Vitest blanks CSS imports, so `vitest.config.ts` lets `tokens.css` through (`css.include`) for the `?raw` import in `src/lib/tokens.ts`.
 - **Islands:** specs that drive an island should first `await waitForIsland(page, selector)` (`tests/e2e/utils.ts`), because `client:visible` islands ignore input until hydrated.
 - **Figma:** prototype specs stub `https://www.figma.com/**`. Never wait on `networkidle` with a live Figma embed, because its telemetry never goes idle.
+- **Fit:** `fit.spec` checks the places where layouts once broke (a lone card's ratio, the footer, overlays on short or narrow windows, clipped summaries, rows that strand one item, glued dashes), each at the width that broke it, with cases read from content. Run it after any layout change.
+- **Reference captures** decode every image before the full-page shot: otherwise a lazy `decoding="async"` image can come out as a blank tile.
 - **Cursor label:** drive it with `page.mouse` at the media's centre. A locator `hover()` aims at the card's stretched link, and on touch emulation the label is never built (`motion.spec`).
 - **Windows:** Git Bash rewrites `/path` arguments, so prefix commands with `MSYS_NO_PATHCONV=1` when passing site paths. Kill a stray `astro preview` with `taskkill //PID <pid> //T //F`.
 

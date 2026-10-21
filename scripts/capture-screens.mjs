@@ -49,9 +49,13 @@ for (const width of widths) {
     });
     // Some lazy images never come into view on their own (the home reel's
     // tiles past its clipped edge), so load every image now, and never wait
-    // longer than 15s for them.
+    // longer than 15s for them. Then decode them all: a full-page capture
+    // can catch a decoding="async" image before it paints, leaving its tile blank.
     await page.evaluate(() => {
-      for (const img of document.images) img.loading = 'eager';
+      for (const img of document.images) {
+        img.loading = 'eager';
+        img.decoding = 'sync';
+      }
       const loaded = Promise.all([
         document.fonts.ready,
         ...Array.from(document.images)
@@ -60,7 +64,7 @@ for (const width of widths) {
             img.addEventListener('load', resolve, { once: true });
             img.addEventListener('error', resolve, { once: true });
           })),
-      ]);
+      ]).then(() => Promise.all(Array.from(document.images).map((img) => img.decode().catch(() => {}))));
       return Promise.race([loaded, new Promise((resolve) => setTimeout(resolve, 15_000))]);
     });
     await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});

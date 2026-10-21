@@ -18,7 +18,12 @@ const { title, summary, disciplines, cover, accent } = project.data;
   <div class="container next-project__inner">
     <div class="next-project__text">
       <p class="eyebrow">Next story</p>
-      <h2 id="next-project-title" class="next-project__title work-title" style={{ '--vt-title': `work-title-${project.id}` }}>
+      <h2
+        id="next-project-title"
+        class="next-project__title work-title"
+        data-size={title.length <= 12 ? 'short' : 'long'}
+        style={{ '--vt-title': `work-title-${project.id}` }}
+      >
         <a class="next-project__link" href={`/projects/${project.id}/`} data-testid="next-project">{title}</a>
       </h2>
       <p class="next-project__meta">{disciplineList(disciplines)}</p>
@@ -52,6 +57,7 @@ const { title, summary, disciplines, cover, accent } = project.data;
   }
 
   .next-project__text {
+    container-type: inline-size;
     display: grid;
     gap: var(--space-xs);
     justify-items: start;
@@ -61,6 +67,12 @@ const { title, summary, disciplines, cover, accent } = project.data;
     font-size: var(--text-hero);
     line-height: var(--leading-display);
     letter-spacing: var(--tracking-display);
+  }
+
+  /* A long title scales with its column, so it sets in two lines, not three
+     ("peachless. / brand identity", never "peachless. / brand / identity"). */
+  .next-project__title[data-size='long'] {
+    font-size: min(var(--text-hero), 18cqi);
   }
 
   .next-project__link {

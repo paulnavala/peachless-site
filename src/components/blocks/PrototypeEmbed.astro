@@ -24,13 +24,19 @@ const embed = `https://www.figma.com/embed?embed_host=share&url=${encodeURICompo
 const buttonLabel = label ?? `Try the ${projectTitle} prototype`;
 // A phone keeps its screen's proportions; a window shows a 16:10 page.
 const screen = frame === 'phone' && poster ? `${poster.width} / ${poster.height}` : frame === 'browser' ? '16 / 10' : undefined;
+// The phone's width for each pixel of its height (screen plus DeviceFrame's
+// 1.8cqi bezel; 9:19.5 without a poster), so it can be sized to fit the window.
+const screenTall = poster ? poster.height / poster.width : 19.5 / 9;
+const phoneFit = (1 / (0.964 * screenTall + 0.036)).toFixed(4);
 const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-width: 75rem) 75rem, 100vw';
 ---
 <figure class:list={['proto is-wide', `proto--${frame}`]} data-prototype data-embed={embed} data-title={projectTitle}>
   {
     frame === 'none' ? (
-      <div class="proto__frame" data-proto-frame data-panel={still.panel}>
-        <Media class="proto__still" image={still.image} alt="" sizes={stillSizes} fit={still.fit} />
+      <div class="proto__screen">
+        <div class="proto__frame" data-proto-frame data-panel={still.panel}>
+          <Media class="proto__still" image={still.image} alt="" sizes={stillSizes} fit={still.fit} />
+        </div>
         <div class="proto__facade" data-proto-facade>
           <button class="btn btn--accent btn--lg" type="button" data-proto-launch>
             <Icon name="play" />
@@ -40,21 +46,23 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
         </div>
       </div>
     ) : frame === 'browser' ? (
-      <DeviceFrame frame="browser" ratio={screen} caption={projectTitle}>
-        <div class="proto__frame" data-proto-frame data-panel={still.panel}>
-          <Media class="proto__still" image={still.image} alt="" sizes={stillSizes} fit={still.fit} />
-          <div class="proto__facade" data-proto-facade>
-            <button class="btn btn--accent btn--lg" type="button" data-proto-launch>
-              <Icon name="play" />
-              {buttonLabel}
-            </button>
-            <p class="proto__note">Loads an interactive Figma prototype.</p>
+      <div class="proto__screen">
+        <DeviceFrame frame="browser" ratio={screen} caption={projectTitle}>
+          <div class="proto__frame" data-proto-frame data-panel={still.panel}>
+            <Media class="proto__still" image={still.image} alt="" sizes={stillSizes} fit={still.fit} />
           </div>
+        </DeviceFrame>
+        <div class="proto__facade" data-proto-facade>
+          <button class="btn btn--accent btn--lg" type="button" data-proto-launch>
+            <Icon name="play" />
+            {buttonLabel}
+          </button>
+          <p class="proto__note">Loads an interactive Figma prototype.</p>
         </div>
-      </DeviceFrame>
+      </div>
     ) : (
       <div class="proto__stage">
-        <DeviceFrame frame="phone" ratio={screen} class="proto__phone">
+        <DeviceFrame frame="phone" ratio={screen} class="proto__phone" style={{ '--phone-fit': phoneFit }}>
           <div class="proto__frame" data-proto-frame data-panel={still.panel}>
             <Media class="proto__still" image={still.image} alt="" sizes={stillSizes} fit={still.fit} />
           </div>
@@ -163,7 +171,7 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
       );
       dialogFrame.src = embed;
       dialog.showModal();
-      unlock = lockScroll();
+      unlock = lockScroll('dark');
       release = trapFocus(dialog, 'a[href], button, iframe');
       closeBtn.focus();
     });
@@ -199,9 +207,10 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
     height: 100%;
   }
 
-  /* Dim a photographic still only while the launch card sits on it. */
-  .proto__frame[data-panel='none']:has([data-proto-facade]) :global(.proto__still) {
-    filter: saturate(0.85) brightness(0.8);
+  /* A cropped still is a screenshot: keep its top (the page's own header)
+     in view, like a browser would. */
+  .proto__frame :global(.media--cover) {
+    object-position: top;
   }
 
   /* Long button labels wrap instead of overflowing narrow screens. */
@@ -225,8 +234,9 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
     justify-items: center;
   }
 
+  /* The phone you try the prototype in fits the window whole, under the header. */
   .proto__stage :global(.proto__phone) {
-    inline-size: min(100%, 20rem);
+    inline-size: min(100%, 20rem, (100svh - var(--header-h-condensed) - var(--space-xl)) * var(--phone-fit));
   }
 
   .proto__aside {
@@ -243,6 +253,7 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
     font-weight: var(--weight-display-sm);
     line-height: var(--leading-heading);
     color: var(--color-heading);
+    text-wrap: balance;
   }
 
   @media (min-width: 48em) {
@@ -259,23 +270,20 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
     }
   }
 
-  /* The launch control floats over the still in a frosted card, so it reads
-     on photos and on light logo panels alike. */
+  /* The launch control: under a small still (a phone), so the whole picture
+     stays in view; over a larger one, floating in a frosted card that reads on
+     photos and on light logo panels alike. */
+  .proto__screen {
+    position: relative;
+    container-type: inline-size;
+    display: grid;
+    gap: var(--space-s);
+  }
+
   .proto__facade {
-    position: absolute;
-    inset: auto 0 var(--space-m);
-    z-index: var(--z-raised);
     display: grid;
     justify-items: center;
     gap: var(--space-2xs);
-    width: fit-content;
-    margin-inline: auto;
-    padding: var(--space-s) var(--space-m);
-    border-radius: var(--radius-xl);
-    background: rgb(var(--linen-rgb) / 0.82);
-    -webkit-backdrop-filter: blur(12px) saturate(1.3);
-    backdrop-filter: blur(12px) saturate(1.3);
-    box-shadow: var(--shadow-md);
     text-align: center;
   }
 
@@ -285,11 +293,46 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
     color: var(--cacao);
   }
 
-  @media (prefers-reduced-transparency: reduce) {
+  /* Under the still: a standard-size button (a long label stays on one line on
+     a phone), and no note, since the caption below already says what it is. */
+  @container (width < 32rem) {
+    .proto__facade .btn {
+      min-height: 2.75rem;
+      padding: 0.65em 1.35em;
+      font-size: var(--text-ui);
+    }
+
+    .proto__facade .proto__note {
+      display: none;
+    }
+  }
+
+  @container (min-width: 32rem) {
     .proto__facade {
-      background: var(--linen);
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
+      position: absolute;
+      inset: auto 0 var(--space-m);
+      z-index: var(--z-raised);
+      width: fit-content;
+      margin-inline: auto;
+      padding: var(--space-s) var(--space-m);
+      border-radius: var(--radius-xl);
+      background: rgb(var(--linen-rgb) / 0.82);
+      -webkit-backdrop-filter: blur(12px) saturate(1.3);
+      backdrop-filter: blur(12px) saturate(1.3);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Dim a photographic still only while the launch card sits on it. */
+    .proto__screen:has(> [data-proto-facade]) [data-panel='none'] :global(.proto__still) {
+      filter: saturate(0.85) brightness(0.8);
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+      .proto__facade {
+        background: var(--linen);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
     }
   }
 

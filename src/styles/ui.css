@@ -253,11 +253,6 @@
     color: var(--color-text-muted);
   }
 
-  .hint {
-    font-size: var(--text-small);
-    color: var(--color-text-muted);
-  }
-
   .error {
     font-size: var(--text-small);
     font-weight: var(--weight-medium);
@@ -274,6 +269,12 @@
     color: var(--ink-strong);
     font-size: max(1rem, var(--text-body));
     line-height: var(--leading-snug);
+  }
+
+  /* A message box opens with room for a few lines, then grows with the text
+     (field-sizing in the reset); the 3rem above is for one-line inputs. */
+  textarea.input {
+    min-height: 8lh;
   }
 
   .input::placeholder {

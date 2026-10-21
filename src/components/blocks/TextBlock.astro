@@ -29,10 +29,6 @@ const { heading, body, id, lead = false } = Astro.props;
     color: var(--color-text);
   }
 
-  .text-block__body :global(p) {
-    text-wrap: pretty;
-  }
-
   /* Lists: an en dash (or the number) in the project's ink, hung outside the
      text so every line starts on the same edge. */
   .text-block__body :global(:is(ul, ol)) {

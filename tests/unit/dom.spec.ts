@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { isReducedMotion, isVisible, trapFocus, rafThrottle, isPointerClick } from '../../src/lib/dom';
+import { isReducedMotion, isVisible, trapFocus, rafThrottle, isPointerClick, lockScroll } from '../../src/lib/dom';
 
 describe('dom utilities', () => {
   describe('isReducedMotion', () => {
@@ -169,6 +169,28 @@ describe('dom utilities', () => {
     it('falls back to detail where click is a plain MouseEvent', () => {
       expect(isPointerClick(new MouseEvent('click', { detail: 1 }))).toBe(true);
       expect(isPointerClick(new MouseEvent('click', { detail: 0 }))).toBe(false);
+    });
+  });
+
+  describe('lockScroll', () => {
+    const locked = () => document.documentElement.dataset.scrollLocked;
+
+    it('locks until the last lock is released, and releasing twice is harmless', () => {
+      const first = lockScroll();
+      const second = lockScroll();
+      expect(locked()).toBe('');
+      first();
+      first();
+      expect(locked()).toBe('');
+      second();
+      expect(locked()).toBeUndefined();
+    });
+
+    it("marks a dark overlay's lock, so the scrollbar gutter can turn dark", () => {
+      const release = lockScroll('dark');
+      expect(locked()).toBe('dark');
+      release();
+      expect(locked()).toBeUndefined();
     });
   });
 

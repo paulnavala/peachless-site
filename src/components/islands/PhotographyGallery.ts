@@ -137,7 +137,7 @@ export default defineComponent({
 
       if (!modalOpen.value) {
         modalOpen.value = true;
-        unlockScroll = lockScroll();
+        unlockScroll = lockScroll('dark');
         document.body.classList.add('pg-modal-open');
         try {
           history.pushState({ pgModal: true }, '', window.location.href);

@@ -7,6 +7,20 @@
     background: var(--color-bg);
   }
 
+  /* A dark overlay can't paint over the reserved scrollbar gutter (classic
+     scrollbars, e.g. Windows), where the root's background shows: it turns
+     dark with the overlay. The body keeps its own background, so the page
+     itself never changes. */
+  html[data-scroll-locked='dark'] {
+    background-color: var(--espresso);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      transition: background-color var(--duration-fast) var(--ease-standard);
+    }
+  }
+
   body {
     background: var(--color-bg);
     color: var(--color-text);

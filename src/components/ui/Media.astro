@@ -3,6 +3,7 @@
 // <img> for SVG (brand-book pages and vector marks must stay vector).
 import { Picture } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+import { srcsetWidths } from '../../lib/media';
 
 interface Props {
   image: ImageMetadata;
@@ -18,8 +19,7 @@ interface Props {
 
 const { image, alt, sizes, widths, priority = false, fit = 'cover', class: className } = Astro.props;
 const isSvg = image.format === 'svg' || /\.svg(\?|$)/.test(image.src);
-const candidates = (widths ?? [480, 800, 1200, 1600, 2400]).filter((w) => w <= image.width);
-const sources = candidates.length ? candidates : [image.width];
+const sources = srcsetWidths(image.width, widths);
 const classes = ['media', fit === 'contain' ? 'media--contain' : 'media--cover', className];
 ---
 {

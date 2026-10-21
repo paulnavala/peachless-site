@@ -117,10 +117,11 @@
   --focus-ring: var(--clay);
 }
 
+/* Opaque, so it matches the scrollbar gutter the scroll lock darkens. */
 .pg-modal__backdrop {
   position: absolute;
   inset: 0;
-  background: rgb(var(--espresso-rgb) / 0.97);
+  background: var(--espresso);
 }
 
 .pg-modal__bar,
@@ -165,6 +166,7 @@
 .pg-modal__close,
 .pg-modal__nav {
   display: inline-grid;
+  flex: none;
   place-items: center;
   width: 2.75rem;
   height: 2.75rem;
@@ -209,10 +211,11 @@
   margin: 0 auto;
   padding: 0 var(--gutter) var(--space-m);
   text-align: center;
+  text-wrap: balance;
   color: var(--sand);
 }
 
-@media (max-width: 48em) {
+@media (width < 48em) {
   .pg-modal__stage {
     grid-template-columns: minmax(0, 1fr);
   }

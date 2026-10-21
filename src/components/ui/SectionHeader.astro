@@ -20,13 +20,20 @@ const { eyebrow, title, lede, id, action } = Astro.props;
 </header>
 
 <style>
+  /* The link sits under the text on phones and at the right from tablets up,
+     whatever the length of the lede (a wrapping row placed it either way). */
   .section-header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    justify-content: space-between;
+    display: grid;
+    align-items: end;
+    justify-items: start;
     gap: var(--space-s) var(--space-l);
     margin-block-end: var(--space-l-2xl);
+  }
+
+  @media (min-width: 48em) {
+    .section-header {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
   }
 
   .section-header__text {

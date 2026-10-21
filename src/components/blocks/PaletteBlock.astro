@@ -62,14 +62,17 @@ const { heading, swatches, id } = Astro.props;
     gap: var(--space-m);
   }
 
+  /* Chips share each row; a short last row stretches instead of leaving a gap. */
   .palette-block__chips {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--space-xs);
     margin: 0;
   }
 
   .paint-chip {
+    flex: 1 1 9rem;
+    container-type: inline-size;
     display: grid;
     grid-template-rows: minmax(9rem, 1fr) auto;
     overflow: clip;
@@ -88,11 +91,14 @@ const { heading, swatches, id } = Astro.props;
     color: var(--swatch-text);
   }
 
+  /* The name scales with its chip (never below the serif floor), and a long
+     word hyphenates instead of being cut off by the chip's edge. */
   .paint-chip__name {
     font-family: var(--font-display);
-    font-size: var(--text-title);
+    font-size: clamp(var(--text-h3), 16cqi, var(--text-title));
     font-weight: var(--weight-display-sm);
     line-height: 1.05;
+    hyphens: auto;
   }
 
   .paint-chip__label {
@@ -144,7 +150,7 @@ const { heading, swatches, id } = Astro.props;
 
   @media (min-width: 48em) {
     .palette-block__chips[data-few] {
-      display: flex;
+      flex-wrap: nowrap;
       block-size: clamp(18rem, 26vw, 24rem);
     }
 
@@ -152,13 +158,17 @@ const { heading, swatches, id } = Astro.props;
       flex: 1 1 0;
       min-inline-size: 0;
     }
+  }
 
+  /* The chip under the pointer widens only where its neighbours keep room for
+     their names and hex values. */
+  @media (min-width: 64em) {
     .palette-block__chips[data-few] .paint-chip:is(:hover, :focus-within) {
       flex-grow: 2.2;
     }
   }
 
-  @media (min-width: 48em) and (prefers-reduced-motion: no-preference) {
+  @media (min-width: 64em) and (prefers-reduced-motion: no-preference) {
     .palette-block__chips[data-few] .paint-chip {
       transition: flex-grow var(--duration-slow) var(--ease-out);
     }

@@ -1,12 +1,26 @@
 /* GuidelineViewer island (src/components/islands/GuidelineViewer.ts). */
 
+/* Two across on phones; wider, the counts GuidelinesBlock picks for this book
+   (src/lib/grid.ts), so a row never ends on a lone page. */
 .gv-thumbs {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-m) var(--space-s);
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+@media (min-width: 48em) {
+  .gv-thumbs {
+    grid-template-columns: repeat(var(--gv-cols-md, 3), minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64em) {
+  .gv-thumbs {
+    grid-template-columns: repeat(var(--gv-cols-lg, 4), minmax(0, 1fr));
+  }
 }
 
 .gv-thumb {
@@ -113,8 +127,11 @@
   font-weight: var(--weight-display-sm);
 }
 
+/* One definite cell, so the page's max-height: 100% resolves and a page always
+   fits the screen (an auto row would grow to the page and get clipped). */
 .gv-stage {
   display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   place-items: center;
   overflow: hidden;
   padding: var(--space-s) var(--gutter);
@@ -172,6 +189,35 @@
   padding: var(--space-xs) var(--gutter) var(--space-s);
 }
 
+/* Phones: previous and next at the ends with the page list between them, the
+   zoom controls on a row of their own. */
+@media (width < 36em) {
+  .gv-dock {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'prev menu next'
+      'zoom zoom zoom';
+    justify-items: center;
+  }
+
+  .gv-dock > :first-child {
+    grid-area: prev;
+  }
+
+  .gv-dock > :last-child {
+    grid-area: next;
+  }
+
+  .gv-menu {
+    grid-area: menu;
+  }
+
+  .gv-zoom {
+    grid-area: zoom;
+  }
+}
+
 .gv-btn {
   display: inline-flex;
   align-items: center;
@@ -201,10 +247,8 @@
   gap: var(--space-3xs);
 }
 
-.gv-menu {
-  position: relative;
-}
-
+/* The page list rises from the dock (its containing block), centred on the
+   screen, so it never runs off a phone's edge. */
 .gv-menu__list {
   position: absolute;
   bottom: calc(100% + var(--space-2xs));
