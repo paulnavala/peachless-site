@@ -7,8 +7,9 @@ tools: []
 cover:
   image: logo.png
   alt: "The Blend logo: a brushed ring of warm colour"
-  panel: paper
+  panel: accent
   fit: contain
+accent: "#DA5D18"
 featured: false
 hidden: false
 order: 5
@@ -22,7 +23,7 @@ blocks:
       - image: logo.png
         alt: Blend logo in its original colours
         label: Original colours
-        panel: paper
+        panel: accent
       - image: logo-peach.png
         alt: Blend logo redrawn in the peachless. palette
         label: In the peachless. palette

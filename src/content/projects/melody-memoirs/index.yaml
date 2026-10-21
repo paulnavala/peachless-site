@@ -10,8 +10,9 @@ tools:
 cover:
   image: logo.png
   alt: "The Melody Memoirs logo: an open book with a musical note rising from its pages"
-  panel: blush
+  panel: accent
   fit: contain
+accent: "#58433B"
 featured: true
 hidden: false
 order: 3
@@ -25,7 +26,7 @@ blocks:
       - image: logo.png
         alt: Melody Memoirs logo in its original colours
         label: Original colours
-        panel: paper
+        panel: accent
       - image: logo-peach.png
         alt: Melody Memoirs logo redrawn in the peachless. palette
         label: In the peachless. palette
@@ -41,3 +42,4 @@ blocks:
   - type: prototype
     url: https://www.figma.com/make/BQtydWnM0aJYReMTqpOiaB/Melody-Memoirs--Community-?node-id=0-1&p=f&t=18eWXd6TlkRVcn16-0&fullscreen=1
     label: Try the Melody Memoirs prototype
+    frame: none

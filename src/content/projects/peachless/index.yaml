@@ -9,8 +9,9 @@ tools: []
 cover:
   image: lockup.png
   alt: "The peachless. logo: a stylised peach above the wordmark"
-  panel: paper
+  panel: accent
   fit: contain
+accent: "#E1A892"
 featured: true
 hidden: false
 order: 1

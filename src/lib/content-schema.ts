@@ -29,9 +29,14 @@ export const TOOL_LABELS: Record<Tool, string> = {
   lightroom: 'Lightroom',
 };
 
-/** Token-named backgrounds for logos and other transparent artwork. */
-export const PANELS = ['none', 'linen', 'paper', 'blush', 'clay', 'espresso'] as const;
+/** Token-named backgrounds for logos and other transparent artwork. `accent` is
+ *  the project's own colour, softened (src/lib/project-theme.ts). */
+export const PANELS = ['none', 'accent', 'linen', 'paper', 'blush', 'clay', 'espresso'] as const;
 export type Panel = (typeof PANELS)[number];
+
+/** Device frames the site draws around screens (galleries, prototype previews). */
+export const FRAMES = ['none', 'phone', 'browser'] as const;
+export type Frame = (typeof FRAMES)[number];
 
 /** Folder names a project may not use: they are (or were) static routes. */
 export const RESERVED_PROJECT_IDS = [
@@ -71,6 +76,7 @@ export const blockSchema = <T extends z.ZodType>(image: () => T) =>
     z.object({
       type: z.literal('gallery'),
       heading: opt(80),
+      frame: z.enum(FRAMES).default('none'),
       images: z.array(z.object({ image: image(), alt: req(200), caption: opt(200) })).min(2).max(12),
     }),
     z.object({
@@ -102,6 +108,7 @@ export const blockSchema = <T extends z.ZodType>(image: () => T) =>
       url: z.string().regex(FIGMA_RE, 'Paste a figma.com prototype or design link'),
       label: opt(40),
       poster: image().optional(),
+      frame: z.enum(FRAMES).default('none'),
     }),
     z.object({
       type: z.literal('before-after'),

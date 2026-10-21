@@ -7,8 +7,9 @@ tools: []
 cover:
   image: logo.png
   alt: "The Fish & Seafood logo: a bold wordmark on a tilted blue panel"
-  panel: paper
+  panel: accent
   fit: contain
+accent: "#0071BC"
 featured: false
 hidden: false
 order: 6
@@ -22,7 +23,7 @@ blocks:
       - image: logo.png
         alt: Fish & Seafood logo in its original colours
         label: Original colours
-        panel: paper
+        panel: accent
       - image: logo-peach.png
         alt: Fish & Seafood logo redrawn in the peachless. palette
         label: In the peachless. palette
