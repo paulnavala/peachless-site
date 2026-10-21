@@ -142,7 +142,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - Modal UI uses native `<dialog>` plus `trapFocus` and `lockScroll`.
   - axe (WCAG 2.2 AA) runs on every route at 1280 and 390px, plus the open overlays.
 - **Links:** internal hrefs use the trailing-slash form (`/projects/`). Cloudflare answers the bare form with a redirect.
-- **Visual reference:** `docs/reference/screens/v2/` is the signed-off look (recaptured for v2.1; recapture for v2.2 once it is signed off). Recapture and compare after visual changes; the captures use reduced motion, so they show final states. Review motion itself on the Cloudflare preview. `v1-parity/` is the retired v1 contract, kept for history.
+- **Visual reference:** `docs/reference/screens/v2/` is the signed-off look (recaptured for v2.2). Recapture and compare after visual changes; the captures use reduced motion, so they show final states. Review motion itself on the Cloudflare preview. `v1-parity/` is the retired v1 contract, kept for history.
 
 ## Content & CMS
 
