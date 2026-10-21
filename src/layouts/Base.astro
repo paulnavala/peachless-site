@@ -50,6 +50,9 @@ const speculationRules = JSON.stringify({
     <Seo title={title} description={description} image={ogImage} canonical={canonical} noindex={noindex} jsonLd={jsonLd} />
     <Font cssVariable="--font-inter" preload={[{ style: 'normal' }]} />
     <Font cssVariable="--font-cormorant" preload={[{ style: preloadSerif }]} />
+    {/* Romanian letters, fetched only by pages that use them (astro.config.mjs). */}
+    <Font cssVariable="--font-inter-ro" />
+    <Font cssVariable="--font-cormorant-ro" />
     {/* Lazy images fade in as they arrive (motion.css): mark each one once it
         has loaded, or failed (so its alt text shows). Inline in <head>, so it
         is listening before any image loads; `load` doesn't bubble, so catch it

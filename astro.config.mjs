@@ -9,6 +9,17 @@ import { REDIRECTS } from './redirects.config.mjs';
 // Display and Neue Haas Grotesk; the wordmark is outlined (ui/Wordmark.astro).
 const fsv = (pkg, file) => `./node_modules/@fontsource-variable/${pkg}/files/${file}`;
 
+// Romanian letters (Ă ă Ș ș Ț ț, plus the older cedilla forms Ş ş Ţ ţ; Â â Î î
+// are already latin) as their own small families, listed first in the font
+// tokens. A browser downloads one only on a page that uses those letters, and
+// none is preloaded: as variants of the main families they would be, because
+// preloads can't tell local subsets apart. The ~3 KB files in src/assets/fonts
+// are cut from the packages' latin-ext files (same pinned versions), keeping
+// the weight axis:
+//   pyftsubset <pkg>-latin-ext-wght-<style>.woff2 --unicodes=<RO> --flavor=woff2
+const RO = ['U+0102-0103', 'U+015E-015F', 'U+0162-0163', 'U+0218-021B'];
+const ro = (file, weight, style) => ({ src: [`./src/assets/fonts/${file}`], weight, style, unicodeRange: RO });
+
 export default defineConfig({
   site: 'https://peachless.design',
   integrations: [
@@ -52,6 +63,29 @@ export default defineConfig({
           { src: [fsv('inter', 'inter-latin-wght-normal.woff2')], weight: '100 900', style: 'normal' },
           { src: [fsv('inter', 'inter-latin-wght-italic.woff2')], weight: '100 900', style: 'italic' },
         ],
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: 'Cormorant Garamond RO',
+      cssVariable: '--font-cormorant-ro',
+      fallbacks: [],
+      optimizedFallbacks: false,
+      options: {
+        variants: [
+          ro('cormorant-garamond-ro-wght-normal.woff2', '300 700', 'normal'),
+          ro('cormorant-garamond-ro-wght-italic.woff2', '300 700', 'italic'),
+        ],
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: 'Inter RO',
+      cssVariable: '--font-inter-ro',
+      fallbacks: [],
+      optimizedFallbacks: false,
+      options: {
+        variants: [ro('inter-ro-wght-normal.woff2', '100 900', 'normal'), ro('inter-ro-wght-italic.woff2', '100 900', 'italic')],
       },
     },
   ],
