@@ -40,7 +40,7 @@ const sizesFor = (ratio: string) => `(min-width: 48em) ${Math.round(ratioOf(rati
         <li class="reel__tile" style={{ '--i': i, '--ratio': tile.ratio, ...tile.theme }}>
           <a class="reel__link" href={tile.href} tabindex="-1">
             <div class:list={['reel__frame card__media', { 'work-media': tile.vt }]} data-panel={tile.panel} style={tile.vt ? { '--vt': tile.vt } : undefined}>
-              <Media image={tile.image} alt="" sizes={sizesFor(tile.ratio)} fit={tile.fit} eager={i < 4} />
+              <Media image={tile.image} alt="" sizes={sizesFor(tile.ratio)} fit={tile.fit} />
             </div>
             <span class="reel__label">{tile.label}</span>
           </a>
