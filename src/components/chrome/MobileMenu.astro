@@ -113,18 +113,25 @@ const path = Astro.url.pathname;
     background: var(--color-bg);
   }
 
+  /* Gaps give way on short screens, so the whole menu fits a small phone. */
   .mobile-menu__inner {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xl);
+    gap: clamp(var(--space-m), 6svh, var(--space-xl));
     min-height: 100%;
-    padding-block: var(--space-s) var(--space-l);
+    padding-block: 0 var(--space-l);
   }
 
+  /* The top row lies exactly over the header's (full or condensed), so the
+     brand stays put and Close lands where Menu was. */
   .mobile-menu__top {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    min-height: var(--header-h);
+  }
+
+  :global(html:has(.site-header[data-condensed])) .mobile-menu__top {
     min-height: var(--header-h-condensed);
   }
 

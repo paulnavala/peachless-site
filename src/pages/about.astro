@@ -99,10 +99,12 @@ const portraitShare = await getImage({ src: portrait, width: 800, format: 'jpg' 
       align-items: start;
     }
 
+    /* Sticky, so it must fit under the header whole: on a short window the
+       arch (4:5) narrows until its foot clears the bottom edge. */
     .about__portrait {
       position: sticky;
       top: calc(var(--header-h-condensed) + var(--space-l));
-      width: 100%;
+      width: min(100%, (100svh - var(--header-h-condensed) - 2 * var(--space-l)) * 0.8);
     }
   }
 </style>

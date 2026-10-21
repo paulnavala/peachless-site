@@ -24,6 +24,10 @@ const embed = `https://www.figma.com/embed?embed_host=share&url=${encodeURICompo
 const buttonLabel = label ?? `Try the ${projectTitle} prototype`;
 // A phone keeps its screen's proportions; a window shows a 16:10 page.
 const screen = frame === 'phone' && poster ? `${poster.width} / ${poster.height}` : frame === 'browser' ? '16 / 10' : undefined;
+// The phone's width for each pixel of its height (screen plus DeviceFrame's
+// 1.8cqi bezel; 9:19.5 without a poster), so it can be sized to fit the window.
+const screenTall = poster ? poster.height / poster.width : 19.5 / 9;
+const phoneFit = (1 / (0.964 * screenTall + 0.036)).toFixed(4);
 const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-width: 75rem) 75rem, 100vw';
 ---
 <figure class:list={['proto is-wide', `proto--${frame}`]} data-prototype data-embed={embed} data-title={projectTitle}>
@@ -58,7 +62,7 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
       </div>
     ) : (
       <div class="proto__stage">
-        <DeviceFrame frame="phone" ratio={screen} class="proto__phone">
+        <DeviceFrame frame="phone" ratio={screen} class="proto__phone" style={{ '--phone-fit': phoneFit }}>
           <div class="proto__frame" data-proto-frame data-panel={still.panel}>
             <Media class="proto__still" image={still.image} alt="" sizes={stillSizes} fit={still.fit} />
           </div>
@@ -230,8 +234,9 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
     justify-items: center;
   }
 
+  /* The phone you try the prototype in fits the window whole, under the header. */
   .proto__stage :global(.proto__phone) {
-    inline-size: min(100%, 20rem);
+    inline-size: min(100%, 20rem, (100svh - var(--header-h-condensed) - var(--space-xl)) * var(--phone-fit));
   }
 
   .proto__aside {
