@@ -38,3 +38,29 @@ export function featured<T extends Orderable>(ordered: T[], fallback = 3): T[] {
   const picked = ordered.filter((p) => p.data.featured);
   return picked.length ? picked : ordered.slice(0, fallback);
 }
+
+export type ReelPick<P, Q> = { kind: 'project'; entry: P } | { kind: 'photo'; entry: Q };
+
+/**
+ * The home hero's work reel: work the rest of the home page doesn't show yet —
+ * projects outside Selected work, photos outside the photo strip — topped up
+ * from the shown ones when there aren't enough, alternating project and photo.
+ */
+export function reelPicks<P extends Orderable, Q extends Orderable>(
+  projects: P[],
+  shownProjects: P[],
+  photos: Q[],
+  shownPhotos: Q[],
+  counts = { projects: 4, photos: 3 }
+): ReelPick<P, Q>[] {
+  const unshownFirst = <T extends Orderable>(all: T[], shown: T[]) => {
+    const ids = new Set(shown.map((x) => x.id));
+    return [...all.filter((x) => !ids.has(x.id)), ...all.filter((x) => ids.has(x.id))];
+  };
+  const ps = unshownFirst(projects, shownProjects).slice(0, counts.projects);
+  const qs = unshownFirst(photos, shownPhotos).slice(0, counts.photos);
+  return Array.from({ length: Math.max(ps.length, qs.length) }).flatMap((_, i): ReelPick<P, Q>[] => [
+    ...(ps[i] ? [{ kind: 'project' as const, entry: ps[i] }] : []),
+    ...(qs[i] ? [{ kind: 'photo' as const, entry: qs[i] }] : []),
+  ]);
+}

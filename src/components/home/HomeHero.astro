@@ -1,6 +1,6 @@
 ---
 import Tagline from './Tagline.astro';
-import PeachMark from '../ui/PeachMark.astro';
+import WorkReel, { type ReelTile } from './WorkReel.astro';
 import Icon from '../ui/Icon.astro';
 
 interface Props {
@@ -10,14 +10,16 @@ interface Props {
   lede?: string;
   primary: { label: string; link: string };
   secondary?: { label: string; link: string };
+  /** Work the rest of the page doesn't show yet (see reelPicks). */
+  reel: ReelTile[];
 }
-const { eyebrow, line1, line2, lede, primary, secondary } = Astro.props;
+const { eyebrow, line1, line2, lede, primary, secondary, reel } = Astro.props;
 ---
 <section class="home-hero" aria-label="Introduction">
   <div class="container home-hero__inner">
-    <div class="home-hero__text">
-      {eyebrow && <p class="eyebrow eyebrow--rule">{eyebrow}</p>}
-      <Tagline line1={line1} line2={line2} />
+    {eyebrow && <p class="eyebrow eyebrow--rule">{eyebrow}</p>}
+    <Tagline line1={line1} line2={line2} />
+    <div class="home-hero__foot">
       {lede && <p class="lede home-hero__lede">{lede}</p>}
       <div class="cluster home-hero__actions">
         <a class="btn btn--lg" href={primary.link}>
@@ -27,18 +29,20 @@ const { eyebrow, line1, line2, lede, primary, secondary } = Astro.props;
         {secondary && <a class="btn btn--secondary btn--lg" href={secondary.link}>{secondary.label}</a>}
       </div>
     </div>
-    <div class="home-hero__art" aria-hidden="true">
-      <span class="home-hero__sun"></span>
-      <PeachMark class="home-hero__mark" />
-    </div>
   </div>
+  {reel.length >= 3 && <WorkReel tiles={reel} />}
 </section>
 
 <style>
   .home-hero {
     display: grid;
-    align-items: center;
-    padding-block: var(--space-l) var(--space-2xl);
+    grid-template-rows: 1fr auto;
+    gap: var(--space-l-2xl);
+    padding-block: var(--space-l) var(--space-xl);
+    /* The reel drifts on this timeline as the hero scrolls away. */
+    view-timeline-name: --hero;
+    view-timeline-axis: block;
+    view-timeline-inset: 0px;
   }
 
   /* A full first screen on tablets and up; phones start the story right away. */
@@ -51,14 +55,16 @@ const { eyebrow, line1, line2, lede, primary, secondary } = Astro.props;
 
   .home-hero__inner {
     display: grid;
-    gap: var(--space-xl);
-    align-items: center;
+    gap: var(--space-m);
+    align-content: center;
+    justify-items: start;
   }
 
-  .home-hero__text {
+  .home-hero__foot {
     display: grid;
     gap: var(--space-m);
     justify-items: start;
+    margin-top: var(--space-2xs);
   }
 
   .home-hero__lede {
@@ -67,49 +73,14 @@ const { eyebrow, line1, line2, lede, primary, secondary } = Astro.props;
 
   .home-hero__actions {
     --cluster-gap: var(--space-xs) var(--space-s);
-    margin-top: var(--space-2xs);
-  }
-
-  .home-hero__art {
-    position: relative;
-    display: none;
-    place-items: center;
-  }
-
-  .home-hero__sun {
-    position: absolute;
-    width: 100%;
-    aspect-ratio: 1;
-    border-radius: var(--radius-pill);
-    background: radial-gradient(circle at 50% 45%, var(--blush), transparent 68%);
-  }
-
-  .home-hero__art :global(.home-hero__mark) {
-    position: relative;
-    width: 58%;
-    filter: drop-shadow(0 24px 30px rgb(var(--espresso-rgb) / 0.14));
   }
 
   @media (min-width: 64em) {
-    .home-hero__inner {
-      grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
-    }
-
-    .home-hero__art {
-      display: grid;
-    }
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .home-hero__art :global(.home-hero__mark) {
-      animation: hero-float 5s var(--ease-in-out) infinite alternate;
-    }
-
-    @keyframes hero-float {
-      from {
-        translate: 0 0.6rem;
-        rotate: -2deg;
-      }
+    .home-hero__foot {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: var(--space-xl);
+      width: 100%;
     }
   }
 </style>

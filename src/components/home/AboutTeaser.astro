@@ -14,7 +14,7 @@ const { heading, body, linkLabel, portrait, portraitAlt } = Astro.props;
 ---
 <section class="section about-teaser" aria-labelledby="about-teaser-title" data-next-step>
   <div class="container about-teaser__inner">
-    <div class="about-teaser__portrait" data-reveal>
+    <div class="about-teaser__portrait about-portrait" data-reveal data-scroll="unveil" style="--unveil-inset: 30% 0 0">
       <Media image={portrait} alt={portraitAlt} sizes="(min-width: 64em) 28rem, 80vw" />
     </div>
     <div class="about-teaser__text" data-reveal style="--reveal-index: 1">
@@ -33,11 +33,13 @@ const { heading, body, linkLabel, portrait, portraitAlt } = Astro.props;
     align-items: center;
   }
 
+  /* An arch: on a 4:5 frame these radii draw a true semicircle on top. */
   .about-teaser__portrait {
+    --arch: 50% 50% var(--radius-lg) var(--radius-lg) / 40% 40% var(--radius-lg) var(--radius-lg);
     width: min(100%, 24rem);
     aspect-ratio: 4 / 5;
     overflow: clip;
-    border-radius: var(--radius-xl);
+    border-radius: var(--arch);
     box-shadow: var(--shadow-md);
   }
 
