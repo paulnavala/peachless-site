@@ -90,12 +90,18 @@
   color: var(--color-text-muted);
 }
 
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+/* The photo owns its motion: a lean-in under the pointer or keyboard focus,
+   and a fade as it arrives (src/styles/motion.css). */
+@media (prefers-reduced-motion: no-preference) {
   .pg-masonry__img {
-    transition: scale 600ms var(--ease-out);
+    transition:
+      scale var(--duration-media) var(--ease-out),
+      opacity var(--duration-slow) var(--ease-out);
   }
+}
 
-  .pg-masonry__media:hover .pg-masonry__img {
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pg-masonry__media:is(:hover, :focus-visible) .pg-masonry__img {
     scale: var(--hover-scale);
   }
 }
@@ -167,8 +173,8 @@
   color: var(--linen);
 }
 
-.pg-modal__close:hover,
-.pg-modal__nav:hover {
+.pg-modal__close:is(:hover, :focus-visible),
+.pg-modal__nav:is(:hover, :focus-visible) {
   background: var(--espresso-raised);
   border-color: var(--sand);
 }
@@ -227,9 +233,76 @@
   }
 }
 
+/* Registered, so the photo's box can morph from one shape to the next. */
+@property --m-ratio {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1.5;
+}
+
 @media (prefers-reduced-motion: no-preference) {
+  /* Closing fades the whole lightbox out (display stays until the fade ends;
+     transitions outrank the reset's [hidden] rule); opening brings in the
+     backdrop and frame first, then the photo. The last photo stays rendered
+     while it fades. */
+  .pg-modal {
+    transition:
+      opacity var(--duration-fast) var(--ease-in),
+      display var(--duration-fast) allow-discrete;
+  }
+
+  .pg-modal[hidden] {
+    opacity: 0;
+  }
+
+  .pg-modal:not([hidden]) :is(.pg-modal__backdrop, .pg-modal__bar, .pg-modal__caption) {
+    animation: pg-fade var(--duration-base) var(--ease-out) both;
+  }
+
   .pg-modal:not([hidden]) .pg-modal__view {
-    animation: pg-in var(--duration-base) var(--ease-out);
+    animation: pg-in var(--duration-slow) var(--ease-out) both;
+  }
+
+  /* From photo to photo: the box eases to the new proportions while the new
+     photo (keyed, so freshly mounted) fades in. */
+  .pg-modal__view {
+    transition: --m-ratio var(--duration-slow) var(--ease-in-out);
+  }
+
+  .pg-modal__view > * {
+    animation: pg-fade var(--duration-base) var(--ease-out);
+  }
+
+  .pg-modal__close,
+  .pg-modal__nav {
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard);
+  }
+
+  .pg-modal__close svg,
+  .pg-modal__nav svg {
+    transition:
+      translate var(--duration-base) var(--ease-out),
+      rotate var(--duration-base) var(--ease-out);
+  }
+
+  .pg-modal__nav--prev:is(:hover, :focus-visible) svg {
+    translate: -0.15em 0;
+  }
+
+  .pg-modal__nav--next:is(:hover, :focus-visible) svg {
+    translate: 0.15em 0;
+  }
+
+  .pg-modal__close:is(:hover, :focus-visible) svg {
+    rotate: 90deg;
+  }
+
+  @keyframes pg-fade {
+    from {
+      opacity: 0;
+    }
   }
 
   @keyframes pg-in {

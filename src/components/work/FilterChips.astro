@@ -89,11 +89,12 @@ const chips: { key: WorkFilter; label: string; href: string }[] = [
       z-index: var(--z-raised);
     }
 
+    /* The pill travels from one chip to the next. */
     ::view-transition-group(filter-indicator) {
       overflow: clip;
       border-radius: var(--radius-pill);
       animation-duration: var(--duration-slow);
-      animation-timing-function: var(--ease-out);
+      animation-timing-function: var(--ease-in-out);
     }
 
     ::view-transition-old(filter-indicator),

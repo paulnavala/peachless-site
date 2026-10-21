@@ -43,8 +43,14 @@
   font-variant-numeric: tabular-nums;
 }
 
-.gv-thumb:hover .gv-thumb__label {
+.gv-thumb:is(:hover, :focus-visible) .gv-thumb__label {
   color: var(--color-accent-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gv-thumb__label {
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
@@ -54,7 +60,7 @@
       box-shadow var(--duration-base) var(--ease-out);
   }
 
-  .gv-thumb:hover .gv-thumb__frame {
+  .gv-thumb:is(:hover, :focus-visible) .gv-thumb__frame {
     translate: 0 -0.25rem;
     box-shadow: var(--shadow-md);
   }
@@ -136,9 +142,23 @@
   transform-origin: center;
 }
 
+/* Zoom eases in and out; panning follows the pointer 1:1. A new page slides
+   in from the side the reader is heading to (--dir on the stage). */
 @media (prefers-reduced-motion: no-preference) {
-  .gv-stage:not(.is-zoomed) .gv-image {
+  .gv-image {
     transition: transform var(--duration-base) var(--ease-out);
+    animation: gv-page var(--duration-base) var(--ease-out);
+  }
+
+  .gv-stage.is-dragging .gv-image {
+    transition: none;
+  }
+
+  @keyframes gv-page {
+    from {
+      opacity: 0;
+      translate: calc(var(--dir, 0) * 1.5rem) 0;
+    }
   }
 }
 
@@ -166,7 +186,7 @@
   font-size: var(--text-ui);
 }
 
-.gv-btn:hover:not(:disabled) {
+.gv-btn:is(:hover, :focus-visible):not(:disabled) {
   background: var(--espresso-raised);
   border-color: var(--sand);
 }
@@ -214,7 +234,7 @@
   text-align: start;
 }
 
-.gv-menu__item:hover {
+.gv-menu__item:is(:hover, :focus-visible) {
   background: rgb(var(--linen-rgb) / 0.08);
 }
 
@@ -231,4 +251,26 @@
 .gv-menu__num {
   font-variant-numeric: tabular-nums;
   color: var(--sand);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gv-btn,
+  .gv-menu__item {
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard),
+      opacity var(--duration-fast) var(--ease-standard);
+  }
+
+  /* The page list rises out of its button. */
+  .gv-menu__list:not([hidden]) {
+    animation: gv-pop var(--duration-base) var(--ease-out);
+  }
+
+  @keyframes gv-pop {
+    from {
+      opacity: 0;
+      translate: -50% 0.5rem;
+    }
+  }
 }

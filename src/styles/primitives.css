@@ -119,4 +119,10 @@
   .skip-link:focus-visible {
     translate: 0 0;
   }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .skip-link {
+      transition: translate var(--duration-base) var(--ease-out);
+    }
+  }
 }

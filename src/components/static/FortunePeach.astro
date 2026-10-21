@@ -96,6 +96,8 @@ const { heading, intro, fortunes } = Astro.props;
     const crack = (moveFocus: boolean) => {
       const result = pick();
       announcer.textContent = '';
+      // From now on the peach comes back with an entrance after "Try again".
+      stage.dataset.played = '';
       setStage('cracking');
       spawnSparks();
       setTimeout(
@@ -200,7 +202,7 @@ const { heading, intro, fortunes } = Astro.props;
     font-weight: var(--weight-medium);
   }
 
-  .fortune__peach:hover .fortune__cta {
+  .fortune__peach:is(:hover, :focus-visible) .fortune__cta {
     background: var(--clay-deep);
   }
 
@@ -288,6 +290,15 @@ const { heading, intro, fortunes } = Astro.props;
       animation-play-state: paused;
     }
 
+    .fortune__cta {
+      transition: background-color var(--duration-fast) var(--ease-standard);
+    }
+
+    /* "Try again": a fresh peach settles back into place. */
+    :global(.flw-stage--unopened[data-played]) .fortune__peach {
+      animation: fortune-back var(--duration-slow) var(--ease-out) both;
+    }
+
     .fortune__half--left {
       animation: fortune-left 900ms var(--ease-out) 250ms both;
     }
@@ -355,6 +366,13 @@ const { heading, intro, fortunes } = Astro.props;
       from {
         opacity: 0;
         scale: 0.6;
+      }
+    }
+
+    @keyframes fortune-back {
+      from {
+        opacity: 0;
+        scale: 0.9;
       }
     }
   }

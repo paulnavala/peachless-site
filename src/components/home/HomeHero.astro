@@ -14,10 +14,10 @@ interface Props {
 }
 const { eyebrow, line1, line2, lede, primary, secondary, reel } = Astro.props;
 ---
+{/* The hero plays once per session: the headline types, the introduction and
+    the reel arrive. Set before any of it is parsed, so a returning visitor
+    never sees it restart. */}
 <script is:inline>
-  // The hero plays once per session: the headline types, the introduction and
-  // the reel arrive. Set before any of it is parsed, so a returning visitor
-  // never sees it restart.
   try {
     if (sessionStorage.getItem('peachless:tagline')) document.documentElement.dataset.taglineSeen = '';
     else sessionStorage.setItem('peachless:tagline', '1');

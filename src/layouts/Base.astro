@@ -6,6 +6,7 @@ import Footer from '../components/chrome/Footer.astro';
 import type { JsonLdNode } from '../lib/structured-data';
 import '../styles/tokens.css';
 import '../styles/global.css';
+import '../styles/components/cursor-label.css';
 
 interface Props {
   title?: string;
@@ -49,6 +50,15 @@ const speculationRules = JSON.stringify({
     <Seo title={title} description={description} image={ogImage} canonical={canonical} noindex={noindex} jsonLd={jsonLd} />
     <Font cssVariable="--font-inter" preload={[{ style: 'normal' }]} />
     <Font cssVariable="--font-cormorant" preload={[{ style: preloadSerif }]} />
+    {/* Lazy images fade in as they arrive (motion.css): mark each one once it
+        has loaded, or failed (so its alt text shows). Inline in <head>, so it
+        is listening before any image loads; `load` doesn't bubble, so catch it
+        on the way down. (Comments stay out of inline scripts: they ship.) */}
+    <script is:inline>
+      document.documentElement.classList.add('img-fade');
+      for (const t of ['load', 'error'])
+        document.addEventListener(t, (e) => { if (e.target instanceof HTMLImageElement) e.target.dataset.loaded = ''; }, true);
+    </script>
     <link rel="sitemap" href="/sitemap-index.xml" />
     <script is:inline type="speculationrules" set:html={speculationRules} />
   </head>
@@ -61,7 +71,9 @@ const speculationRules = JSON.stringify({
     <Footer showCta={footerCta} />
     <script>
       import { initReveal } from '../lib/reveal';
+      import { initCursorLabel } from '../lib/cursor-label';
       initReveal();
+      initCursorLabel();
     </script>
   </body>
 </html>
