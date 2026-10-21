@@ -1,6 +1,7 @@
 ---
 import { getEntry } from 'astro:content';
 import PeachMark from '../ui/PeachMark.astro';
+import Wordmark from '../ui/Wordmark.astro';
 import Icon from '../ui/Icon.astro';
 
 interface Props {
@@ -15,14 +16,11 @@ const year = new Date().getFullYear();
 <footer class="site-footer sheet" data-surface="inverse">
   {showCta && cta && (
     <section class="site-footer__cta container" aria-labelledby="footer-cta-title">
-      {cta.eyebrow && <p class="eyebrow eyebrow--rule">{cta.eyebrow}</p>}
+      {cta.eyebrow && <p class="eyebrow">{cta.eyebrow}</p>}
       <h2 id="footer-cta-title" class="site-footer__cta-title">{cta.heading}</h2>
       <svg class="site-footer__swash" viewBox="0 0 320 24" aria-hidden="true" focusable="false"><path d="M3 17C64 6 132 4 196 11s96 9 121 1" /></svg>
       <div class="cluster site-footer__cta-actions">
-        <a class="btn btn--accent btn--lg" href={cta.buttonLink}>
-          {cta.buttonLabel}
-          <Icon name="arrow-right" />
-        </a>
+        <a class="btn btn--accent btn--lg" href={cta.buttonLink}>{cta.buttonLabel}</a>
         {emails[0] && (
           <a class="link-arrow" href={`mailto:${emails[0].address}`}>
             {emails[0].address}
@@ -37,7 +35,7 @@ const year = new Date().getFullYear();
     <div class="site-footer__brand">
       <a class="site-footer__wordmark" href="/">
         <PeachMark class="site-footer__mark" />
-        <span>{siteName}</span>
+        <Wordmark name={siteName} />
       </a>
       <p class="site-footer__tagline">{tagline}</p>
     </div>
@@ -79,6 +77,10 @@ const year = new Date().getFullYear();
 
   <div class="site-footer__legal container">
     <p>© {year} {siteName} All rights reserved.</p>
+    <p class="site-footer__colophon">
+      <span class="site-footer__swatches" aria-hidden="true"></span>
+      Set in Cormorant Garamond and Inter.
+    </p>
     <a class="link-quiet site-footer__top" href="#top">
       Back to top
       <Icon name="arrow-up" />
@@ -185,9 +187,7 @@ const year = new Date().getFullYear();
     align-items: center;
     gap: 0.6rem;
     color: var(--color-heading);
-    font-family: var(--font-display);
     font-size: var(--step-3);
-    font-weight: var(--weight-display);
     text-decoration: none;
   }
 
@@ -197,20 +197,17 @@ const year = new Date().getFullYear();
 
   .site-footer__tagline {
     margin-top: var(--space-xs);
-    max-width: 28ch;
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: var(--step-1);
+    max-width: 30ch;
     color: var(--color-text-muted);
   }
 
   .site-footer__heading {
     margin-bottom: var(--space-xs);
     font-family: var(--font-body);
-    font-size: var(--text-micro);
-    font-weight: var(--weight-semibold);
-    letter-spacing: var(--tracking-caps);
-    text-transform: uppercase;
+    font-size: var(--text-small);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-ui);
+    letter-spacing: 0;
     color: var(--color-text-muted);
   }
 
@@ -244,6 +241,28 @@ const year = new Date().getFullYear();
     border-top: 1px solid var(--color-border);
     font-size: var(--text-small);
     color: var(--color-text-muted);
+  }
+
+  .site-footer__colophon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75em;
+  }
+
+  /* The brand's peach tones as a little paint strip, deepest to lightest. */
+  .site-footer__swatches {
+    inline-size: 3rem;
+    block-size: 0.5rem;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(
+      to right,
+      var(--clay) 0 20%,
+      var(--mark-peach) 0 40%,
+      var(--mark-blush) 0 60%,
+      var(--mark-cream) 0 80%,
+      var(--linen) 0
+    );
+    box-shadow: inset 0 0 0 1px var(--color-border);
   }
 
   .site-footer__top {

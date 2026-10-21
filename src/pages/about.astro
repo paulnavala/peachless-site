@@ -22,7 +22,7 @@ const portraitShare = await getImage({ src: portrait, width: 800, format: 'jpg' 
         <Media image={portrait} alt={portraitAlt} sizes="(min-width: 64em) 30rem, 90vw" priority />
       </div>
       <div class="about__text">
-        {eyebrow && <p class="eyebrow eyebrow--rule">{eyebrow}</p>}
+        {eyebrow && <p class="eyebrow">{eyebrow}</p>}
         <h1 class="about__title">{title}</h1>
         <p class="about__statement t-quote">{statement}</p>
         <div class="about__body flow">
@@ -33,7 +33,7 @@ const portraitShare = await getImage({ src: portrait, width: 800, format: 'jpg' 
     </div>
   </section>
 
-  <CtaBand eyebrow="Keep exploring" heading="See the work behind the words." tone="paper">
+  <CtaBand heading="See the work behind the words." tone="paper">
     <ArrowLink href="/projects/">Explore my work</ArrowLink>
     <ArrowLink href="/photography/">Photography</ArrowLink>
   </CtaBand>

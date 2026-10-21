@@ -18,7 +18,6 @@ const { heading, body, linkLabel, portrait, portraitAlt } = Astro.props;
       <Media image={portrait} alt={portraitAlt} sizes="(min-width: 64em) 28rem, 80vw" />
     </div>
     <div class="about-teaser__text" data-reveal style="--reveal-index: 1">
-      <p class="eyebrow eyebrow--rule">About</p>
       <h2 id="about-teaser-title" class="about-teaser__title">{heading}</h2>
       <p class="t-quote about-teaser__body">{body}</p>
       <ArrowLink href="/about/">{linkLabel}</ArrowLink>

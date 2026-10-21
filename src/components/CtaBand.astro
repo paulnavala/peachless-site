@@ -13,7 +13,7 @@ const { eyebrow, heading, body, tone = 'blush', id = 'next-step-title' } = Astro
 <section class="cta-band sheet" data-surface={tone} data-next-step aria-labelledby={id}>
   <div class="container cta-band__inner">
     <div class="cta-band__text">
-      {eyebrow && <p class="eyebrow eyebrow--rule">{eyebrow}</p>}
+      {eyebrow && <p class="eyebrow">{eyebrow}</p>}
       <h2 id={id} class="cta-band__title t-h2">{heading}</h2>
       {body && <p class="cta-band__body">{body}</p>}
     </div>

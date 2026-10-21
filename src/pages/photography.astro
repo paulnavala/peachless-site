@@ -51,7 +51,7 @@ const counts = {
 <Base title="Photography" description={page.seo.description ?? page.lede ?? page.heading}>
   <section class="section section--tight photo-header">
     <div class="container">
-      {page.eyebrow && <p class="eyebrow eyebrow--rule">{page.eyebrow}</p>}
+      {page.eyebrow && <p class="eyebrow">{page.eyebrow}</p>}
       <h1 class="photo-header__title">{page.heading}</h1>
       {page.lede && <p class="lede">{page.lede}</p>}
       <div class="photo-header__filters">
@@ -74,7 +74,7 @@ const counts = {
     </div>
   </section>
 
-  <CtaBand eyebrow="Keep exploring" heading="See the brand and interface work." tone="paper">
+  <CtaBand heading="See the brand and interface work." tone="paper">
     <ArrowLink href="/projects/">All work</ArrowLink>
     <ArrowLink href="/about/">About me</ArrowLink>
   </CtaBand>

@@ -2,8 +2,8 @@
 // The home headline, typed out once per visit. Characters are rendered on the
 // server with fixed delays and CSS does the typing, so it starts at first
 // paint with no JavaScript framework; screen readers get the whole sentence at
-// once. Under reduced motion — or on a second visit in the same session —
-// the full text simply shows.
+// once. Under reduced motion — or on a second visit in the same session (the
+// flag HomeHero sets before the hero is parsed) — the full text simply shows.
 interface Props {
   line1: string;
   line2: string;
@@ -37,14 +37,6 @@ const line = (text: string, modifier: string) => {
 };
 const visual = line(line1, '') + ((clock += LINE_PAUSE), line(line2, ' tagline__line--2'));
 ---
-<script is:inline>
-  // Play the typing once per session: set before the headline is parsed, so a
-  // returning visitor never sees it restart.
-  try {
-    if (sessionStorage.getItem('peachless:tagline')) document.documentElement.dataset.taglineSeen = '';
-    else sessionStorage.setItem('peachless:tagline', '1');
-  } catch {}
-</script>
 <h1 class="tagline">
   <span class="sr-only">{line1} {line2}</span>
   <span class="tagline__visual" aria-hidden="true" set:html={visual} />
@@ -57,7 +49,7 @@ const visual = line(line1, '') + ((clock += LINE_PAUSE), line(line2, ' tagline__
     font-style: italic;
     font-weight: var(--weight-regular);
     line-height: var(--leading-display);
-    letter-spacing: var(--tracking-display);
+    letter-spacing: var(--tracking-heading);
     color: var(--color-heading);
   }
 

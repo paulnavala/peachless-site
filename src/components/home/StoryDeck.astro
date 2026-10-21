@@ -3,7 +3,7 @@
 // sticks under the header while the next one slides over it, and the covered
 // card recedes. Phones, short or zoomed screens get a plain list.
 import type { Project } from '../../lib/content';
-import { DISCIPLINE_LABELS } from '../../lib/content-schema';
+import { disciplineList } from '../../lib/content-schema';
 import { projectTheme } from '../../lib/project-theme';
 import Media from '../ui/Media.astro';
 import Icon from '../ui/Icon.astro';
@@ -20,7 +20,6 @@ const pad = (n: number) => String(n).padStart(2, '0');
   {
     projects.map((project, i) => {
       const { title, summary, disciplines, year, cover, accent } = project.data;
-      const meta = [disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · '), year].filter(Boolean).join(' — ');
       return (
         <li class="deck__item" style={{ '--i': i }}>
           <article class="deck-card card" data-testid="work-card" style={projectTheme(accent)}>
@@ -28,6 +27,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
               <div
                 class="deck-card__media card__media work-media"
                 data-panel={cover.panel}
+                data-cursor="View"
                 data-reveal
                 data-scroll="unveil"
                 style={{ '--vt': `work-${project.id}` }}
@@ -39,7 +39,10 @@ const pad = (n: number) => String(n).padStart(2, '0');
                   {pad(i + 1)}
                   <span>/ {pad(projects.length)}</span>
                 </p>
-                <p class="deck-card__meta">{meta}</p>
+                <p class="deck-card__meta">
+                  <span>{disciplineList(disciplines)}</span>
+                  {year && <span class="deck-card__year">{year}</span>}
+                </p>
                 <Heading class="deck-card__title work-title" style={{ '--vt-title': `work-title-${project.id}` }}>
                   <a class="card__link" href={`/projects/${project.id}/`}>
                     {title}
@@ -112,28 +115,39 @@ const pad = (n: number) => String(n).padStart(2, '0');
     padding: var(--space-m) var(--space-m-xl) var(--space-l);
   }
 
+  /* "01 / 03": lining figures (old-style "01" reads as "o1"); the total is
+     small, so it is set in Inter, not the serif. */
   .deck-card__count {
     font-family: var(--font-display);
-    font-size: var(--step-4);
+    font-size: var(--text-title);
+    font-variant-numeric: lining-nums tabular-nums;
     line-height: 1;
     color: var(--project-ink, var(--color-accent-text));
   }
 
   .deck-card__count span {
-    font-size: 0.5em;
+    margin-inline-start: 0.2em;
+    font-family: var(--font-body);
+    font-size: var(--text-small);
     color: var(--color-text-secondary);
   }
 
   .deck-card__meta {
-    font-size: var(--text-micro);
-    font-weight: var(--weight-semibold);
-    letter-spacing: var(--tracking-caps);
-    text-transform: uppercase;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.75em;
+    font-size: var(--text-small);
     color: var(--color-text-secondary);
+  }
+
+  .deck-card__year {
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
   }
 
   .deck-card__title {
     font-size: var(--text-h2);
+    font-weight: var(--weight-display);
     line-height: var(--leading-heading);
   }
 
@@ -216,21 +230,15 @@ const pad = (n: number) => String(n).padStart(2, '0');
     }
   }
 
+  /* The cover leans in and the cue's arrow leads on: under the pointer and
+     for keyboard focus alike (the image and icon own their transitions). */
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .deck-card__media :global(.media) {
-      transition: scale 600ms var(--ease-out);
-    }
-
-    .deck-card:hover .deck-card__media :global(.media) {
+    .deck-card:is(:hover, :focus-within) .deck-card__media :global(.media) {
       scale: var(--hover-scale);
     }
 
-    .deck-card__cta :global(svg) {
-      transition: translate var(--duration-base) var(--ease-out);
-    }
-
-    .deck-card:hover .deck-card__cta :global(svg) {
-      translate: 0.25em 0;
+    .deck-card:is(:hover, :focus-within) .deck-card__cta :global(.icon) {
+      translate: var(--nudge, none);
     }
   }
 

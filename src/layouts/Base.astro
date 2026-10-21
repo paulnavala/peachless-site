@@ -15,7 +15,7 @@ interface Props {
   /** Override the canonical URL (alias pages point at the real one). */
   canonical?: string;
   noindex?: boolean;
-  /** Which Crimson Pro face the page's h1 uses; preloaded to avoid a swap. */
+  /** Which Cormorant face the page's h1 uses; preloaded to avoid a swap. */
   preloadSerif?: 'normal' | 'italic';
   /** Show the "Let's create together" invitation in the footer. */
   footerCta?: boolean;
@@ -48,7 +48,7 @@ const speculationRules = JSON.stringify({
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <Seo title={title} description={description} image={ogImage} canonical={canonical} noindex={noindex} jsonLd={jsonLd} />
     <Font cssVariable="--font-inter" preload={[{ style: 'normal' }]} />
-    <Font cssVariable="--font-crimson-pro" preload={[{ style: preloadSerif }]} />
+    <Font cssVariable="--font-cormorant" preload={[{ style: preloadSerif }]} />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <script is:inline type="speculationrules" set:html={speculationRules} />
   </head>

@@ -4,9 +4,9 @@ import sitemap from '@astrojs/sitemap';
 import { REDIRECTS } from './redirects.config.mjs';
 
 // Fonts come from pinned @fontsource-variable packages through the local
-// provider, so builds are deterministic and need no font CDN. Crimson Pro
-// (display) and Inter (body/UI) stand in for the brand book's Minion and
-// Neue Haas Grotesk.
+// provider, so builds are deterministic and need no font CDN. Cormorant
+// Garamond (display) and Inter (body/UI) stand in for the brand book's Minion
+// Display and Neue Haas Grotesk; the wordmark is outlined (ui/Wordmark.astro).
 const fsv = (pkg, file) => `./node_modules/@fontsource-variable/${pkg}/files/${file}`;
 
 export default defineConfig({
@@ -24,13 +24,21 @@ export default defineConfig({
   fonts: [
     {
       provider: fontProviders.local(),
-      name: 'Crimson Pro',
-      cssVariable: '--font-crimson-pro',
+      name: 'Cormorant Garamond',
+      cssVariable: '--font-cormorant',
       fallbacks: ['Georgia', 'serif'],
       options: {
         variants: [
-          { src: [fsv('crimson-pro', 'crimson-pro-latin-wght-normal.woff2')], weight: '200 900', style: 'normal' },
-          { src: [fsv('crimson-pro', 'crimson-pro-latin-wght-italic.woff2')], weight: '200 900', style: 'italic' },
+          {
+            src: [fsv('cormorant-garamond', 'cormorant-garamond-latin-wght-normal.woff2')],
+            weight: '300 700',
+            style: 'normal',
+          },
+          {
+            src: [fsv('cormorant-garamond', 'cormorant-garamond-latin-wght-italic.woff2')],
+            weight: '300 700',
+            style: 'italic',
+          },
         ],
       },
     },

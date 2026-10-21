@@ -1,7 +1,6 @@
 ---
 import Tagline from './Tagline.astro';
 import WorkReel, { type ReelTile } from './WorkReel.astro';
-import Icon from '../ui/Icon.astro';
 
 interface Props {
   eyebrow?: string;
@@ -15,17 +14,23 @@ interface Props {
 }
 const { eyebrow, line1, line2, lede, primary, secondary, reel } = Astro.props;
 ---
+<script is:inline>
+  // The hero plays once per session: the headline types, the introduction and
+  // the reel arrive. Set before any of it is parsed, so a returning visitor
+  // never sees it restart.
+  try {
+    if (sessionStorage.getItem('peachless:tagline')) document.documentElement.dataset.taglineSeen = '';
+    else sessionStorage.setItem('peachless:tagline', '1');
+  } catch {}
+</script>
 <section class="home-hero" aria-label="Introduction">
   <div class="container home-hero__inner">
-    {eyebrow && <p class="eyebrow eyebrow--rule">{eyebrow}</p>}
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
     <Tagline line1={line1} line2={line2} />
     <div class="home-hero__foot">
       {lede && <p class="lede home-hero__lede">{lede}</p>}
       <div class="cluster home-hero__actions">
-        <a class="btn btn--lg" href={primary.link}>
-          {primary.label}
-          <Icon name="arrow-right" />
-        </a>
+        <a class="btn btn--lg" href={primary.link}>{primary.label}</a>
         {secondary && <a class="btn btn--secondary btn--lg" href={secondary.link}>{secondary.label}</a>}
       </div>
     </div>
@@ -81,6 +86,30 @@ const { eyebrow, line1, line2, lede, primary, secondary, reel } = Astro.props;
       align-items: end;
       gap: var(--space-xl);
       width: 100%;
+    }
+  }
+
+  /* First visit: the introduction settles in while the headline types, so the
+     calls to action are ready long before the last letter. The headline (the
+     LCP) is never held back. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not([data-tagline-seen])) .home-hero :is(.eyebrow, .home-hero__lede, .home-hero__actions) {
+      animation: hero-in var(--duration-slower) var(--ease-out) both;
+    }
+
+    :global(html:not([data-tagline-seen])) .home-hero__lede {
+      animation-delay: var(--duration-slow);
+    }
+
+    :global(html:not([data-tagline-seen])) .home-hero__actions {
+      animation-delay: calc(var(--duration-slow) + 2 * var(--stagger));
+    }
+
+    @keyframes hero-in {
+      from {
+        opacity: 0;
+        translate: 0 var(--reveal-shift);
+      }
     }
   }
 </style>

@@ -113,7 +113,7 @@ const disciplines: DisciplineEntry[] = [
 
   <section class="section" aria-labelledby="services-title">
     <div class="container">
-      <SectionHeader id="services-title" eyebrow="Crafts" title={home.services.heading} lede={home.services.intro} />
+      <SectionHeader id="services-title" title={home.services.heading} lede={home.services.intro} />
       <DisciplineIndex entries={disciplines} />
     </div>
   </section>
@@ -122,7 +122,6 @@ const disciplines: DisciplineEntry[] = [
     <div class="container">
       <SectionHeader
         id="featured-title"
-        eyebrow="Stories"
         title={home.featured.heading}
         lede={home.featured.intro}
         action={{ href: '/projects/', label: 'All work' }}
@@ -137,7 +136,6 @@ const disciplines: DisciplineEntry[] = [
         <div class="container">
           <SectionHeader
             id="photography-title"
-            eyebrow="Photography"
             title={home.photography.heading}
             lede={home.photography.intro}
             action={{ href: '/photography/', label: 'View the gallery' }}

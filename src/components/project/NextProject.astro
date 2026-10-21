@@ -3,7 +3,7 @@
 // title and cover carry the next project's view-transition names, so they
 // morph into that project's hero.
 import type { Project } from '../../lib/content';
-import { DISCIPLINE_LABELS } from '../../lib/content-schema';
+import { disciplineList } from '../../lib/content-schema';
 import { projectTheme } from '../../lib/project-theme';
 import ArrowLink from '../ui/ArrowLink.astro';
 import Media from '../ui/Media.astro';
@@ -17,11 +17,11 @@ const { title, summary, disciplines, cover, accent } = project.data;
 <section class="next-project sheet" data-next-step aria-labelledby="next-project-title" style={projectTheme(accent)}>
   <div class="container next-project__inner">
     <div class="next-project__text">
-      <p class="eyebrow eyebrow--rule">Next story</p>
+      <p class="eyebrow">Next story</p>
       <h2 id="next-project-title" class="next-project__title work-title" style={{ '--vt-title': `work-title-${project.id}` }}>
         <a class="next-project__link" href={`/projects/${project.id}/`} data-testid="next-project">{title}</a>
       </h2>
-      <p class="next-project__meta">{disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · ')}</p>
+      <p class="next-project__meta">{disciplineList(disciplines)}</p>
       <p class="next-project__summary">{summary}</p>
       <ArrowLink class="next-project__all" href="/projects/">All work</ArrowLink>
     </div>
@@ -31,6 +31,7 @@ const { title, summary, disciplines, cover, accent } = project.data;
       tabindex="-1"
       aria-hidden="true"
       data-panel={cover.panel}
+      data-cursor="Next"
       style={{ '--vt': `work-${project.id}` }}
     >
       <Media image={cover.image} alt="" sizes="(min-width: 64em) 44rem, 100vw" fit={cover.fit} />
@@ -67,16 +68,13 @@ const { title, summary, disciplines, cover, accent } = project.data;
     text-decoration: none;
   }
 
-  .next-project__link:hover {
+  .next-project__link:is(:hover, :focus-visible) {
     color: var(--color-accent-text);
   }
 
   .next-project__meta {
-    font-size: var(--text-micro);
-    font-weight: var(--weight-semibold);
-    letter-spacing: var(--tracking-caps);
-    text-transform: uppercase;
-    color: var(--color-accent-text);
+    font-size: var(--text-small);
+    color: var(--color-text-secondary);
   }
 
   .next-project__summary {
@@ -109,11 +107,7 @@ const { title, summary, disciplines, cover, accent } = project.data;
   }
 
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .next-project__media :global(.media) {
-      transition: scale 600ms var(--ease-out);
-    }
-
-    .next-project__inner:hover .next-project__media :global(.media) {
+    .next-project__inner:is(:hover, :focus-within) .next-project__media :global(.media) {
       scale: var(--hover-scale);
     }
   }
