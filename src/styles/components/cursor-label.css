@@ -8,8 +8,10 @@
     z-index: var(--z-overlay);
     display: grid;
     place-items: center;
-    inline-size: 3.75rem;
+    /* A disc for a short word ("View"), a pill for a longer one ("Compare"). */
+    min-inline-size: 3.75rem;
     block-size: 3.75rem;
+    padding-inline: 0.75em;
     margin: 0.75rem 0 0 0.75rem;
     border-radius: var(--radius-pill);
     background: var(--espresso);
