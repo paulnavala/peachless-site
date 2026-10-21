@@ -10,6 +10,9 @@ test.describe('site chrome', () => {
     await expect(brand).toHaveCount(1);
     await expect(brand).toHaveAttribute('href', '/');
     await expect(brand).toContainText(settings.siteName ?? 'peachless.');
+    // The wordmark is drawn (an outlined SVG); its name is still the site name.
+    await expect(brand).toHaveAccessibleName(settings.siteName ?? 'peachless.');
+    await expect(brand.locator('.wordmark svg, .wordmark--text').first()).toBeVisible();
 
     const links = page.locator('.site-header__nav a');
     await expect(links).toHaveCount(settings.nav.length);

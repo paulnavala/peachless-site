@@ -86,6 +86,8 @@ function violations(rel: string, raw: string): string[] {
   if (!IMPORTANT_ALLOWED.has(rel)) {
     for (const _ of css.matchAll(/!important/g)) found.push('!important');
   }
+  // Labels are sentence case: tracked capitals read as template chrome.
+  for (const _ of css.matchAll(/text-transform\s*:\s*uppercase/g)) found.push('text-transform: uppercase (labels are sentence case)');
   for (const m of code.matchAll(/['"`]#[0-9a-fA-F]{3,8}['"`]/g)) found.push(`hex colour ${m[0]} in script`);
   if (!rel.endsWith('.css')) {
     const markup = text.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');

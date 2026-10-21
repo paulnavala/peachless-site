@@ -84,6 +84,15 @@ describe('design tokens', () => {
     expect(relativeLuminance(resolve('--paper'))).toBeCloseTo(PAPER_LUMINANCE, 3);
   });
 
+  it('the display serif is never set below --text-h3, its smallest size', () => {
+    // Cormorant's hairlines and small x-height need the size (CLAUDE.md, Type).
+    const SERIF_SIZES = ['--text-hero', '--text-display', '--text-statement', '--text-h1', '--text-display-2', '--text-h2', '--text-title', '--text-quote'];
+    const minRem = (name: string) => Number(tokens.get(name)?.match(/^clamp\(\s*([\d.]+)rem/)?.[1]);
+    const floor = minRem('--text-h3');
+    expect(floor).toBeGreaterThanOrEqual(1.6);
+    for (const name of SERIF_SIZES) expect(minRem(name), name).toBeGreaterThanOrEqual(floor);
+  });
+
   it('fluid sizes stay zoomable: every clamp max is at most 2.5× its min', () => {
     for (const [name, value] of tokens) {
       const m = value.match(/^clamp\(\s*([\d.]+)rem\s*,[^,]+,\s*([\d.]+)rem\s*\)$/);
