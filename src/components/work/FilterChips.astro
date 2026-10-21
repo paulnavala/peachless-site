@@ -44,11 +44,20 @@ const chips: { key: WorkFilter; label: string; href: string }[] = [
     --cluster-gap: var(--space-2xs);
   }
 
-  /* Where the four don't fit on one line, two by two (never one chip alone). */
+  /* Where the four don't fit on one line, two by two (never one chip alone),
+     each chip as wide as its column so the grid reads even. */
   @container (width < 30rem) {
     .filter-chips ul {
       display: grid;
       grid-template-columns: repeat(2, max-content);
+    }
+
+    .filter-chips li {
+      display: grid;
+    }
+
+    .filter-chips .chip {
+      justify-content: center;
     }
   }
 
