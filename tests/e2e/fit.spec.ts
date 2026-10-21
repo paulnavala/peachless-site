@@ -149,6 +149,14 @@ test.describe('phones', () => {
     }
   });
 
+  test('the contact message box opens with room for several lines', async ({ page }) => {
+    await page.goto('/contact/');
+    const lines = await page
+      .locator('textarea')
+      .evaluate((el) => el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight));
+    expect(lines).toBeGreaterThanOrEqual(5);
+  });
+
   test('the menu opens with its brand and Close exactly over the header row', async ({ page }) => {
     await page.goto('/');
     const brand = await rect(page.locator('.site-header__brand'));

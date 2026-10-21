@@ -271,6 +271,12 @@
     line-height: var(--leading-snug);
   }
 
+  /* A message box opens with room for a few lines, then grows with the text
+     (field-sizing in the reset); the 3rem above is for one-line inputs. */
+  textarea.input {
+    min-height: 8lh;
+  }
+
   .input::placeholder {
     color: var(--color-text-muted);
     opacity: 1;
