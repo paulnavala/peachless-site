@@ -16,6 +16,12 @@ export const DISCIPLINE_LABELS: Record<Discipline, string> = {
   uiux: 'UI/UX',
 };
 
+/** Disciplines as a reader would say them: "Graphic design & UI/UX". */
+export function disciplineList(disciplines: readonly Discipline[]): string {
+  const labels = disciplines.map((d) => DISCIPLINE_LABELS[d]);
+  return labels.length > 1 ? `${labels.slice(0, -1).join(', ')} & ${labels.at(-1)}` : (labels[0] ?? '');
+}
+
 export const TOOLS = ['photoshop', 'illustrator', 'indesign', 'canva', 'xd', 'figma', 'miro', 'lightroom'] as const;
 export type Tool = (typeof TOOLS)[number];
 export const TOOL_LABELS: Record<Tool, string> = {

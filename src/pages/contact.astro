@@ -17,7 +17,7 @@ const form = (await getSingleton('form')).data;
   <section class="section contact">
     <div class="container contact__inner">
       <div class="contact__intro">
-        {contact.eyebrow && <p class="eyebrow eyebrow--rule">{contact.eyebrow}</p>}
+        {contact.eyebrow && <p class="eyebrow">{contact.eyebrow}</p>}
         <h1 class="contact__title">{contact.heading}</h1>
         {contact.lede && <p class="lede">{contact.lede}</p>}
         <ul class="contact-emails" role="list">
@@ -68,7 +68,7 @@ const form = (await getSingleton('form')).data;
     </div>
   </section>
 
-  <CtaBand eyebrow="Before you go" heading="Or browse the work first." tone="paper">
+  <CtaBand heading="Or browse the work first." tone="paper">
     <ArrowLink href="/projects/">See the work</ArrowLink>
     <ArrowLink href="/photography/">Photography</ArrowLink>
   </CtaBand>
@@ -104,11 +104,9 @@ const form = (await getSingleton('form')).data;
   }
 
   .contact-emails__label {
-    font-size: var(--text-micro);
-    font-weight: var(--weight-semibold);
-    letter-spacing: var(--tracking-caps);
-    text-transform: uppercase;
+    font-size: var(--text-small);
     color: var(--color-text-muted);
+    text-transform: capitalize;
   }
 
   .contact-emails__link {
@@ -117,15 +115,16 @@ const form = (await getSingleton('form')).data;
     gap: 0.35em;
     width: fit-content;
     font-family: var(--font-display);
-    /* A typical address plus the arrow is ~12.5em: shrink to fit narrow columns. */
-    font-size: min(var(--step-3), 7.5cqi);
-    font-weight: var(--weight-display);
+    /* A typical address plus the arrow is ~12.5em: shrink to fit narrow
+       columns, but never below the serif's floor (it wraps at the @ instead). */
+    font-size: clamp(var(--text-h3), 7.5cqi, var(--text-title));
+    font-weight: var(--weight-display-sm);
     color: var(--color-heading);
     text-decoration: none;
     overflow-wrap: anywhere;
   }
 
-  .contact-emails__link:hover {
+  .contact-emails__link:is(:hover, :focus-visible) {
     color: var(--color-accent-text);
   }
 

@@ -670,7 +670,11 @@ singletons:
     editor:
       preview: false
     fields:
-      - { name: siteName, label: Site name, widget: string, maxlength: 40 }
+      - name: siteName
+        label: Site name
+        widget: string
+        maxlength: 40
+        hint: 'The header, menu and footer draw the logo for "peachless."; any other name appears there as plain text.'
       - { name: ownerName, label: Your name, widget: string, maxlength: 40, required: false, hint: Used to introduce you. Leave empty to stay “peachless.” only. }
       - { name: tagline, label: Tagline, widget: string, maxlength: 120, hint: Shown in the footer and the mobile menu. }
       - name: nav

@@ -2,7 +2,6 @@
 import Base from '../layouts/Base.astro';
 import WorkGrid from '../components/work/WorkGrid.astro';
 import PeachMark from '../components/ui/PeachMark.astro';
-import Icon from '../components/ui/Icon.astro';
 import { getFeaturedProjects } from '../lib/content';
 
 const suggestions = (await getFeaturedProjects()).slice(0, 3);
@@ -15,10 +14,7 @@ const suggestions = (await getFeaturedProjects()).slice(0, 3);
       <h1 class="not-found__title">This pixel got lost.</h1>
       <p class="lede">The page you were looking for has moved, or never existed. Here’s where the story picks up again.</p>
       <div class="cluster not-found__actions">
-        <a class="btn btn--lg" href="/projects/">
-          See the work
-          <Icon name="arrow-right" />
-        </a>
+        <a class="btn btn--lg" href="/projects/">See the work</a>
         <a class="btn btn--secondary btn--lg" href="/">Go home</a>
       </div>
     </div>
@@ -66,6 +62,7 @@ const suggestions = (await getFeaturedProjects()).slice(0, 3);
 
   .not-found__more-title {
     font-size: var(--text-h3);
+    font-weight: var(--weight-display-sm);
     margin-block-end: var(--space-l);
   }
 </style>

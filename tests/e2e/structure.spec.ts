@@ -89,7 +89,7 @@ test('scroll-linked effects come to rest by the bottom of every page', async ({ 
 test.describe('reduced motion', () => {
   test.use({ contextOptions: { reducedMotion: 'reduce' } });
 
-  for (const path of ['/', '/projects/', '/projects/ton/', '/photography/', '/about/', '/contact/']) {
+  for (const path of ['/', '/projects/', '/projects/ton/', '/projects/peachless/', '/photography/', '/about/', '/contact/']) {
     test(`${path} runs no animations`, async ({ page }) => {
       await page.goto(path);
       await page.waitForTimeout(300);

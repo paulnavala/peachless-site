@@ -14,6 +14,17 @@ const ICONS = {
   expand: 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',
 } as const;
 
+// How each icon leans while its link or button is hovered or focused
+// (src/styles/ui.css): arrows along their direction; close turns a quarter.
+const LEAN: Partial<Record<keyof typeof ICONS, string>> = {
+  'arrow-right': '--nudge: 0.2em 0',
+  'arrow-left': '--nudge: -0.2em 0',
+  'arrow-up': '--nudge: 0 -0.2em',
+  'arrow-up-right': '--nudge: 0.15em -0.15em',
+  play: '--nudge: 0.12em 0',
+  close: '--turn: 90deg',
+};
+
 interface Props {
   name: keyof typeof ICONS;
   class?: string;
@@ -23,6 +34,7 @@ const filled = name === 'play';
 ---
 <svg
   class:list={['icon', className]}
+  style={LEAN[name]}
   viewBox="0 0 24 24"
   width="24"
   height="24"

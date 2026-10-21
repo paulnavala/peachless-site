@@ -67,7 +67,8 @@ const figcaption = Root === 'figure' && caption;
     block-size: 100%;
   }
 
-  /* ── Phone: an espresso body, a pill-shaped island, rounded glass ──────── */
+  /* ── Phone: a slim espresso body with a fine metal rim, a pill-shaped
+     island and glass whose corners run concentric with the body's ─────── */
   .device--phone {
     display: grid;
     gap: var(--space-xs);
@@ -75,30 +76,32 @@ const figcaption = Root === 'figure' && caption;
 
   .device--phone .device__body {
     position: relative;
-    padding: 3cqi;
-    border-radius: 14cqi;
+    padding: 1.8cqi;
+    border-radius: 13.8cqi;
     background: var(--espresso);
     box-shadow:
-      var(--shadow-lg),
-      inset 0 0 0 0.6cqi var(--espresso-raised);
+      0 0 0 1px rgb(var(--espresso-rgb) / 0.1),
+      inset 0 0 0 0.35cqi var(--espresso-raised),
+      inset 0 0.4cqi 0.6cqi rgb(var(--linen-rgb) / 0.14),
+      var(--shadow-lg);
   }
 
   .device--phone .device__body::before {
     content: '';
     position: absolute;
     z-index: var(--z-raised);
-    inset-block-start: 5.5cqi;
+    inset-block-start: 4.2cqi;
     inset-inline-start: 50%;
     translate: -50% 0;
-    inline-size: 24cqi;
-    block-size: 6.5cqi;
+    inline-size: 21cqi;
+    block-size: 5.6cqi;
     border-radius: var(--radius-pill);
     background: var(--espresso);
   }
 
   .device--phone .device__screen {
     aspect-ratio: var(--screen, 9 / 19.5);
-    border-radius: 11cqi;
+    border-radius: 12cqi;
   }
 
   /* ── Browser: a window with a bar and three dots ───────────────────────── */
@@ -131,10 +134,15 @@ const figcaption = Root === 'figure' && caption;
     background: radial-gradient(circle, currentColor 0 0.25em, transparent 0.27em) 0 50% / 0.8em 0.8em repeat-x;
   }
 
+  /* Centred in the window, like a real title bar: the end padding balances
+     the dots. */
   .device__title {
+    margin-inline: auto;
+    padding-inline-end: calc(2.4em + var(--space-xs));
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    color: var(--color-text-muted);
   }
 
   .device--browser .device__screen {

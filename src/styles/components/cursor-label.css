@@ -1,0 +1,36 @@
+/* The "View" / "Open" label that glides beside the pointer over work
+   (src/lib/cursor-label.ts). Mouse only; it grows out of the pointer, trails
+   it a little, and shrinks away when the pointer leaves the work. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) and (forced-colors: none) {
+  .cursor-label {
+    position: fixed;
+    inset: 0 auto auto 0;
+    z-index: var(--z-overlay);
+    display: grid;
+    place-items: center;
+    inline-size: 3.75rem;
+    block-size: 3.75rem;
+    margin: 0.75rem 0 0 0.75rem;
+    border-radius: var(--radius-pill);
+    background: var(--espresso);
+    color: var(--linen);
+    font-size: var(--text-small);
+    font-weight: var(--weight-medium);
+    pointer-events: none;
+    transform-origin: 0 0;
+    opacity: 0;
+    scale: 0.4;
+    transition:
+      opacity var(--duration-fast) var(--ease-in),
+      scale var(--duration-fast) var(--ease-in);
+  }
+
+  .cursor-label[data-on] {
+    opacity: 1;
+    scale: 1;
+    transition:
+      opacity var(--duration-base) var(--ease-out),
+      scale var(--duration-base) var(--ease-out),
+      translate var(--duration-fast) var(--ease-out);
+  }
+}

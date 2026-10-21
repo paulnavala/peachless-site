@@ -15,6 +15,13 @@
    animate transform, clip-path and color; hovers, transitions and reveals own
    translate, scale, rotate and opacity.
 
+   One vocabulary, so every state change moves alike:
+   - enter: --ease-out at --duration-base/slow (things arrive and settle);
+   - exit: --ease-in at --duration-fast (things leave quickly);
+   - state change (hover, focus, selection): --ease-standard at --duration-fast;
+   - travel (one thing moving between two places): --ease-in-out.
+   Images own their motion (.media in ui.css): components only set `scale`.
+
    Pitfalls:
    - write animation-timeline / animation-range after the animation shorthand,
      which resets them;
@@ -62,7 +69,7 @@
 @media (prefers-reduced-motion: no-preference) {
   /* A fade-through: the old page leaves quickly, the new one rises into place. */
   ::view-transition-old(root) {
-    animation: vt-out var(--duration-fast) var(--ease-standard) both;
+    animation: vt-out var(--duration-fast) var(--ease-in) both;
   }
 
   ::view-transition-new(root) {
@@ -99,7 +106,7 @@
   /* Text snapshots are images: keep their uniform scaling (never height: 100%),
      drop the old title quickly and let the sharper new one take over. */
   ::view-transition-old(*.work-title) {
-    animation: vt-out var(--duration-base) var(--ease-standard) both;
+    animation: vt-out var(--duration-base) var(--ease-in) both;
   }
 
   ::view-transition-new(*.work-title) {
@@ -136,6 +143,46 @@
 
 @layer ui {
   @media (prefers-reduced-motion: no-preference) {
+    /* ── Overlays ────────────────────────────────────────────────────────────
+       Dialogs fade in and out while their open state stays synchronous (focus
+       moves and the close event fires at once): allow-discrete keeps a closing
+       dialog painted, and in the top layer where `overlay` exists, until its
+       fade ends. Keep a dialog's content rendered while it closes. */
+    dialog,
+    dialog::backdrop {
+      transition:
+        opacity var(--duration-fast) var(--ease-in),
+        display var(--duration-fast) allow-discrete,
+        overlay var(--duration-fast) allow-discrete;
+    }
+
+    dialog[open],
+    dialog[open]::backdrop {
+      transition-duration: var(--duration-base);
+      transition-timing-function: var(--ease-out);
+    }
+
+    dialog:not([open]),
+    dialog:not([open])::backdrop {
+      opacity: 0;
+    }
+
+    @starting-style {
+      dialog[open],
+      dialog[open]::backdrop {
+        opacity: 0;
+      }
+    }
+
+    /* ── Lazy images fade in as they arrive ──────────────────────────────────
+       The inline script in Base.astro marks each image when it loads; without
+       it nothing is hidden, and eager (LCP) images are never touched. */
+    @media screen {
+      .img-fade :is(.media, .pg-masonry__img)[loading='lazy']:not([data-loaded]) {
+        opacity: 0;
+      }
+    }
+
     /* ── One-shot reveal (src/lib/reveal.ts) ─────────────────────────────── */
     .reveal-on [data-reveal]:not([data-revealed]) {
       opacity: 0;

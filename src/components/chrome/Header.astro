@@ -2,6 +2,7 @@
 import { getEntry } from 'astro:content';
 import { navCurrent } from '../../lib/nav';
 import PeachMark from '../ui/PeachMark.astro';
+import Wordmark from '../ui/Wordmark.astro';
 import Icon from '../ui/Icon.astro';
 import MobileMenu from './MobileMenu.astro';
 
@@ -14,7 +15,7 @@ const path = Astro.url.pathname;
   <div class="site-header__inner container container--wide">
     <a class="site-header__brand" href="/">
       <PeachMark class="site-header__mark" />
-      <span class="site-header__wordmark">{siteName}</span>
+      <Wordmark name={siteName} class="site-header__wordmark" />
     </a>
 
     <nav class="site-header__nav" aria-label="Primary">
@@ -114,10 +115,7 @@ const path = Astro.url.pathname;
   }
 
   .site-header__wordmark {
-    font-family: var(--font-display);
     font-size: var(--step-2);
-    font-weight: var(--weight-display);
-    letter-spacing: var(--tracking-heading);
     line-height: 1;
   }
 
@@ -152,6 +150,8 @@ const path = Astro.url.pathname;
       transition:
         background-color var(--duration-base) var(--ease-standard),
         box-shadow var(--duration-base) var(--ease-standard),
+        -webkit-backdrop-filter var(--duration-base) var(--ease-standard),
+        backdrop-filter var(--duration-base) var(--ease-standard),
         margin-block-end var(--duration-base) var(--ease-standard);
     }
 

@@ -20,7 +20,7 @@ const DRIFT = ['0rem', '2.5rem', '-1.5rem', '-1rem', '3rem'];
         data-scroll="drift"
         style={{ '--reveal-index': i, '--drift': DRIFT[i % DRIFT.length] }}
       >
-        <a class="photo-strip__link" href="/photography/">
+        <a class="photo-strip__link" href="/photography/" data-cursor="View">
           <Media
             image={photo.data.image}
             alt={photo.data.alt}
@@ -128,11 +128,7 @@ const DRIFT = ['0rem', '2.5rem', '-1.5rem', '-1rem', '3rem'];
   }
 
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .photo-strip__link :global(.media) {
-      transition: scale 600ms var(--ease-out);
-    }
-
-    .photo-strip__link:hover :global(.media) {
+    .photo-strip__link:is(:hover, :focus-visible) :global(.media) {
       scale: var(--hover-scale);
     }
   }

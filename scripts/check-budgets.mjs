@@ -21,12 +21,17 @@ import { gzipSync } from 'node:zlib';
 const DIST = process.argv[2] ?? fileURLToPath(new URL('../dist/', import.meta.url));
 const KB = 1024;
 
-// First match wins. Budgets are in KB (gzipped).
+// First match wins. Budgets are in KB (gzipped). Raised in v2.2, with reasons:
+// - Project CSS 14 → 15: BlockRenderer puts every story block's CSS on every
+//   project page, and the shared overlay/interaction motion took the last KB.
+// - Photography JS 4 → 5: inline scripts are measured since v2.2 (the loop
+//   used to read their attributes), and this page inlines Astro's island
+//   bootstrap (~2 KB).
 const BUDGETS = [
   { name: 'Home', match: /^\/$/, js: 4, islands: 0, css: 14 },
   { name: 'Work', match: /^\/projects\/(graphic-design\/|uiux\/|logo-design\/)?$/, js: 4, islands: 0, css: 14 },
-  { name: 'Project', match: /^\/projects\/[^/]+\/$/, js: 6, islands: 40, css: 14 },
-  { name: 'Photography', match: /^\/photography\/$/, js: 4, islands: 40, css: 14 },
+  { name: 'Project', match: /^\/projects\/[^/]+\/$/, js: 6, islands: 40, css: 15 },
+  { name: 'Photography', match: /^\/photography\/$/, js: 5, islands: 40, css: 14 },
   { name: 'Contact', match: /^\/contact\/$/, js: 6, islands: 40, css: 14 },
   { name: 'Page', match: /./, js: 4, islands: 0, css: 14 },
 ];
@@ -88,10 +93,10 @@ for (const file of pages.sort()) {
   // Scripts that run on load.
   let inlineJs = 0;
   const entryJs = [];
-  for (const [tag, body] of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)) {
-    const type = attr(tag, 'type');
+  for (const [, attrs, body] of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)) {
+    const type = attr(attrs, 'type');
     if (type && type !== 'module' && type !== 'text/javascript') continue; // JSON-LD, speculation rules
-    const src = attr(tag, 'src');
+    const src = attr(attrs, 'src');
     if (src) entryJs.push(src);
     else if (body.trim()) {
       inlineJs += gz(body);

@@ -1,6 +1,6 @@
 ---
 import type { Project } from '../../lib/content';
-import { DISCIPLINE_LABELS } from '../../lib/content-schema';
+import { disciplineList } from '../../lib/content-schema';
 import { projectTheme } from '../../lib/project-theme';
 import Media from '../ui/Media.astro';
 import Icon from '../ui/Icon.astro';
@@ -11,13 +11,10 @@ interface Props {
   /** Layout width hint for the cover image. */
   sizes?: string;
   priority?: boolean;
-  /** Position in the index (1-based), shown as a decorative number. */
-  index?: number;
 }
-const { project, headingLevel = 2, sizes = '(min-width: 64em) 38rem, (min-width: 36em) 50vw, 100vw', priority = false, index } = Astro.props;
+const { project, headingLevel = 2, sizes = '(min-width: 64em) 38rem, (min-width: 36em) 50vw, 100vw', priority = false } = Astro.props;
 const { title, summary, disciplines, year, cover, accent } = project.data;
 const Heading = `h${headingLevel}` as 'h2' | 'h3';
-const meta = [disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · '), year].filter(Boolean).join(' — ');
 ---
 <article class="project-card card" data-testid="work-card" style={projectTheme(accent)}>
   <div
@@ -25,6 +22,7 @@ const meta = [disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · '), year].f
     data-panel={cover.panel}
     data-fit={cover.fit}
     data-scroll={cover.fit === 'cover' ? 'parallax' : undefined}
+    data-cursor="View"
     style={{ '--vt': `work-${project.id}` }}
   >
     <div class="project-card__drift" data-scroll={cover.fit === 'contain' ? 'drift' : undefined}>
@@ -33,8 +31,8 @@ const meta = [disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · '), year].f
   </div>
   <div class="project-card__body">
     <p class="project-card__meta">
-      {index !== undefined && <span class="project-card__num" aria-hidden="true">{String(index).padStart(2, '0')}</span>}
-      {meta}
+      <span>{disciplineList(disciplines)}</span>
+      {year && <span class="project-card__year">{year}</span>}
     </p>
     <Heading class="project-card__title work-title" style={{ '--vt-title': `work-title-${project.id}` }}>
       <a class="card__link" href={`/projects/${project.id}/`}>{title}</a>
@@ -81,22 +79,21 @@ const meta = [disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · '), year].f
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: 0 0.9em;
-    font-size: var(--text-micro);
-    font-weight: var(--weight-semibold);
-    letter-spacing: var(--tracking-caps);
-    text-transform: uppercase;
-    color: var(--color-accent-text);
+    gap: 0 0.75em;
+    font-size: var(--text-small);
+    color: var(--color-text-secondary);
   }
 
-  .project-card__num {
+  .project-card__year {
     font-variant-numeric: tabular-nums;
     color: var(--color-text-muted);
   }
 
   .project-card__title {
-    font-size: var(--step-3);
+    font-size: var(--text-title);
+    font-weight: var(--weight-display-sm);
     line-height: var(--leading-heading);
+    letter-spacing: 0;
   }
 
   .project-card__summary {
@@ -122,7 +119,8 @@ const meta = [disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · '), year].f
     height: 1em;
   }
 
-  /* On hover devices the cue waits for the card. */
+  /* On hover devices the cue waits for the card, and the title underlines
+     (in from the left, out to the right, like every quiet link). */
   @media (hover: hover) {
     .project-card__cta {
       opacity: 0;
@@ -131,24 +129,28 @@ const meta = [disciplines.map((d) => DISCIPLINE_LABELS[d]).join(' · '), year].f
     .project-card:is(:hover, :focus-within) .project-card__cta {
       opacity: 1;
     }
+
+    .project-card__title :global(a) {
+      background: linear-gradient(currentColor, currentColor) 100% 100% / 0 1px no-repeat;
+    }
+
+    .project-card:is(:hover, :focus-within) .project-card__title :global(a) {
+      background-position: 0 100%;
+      background-size: 100% 1px;
+    }
   }
 
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .project-card__media :global(.media) {
-      transition: scale 600ms var(--ease-out);
-    }
-
-    .project-card:hover .project-card__media :global(.media) {
+    .project-card:is(:hover, :focus-within) .project-card__media :global(.media) {
       scale: var(--hover-scale);
     }
 
     .project-card__title :global(a) {
-      background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
       transition: background-size var(--duration-base) var(--ease-out);
     }
 
-    .project-card:hover .project-card__title :global(a) {
-      background-size: 100% 1px;
+    .project-card:is(:hover, :focus-within) .project-card__cta :global(.icon) {
+      translate: var(--nudge, none);
     }
 
     .project-card__cta {

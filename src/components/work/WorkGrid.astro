@@ -4,8 +4,8 @@ import ProjectCard from './ProjectCard.astro';
 
 interface Props {
   projects: Project[];
-  /** `grid`: the Work index, an editorial rhythm of wide and narrow cards with
-      numbers. `trio`: three across on wide screens (short suggestion lists). */
+  /** `grid`: the Work index, an editorial rhythm of wide and narrow cards.
+      `trio`: three across on wide screens (short suggestion lists). */
   layout?: 'grid' | 'trio';
   headingLevel?: 2 | 3;
   /** Load the first card's image eagerly (it is above the fold). */
@@ -32,7 +32,6 @@ const sizesFor = (i: number) =>
           project={project}
           headingLevel={headingLevel}
           priority={priorityFirst && i === 0}
-          index={layout === 'grid' ? i + 1 : undefined}
           sizes={sizesFor(i)}
         />
       </li>

@@ -45,7 +45,7 @@ const others = [
 <Base title={title} description={description} canonical={canonical}>
   <section class="section section--tight work-header">
     <div class="container">
-      {work.eyebrow && <p class="eyebrow eyebrow--rule">{work.eyebrow}</p>}
+      {work.eyebrow && <p class="eyebrow">{work.eyebrow}</p>}
       <h1 class="work-header__title">{heading}</h1>
       {lede && <p class="lede">{lede}</p>}
       <div class="work-header__filters">
@@ -74,7 +74,7 @@ const others = [
     </div>
   </section>
 
-  <CtaBand eyebrow="Keep exploring" heading="There’s more to see." tone="paper">
+  <CtaBand heading="There’s more to see." tone="paper">
     {others.map((o) => <ArrowLink href={o.href}>{o.label}</ArrowLink>)}
   </CtaBand>
 </Base>

@@ -4,21 +4,16 @@ import ArrowLink from './ArrowLink.astro';
 interface Props {
   eyebrow?: string;
   title: string;
-  level?: 1 | 2 | 3;
   lede?: string;
   id?: string;
   action?: { href: string; label: string };
-  /** Size class for the title (defaults by level). */
-  size?: 't-h1' | 't-display-2' | 't-h2' | 't-h3';
 }
-const { eyebrow, title, level = 2, lede, id, action, size } = Astro.props;
-const Heading = `h${level}` as 'h1' | 'h2' | 'h3';
-const sizeClass = size ?? (level === 1 ? 't-h1' : level === 2 ? 't-h2' : 't-h3');
+const { eyebrow, title, lede, id, action } = Astro.props;
 ---
 <header class="section-header">
   <div class="section-header__text">
-    {eyebrow && <p class="eyebrow eyebrow--rule">{eyebrow}</p>}
-    <Heading id={id} class:list={['section-header__title', sizeClass]}>{title}</Heading>
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    <h2 id={id} class="section-header__title t-h2">{title}</h2>
     {lede && <p class="lede">{lede}</p>}
   </div>
   {action && <ArrowLink class="section-header__action" href={action.href}>{action.label}</ArrowLink>}

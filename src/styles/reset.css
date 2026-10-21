@@ -89,7 +89,13 @@
     padding: 0;
   }
 
+  /* Fixed and above the header even outside the top layer: a closing dialog
+     stays in place while it fades (browsers without the `overlay` property
+     drop it from the top layer at once). */
   dialog {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
     padding: 0;
     border: 0;
     max-width: none;

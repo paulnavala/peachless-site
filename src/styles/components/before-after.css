@@ -31,10 +31,8 @@
   border-radius: var(--radius-pill);
   background: rgb(var(--espresso-rgb) / 0.72);
   color: var(--linen);
-  font-size: var(--text-micro);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
   pointer-events: none;
 }
 
@@ -120,5 +118,23 @@
 
   .image-compare:not(.is-dragging) .image-compare__handle {
     transition: left var(--duration-fast) var(--ease-out);
+  }
+
+  /* The knob answers the hand: it swells under the pointer and gives a little
+     while it is held. */
+  .image-compare__knob {
+    transition:
+      scale var(--duration-fast) var(--ease-standard),
+      box-shadow var(--duration-fast) var(--ease-standard);
+  }
+
+  .image-compare.is-dragging .image-compare__knob {
+    scale: 0.94;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .image-compare:not(.is-dragging):hover .image-compare__knob {
+    scale: 1.08;
   }
 }

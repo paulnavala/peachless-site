@@ -12,8 +12,8 @@
 
 .cf__title {
   font-family: var(--font-display);
-  font-size: var(--step-3);
-  font-weight: var(--weight-display);
+  font-size: var(--text-title);
+  font-weight: var(--weight-display-sm);
   line-height: var(--leading-heading);
   color: var(--color-heading);
 }
@@ -65,4 +65,40 @@
 
 .form-status a {
   color: inherit;
+}
+
+/* Sending: the button waits (a slow breath, only while the request runs). */
+.cf__submit[aria-disabled='true'] {
+  cursor: progress;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cf__input {
+    transition:
+      border-color var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard);
+  }
+
+  /* Messages arrive instead of popping in. */
+  .cf .error,
+  .form-status:not(:empty) {
+    animation: cf-in var(--duration-base) var(--ease-out);
+  }
+
+  .cf__submit[aria-disabled='true'] {
+    animation: cf-wait 1.2s var(--ease-in-out) infinite alternate;
+  }
+
+  @keyframes cf-in {
+    from {
+      opacity: 0;
+      translate: 0 -0.25rem;
+    }
+  }
+
+  @keyframes cf-wait {
+    to {
+      opacity: 0.4;
+    }
+  }
 }

@@ -178,7 +178,7 @@ export default defineComponent({
       releaseFocusTrap?.();
       releaseFocusTrap = null;
       modalOpen.value = false;
-      activeIndex.value = -1;
+      // activeIndex stays: the last photo fades out with the lightbox.
       unlockScroll?.();
       unlockScroll = null;
       document.body.classList.remove('pg-modal-open');
@@ -310,6 +310,8 @@ export default defineComponent({
                   // The photo (the first child) opens like a window as it scrolls
                   // in; the button itself holds still (src/styles/motion.css).
                   'data-scroll': 'unveil',
+                  // The pointer's label (src/lib/cursor-label.ts).
+                  'data-cursor': item.modalBefore ? 'Compare' : 'Open',
                   onMouseenter: () => prefetch(index),
                   onFocus: () => prefetch(index),
                   onKeydown: (e: KeyboardEvent) => onTileKeydown(e, index),
@@ -377,7 +379,7 @@ export default defineComponent({
                 ? [
                     active.modalBefore
                       ? h(BeforeAfterSlider, { key: active.id, afterSrc: active.modalAfter, beforeSrc: active.modalBefore, alt: active.alt })
-                      : h('img', { class: 'pg-modal__img', alt: active.alt, src: active.modalAfter }),
+                      : h('img', { key: active.id, class: 'pg-modal__img', alt: active.alt, src: active.modalAfter }),
                   ]
                 : []
             ),

@@ -21,16 +21,19 @@
     font-size: var(--text-ui);
     font-weight: var(--weight-medium);
     line-height: var(--leading-ui);
-    letter-spacing: 0.01em;
     text-decoration: none;
     white-space: nowrap;
     cursor: pointer;
   }
 
-  .btn:hover {
-    background: var(--btn-bg-hover);
-    color: var(--btn-fg-hover);
-    border-color: var(--btn-border-hover);
+  /* Hover only where there is a pointer to hover with (no sticky hover after a
+     tap), and never on a button that can't be pressed. */
+  @media (hover: hover) {
+    .btn:hover:not([aria-disabled='true'], :disabled) {
+      background: var(--btn-bg-hover);
+      color: var(--btn-fg-hover);
+      border-color: var(--btn-border-hover);
+    }
   }
 
   .btn svg {
@@ -55,14 +58,6 @@
     --btn-border-hover: var(--color-text);
   }
 
-  .btn--ghost {
-    --btn-bg: transparent;
-    --btn-fg: var(--color-text);
-    --btn-bg-hover: transparent;
-    --btn-fg-hover: var(--color-accent-text);
-    padding-inline: 0.4em;
-  }
-
   .btn--sm {
     min-height: 2.25rem;
     padding: 0.45em 1.05em;
@@ -74,7 +69,7 @@
     font-size: var(--text-body);
   }
 
-  [data-surface='inverse'] .btn:not(.btn--accent, .btn--secondary, .btn--ghost) {
+  [data-surface='inverse'] .btn:not(.btn--accent, .btn--secondary) {
     --btn-bg: var(--linen);
     --btn-fg: var(--espresso);
     --btn-bg-hover: var(--clay);
@@ -93,15 +88,31 @@
         background-color var(--duration-fast) var(--ease-standard),
         color var(--duration-fast) var(--ease-standard),
         border-color var(--duration-fast) var(--ease-standard),
+        opacity var(--duration-fast) var(--ease-standard),
         scale var(--duration-fast) var(--ease-standard);
     }
 
     .btn:active:not([aria-disabled='true'], :disabled) {
       scale: 0.98;
     }
+
+    /* Icons lean the way they point (--nudge / --turn are set per icon in
+       src/components/ui/Icon.astro) while their control is hovered or focused. */
+    .icon {
+      transition:
+        translate var(--duration-base) var(--ease-out),
+        rotate var(--duration-base) var(--ease-out);
+    }
+
+    :is(a, button):is(:hover, :focus-visible) > .icon {
+      translate: var(--nudge, none);
+      rotate: var(--turn, none);
+    }
   }
 
   /* ── Links ───────────────────────────────────────────────────────────── */
+  /* The underline sweeps in from the left and leaves to the right: it rests
+     anchored right at zero width, and only its size is transitioned. */
   .link-arrow {
     display: inline-flex;
     align-items: center;
@@ -109,12 +120,13 @@
     color: var(--color-link);
     font-weight: var(--weight-medium);
     text-decoration: none;
-    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1.5px no-repeat;
+    background: linear-gradient(currentColor, currentColor) 100% 100% / 0 1.5px no-repeat;
     padding-block-end: 0.15em;
   }
 
-  .link-arrow:hover {
+  .link-arrow:is(:hover, :focus-visible) {
     color: var(--color-link-hover);
+    background-position: 0 100%;
     background-size: 100% 1.5px;
   }
 
@@ -127,12 +139,13 @@
   .link-quiet {
     color: var(--color-link);
     text-decoration: none;
-    background: linear-gradient(var(--color-accent-text), var(--color-accent-text)) 0 100% / 0 2px no-repeat;
+    background: linear-gradient(var(--color-accent-text), var(--color-accent-text)) 100% 100% / 0 2px no-repeat;
     padding-block: 0.3em;
   }
 
-  .link-quiet:hover,
+  .link-quiet:is(:hover, :focus-visible),
   .link-quiet[aria-current] {
+    background-position: 0 100%;
     background-size: 100% 2px;
   }
 
@@ -147,61 +160,24 @@
         background-size var(--duration-base) var(--ease-out),
         color var(--duration-fast) var(--ease-standard);
     }
-
-    .link-arrow svg {
-      transition: translate var(--duration-base) var(--ease-out);
-    }
-
-    .link-arrow:hover svg {
-      translate: 0.25em 0;
-    }
   }
 
   /* ── Editorial text ──────────────────────────────────────────────────── */
+  /* A quiet label: sentence case, never shouted. */
   .eyebrow {
     font-family: var(--font-body);
-    font-size: var(--text-micro);
-    font-weight: var(--weight-semibold);
+    font-size: var(--text-ui);
+    font-weight: var(--weight-medium);
     line-height: var(--leading-ui);
-    letter-spacing: var(--tracking-caps);
-    text-transform: uppercase;
-    font-feature-settings: 'case';
-    color: var(--color-accent-text);
-  }
-
-  .eyebrow--rule {
-    display: flex;
-    align-items: center;
-    gap: 0.85em;
-  }
-
-  .eyebrow--rule::before {
-    content: '';
-    inline-size: 2.25rem;
-    block-size: 1px;
-    background: currentColor;
+    color: var(--color-text-muted);
   }
 
   .lede {
     font-size: var(--text-lede);
     line-height: 1.5;
+    letter-spacing: -0.011em;
     color: var(--color-text-secondary);
     max-width: 48ch;
-  }
-
-  .kicker {
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: var(--step-1);
-    color: var(--color-accent-text);
-  }
-
-  .numeral {
-    font-family: var(--font-body);
-    font-weight: 200;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-    color: var(--color-accent-text);
   }
 
   /* ── Chips & tags ────────────────────────────────────────────────────── */
@@ -221,7 +197,7 @@
     text-decoration: none;
   }
 
-  .chip:hover {
+  .chip:is(:hover, :focus-visible) {
     background: var(--color-surface);
     border-color: var(--color-text);
     color: var(--color-text);
@@ -248,14 +224,14 @@
     font-size: var(--text-micro);
     font-weight: var(--weight-medium);
     line-height: var(--leading-ui);
-    letter-spacing: 0.02em;
   }
 
   @media (prefers-reduced-motion: no-preference) {
     .chip {
       transition:
         background-color var(--duration-fast) var(--ease-standard),
-        border-color var(--duration-fast) var(--ease-standard);
+        border-color var(--duration-fast) var(--ease-standard),
+        color var(--duration-fast) var(--ease-standard);
     }
   }
 
@@ -377,6 +353,16 @@
     object-fit: contain;
   }
 
+  /* The image owns its motion: components only set `scale` (a hover lean-in)
+     and motion.css fades lazy images in as they arrive. */
+  @media (prefers-reduced-motion: no-preference) {
+    .media {
+      transition:
+        scale var(--duration-media) var(--ease-out),
+        opacity var(--duration-slow) var(--ease-out);
+    }
+  }
+
   /* The project's own colour, softened (set by src/lib/project-theme.ts on the
      card or page; without a project around it, a clay-light panel). */
   [data-panel='accent'] {
@@ -412,9 +398,10 @@
   /* ── Story blocks (src/components/blocks) ─────────────────────────────── */
   .block-heading {
     font-family: var(--font-display);
-    font-size: var(--step-3);
-    font-weight: var(--weight-display);
+    font-size: var(--text-title);
+    font-weight: var(--weight-display-sm);
     line-height: var(--leading-heading);
+    letter-spacing: 0;
     color: var(--color-heading);
   }
 

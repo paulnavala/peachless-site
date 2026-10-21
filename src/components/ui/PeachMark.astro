@@ -45,4 +45,17 @@ const { class: className, title } = Astro.props;
   .pm-cream {
     fill: var(--mark-cream);
   }
+
+  /* A little nod when its link (the brand in the header, menu and footer) is
+     hovered or focused: the peach tips on its stalk. */
+  @media (prefers-reduced-motion: no-preference) {
+    .peach-mark {
+      transform-origin: 50% 85%;
+      transition: rotate var(--duration-slow) var(--ease-out);
+    }
+
+    :global(a:is(:hover, :focus-visible)) > .peach-mark {
+      rotate: -10deg;
+    }
+  }
 </style>

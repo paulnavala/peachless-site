@@ -8,10 +8,6 @@
     width: min(100% - 2 * var(--gutter), var(--container-wide));
   }
 
-  .container--narrow {
-    width: min(100% - 2 * var(--gutter), var(--container-narrow));
-  }
-
   .section {
     padding-block: var(--section-pad);
   }
@@ -66,14 +62,19 @@
     grid-column: full;
   }
 
-  .stack {
-    display: flex;
-    flex-direction: column;
-    gap: var(--stack-gap, var(--space-s));
-  }
-
   .flow > * + * {
     margin-block-start: var(--flow-space, 1em);
+  }
+
+  /* Reading text: Inter's own optical tracking at 18–22px, and opening quotes
+     that hang into the margin so the text edge stays straight (Safari;
+     elsewhere a no-op). */
+  .flow {
+    letter-spacing: -0.011em;
+  }
+
+  .flow p {
+    hanging-punctuation: first;
   }
 
   .cluster {
@@ -89,24 +90,7 @@
     grid-template-columns: repeat(auto-fill, minmax(min(var(--grid-min, 18rem), 100%), 1fr));
   }
 
-  /* Two (or more) columns that stack below --switch-at, no media query. */
-  .switcher {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--switcher-gap, var(--space-l-2xl));
-  }
-
-  .switcher > * {
-    flex-grow: 1;
-    flex-basis: calc((var(--switch-at, 48rem) - 100%) * 999);
-  }
-
-  .prose {
-    max-width: var(--measure);
-  }
-
-  .sr-only,
-  .visually-hidden-focusable:not(:focus, :focus-within) {
+  .sr-only {
     position: absolute !important;
     width: 1px !important;
     height: 1px !important;
@@ -134,5 +118,11 @@
 
   .skip-link:focus-visible {
     translate: 0 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .skip-link {
+      transition: translate var(--duration-base) var(--ease-out);
+    }
   }
 }

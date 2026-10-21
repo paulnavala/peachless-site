@@ -71,7 +71,7 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
     )
   }
   <figcaption class="proto__bar">
-    <span class="proto__caption">Interactive prototype · Figma</span>
+    <span class="proto__caption">Interactive Figma prototype</span>
     <span class="cluster proto__actions">
       <button class="btn btn--secondary btn--sm" type="button" data-proto-fullscreen aria-haspopup="dialog">
         Fullscreen
@@ -117,18 +117,34 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
     let unlock: (() => void) | null = null;
     let opener: HTMLElement | null = null;
 
-    // Inline: swap the facade for the live embed.
+    // Inline: load the live embed over the still. The facade says it is
+    // loading until the prototype has painted, then the embed fades in and the
+    // facade (in the frame, or beside a phone) has done its job. Figma can be
+    // slow; after a few seconds the embed shows whatever it has.
     root.querySelector('[data-proto-launch]')?.addEventListener('click', () => {
+      const facade = root.querySelector<HTMLElement>('[data-proto-facade]');
       const iframe = document.createElement('iframe');
       iframe.className = 'proto__iframe';
       iframe.title = `${title} prototype`;
       iframe.allow = 'fullscreen; clipboard-write';
       iframe.allowFullscreen = true;
+      const shown = () => {
+        if (iframe.hasAttribute('data-loaded')) return;
+        iframe.dataset.loaded = '';
+        facade?.remove();
+      };
+      iframe.addEventListener('load', shown, { once: true });
+      setTimeout(shown, 6000);
       iframe.src = embed;
-      frame.replaceChildren(iframe);
+      if (facade) {
+        const note = document.createElement('p');
+        note.className = 'proto__note proto__note--loading';
+        note.setAttribute('role', 'status');
+        note.textContent = 'Loading the prototype…';
+        facade.replaceChildren(note);
+      }
+      frame.append(iframe);
       frame.dataset.live = '';
-      // A facade outside the frame (beside a phone) has done its job.
-      root.querySelector('[data-proto-facade]')?.remove();
       iframe.focus();
     });
 
@@ -223,8 +239,8 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
 
   .proto__lead {
     font-family: var(--font-display);
-    font-size: var(--step-3);
-    font-weight: var(--weight-display);
+    font-size: var(--text-title);
+    font-weight: var(--weight-display-sm);
     line-height: var(--leading-heading);
     color: var(--color-heading);
   }
@@ -263,7 +279,8 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
     text-align: center;
   }
 
-  .proto__note {
+  .proto__note,
+  .proto :global(.proto__note--loading) {
     font-size: var(--text-small);
     color: var(--cacao);
   }
@@ -276,10 +293,33 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
     }
   }
 
+  /* The live embed lies over the still and fades in once it has painted. */
   .proto__frame :global(.proto__iframe) {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     border: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .proto__frame :global(.proto__iframe) {
+      transition: opacity var(--duration-slow) var(--ease-out);
+    }
+
+    .proto__frame :global(.proto__iframe:not([data-loaded])) {
+      opacity: 0;
+    }
+
+    .proto :global(.proto__note--loading) {
+      animation: proto-wait 1.2s var(--ease-in-out) infinite alternate;
+    }
+
+    @keyframes proto-wait {
+      to {
+        opacity: 0.45;
+      }
+    }
   }
 
   .proto__bar {
@@ -328,8 +368,8 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
 
   .proto-dialog__title {
     font-family: var(--font-display);
-    font-size: var(--step-2);
-    font-weight: var(--weight-display);
+    font-size: var(--text-h3);
+    font-weight: var(--weight-display-sm);
   }
 
   .proto-dialog__frame {

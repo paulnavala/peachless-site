@@ -57,7 +57,15 @@ export default defineComponent({
     const menuId = useId();
     const dialogRef = ref<HTMLDialogElement | null>(null);
     const isOpen = ref(false);
+    // Rendered from the first open on, so the viewer fades out with its page
+    // still in it instead of emptying first.
+    const shown = ref(false);
     const index = ref(0);
+    // Which way the reader is paging (-1, 0, 1): the new page slides in from
+    // that side.
+    const dir = ref(0);
+    // Panning or pinching: the image then follows the fingers 1:1, with no easing.
+    const dragging = ref(false);
     const zoom = ref(1);
     const panX = ref(0);
     const panY = ref(0);
@@ -89,6 +97,7 @@ export default defineComponent({
     };
     const go = (i: number) => {
       if (i < 0 || i >= props.pages.length) return;
+      dir.value = Math.sign(i - index.value);
       index.value = i;
       resetZoom();
       menuOpen.value = false;
@@ -104,7 +113,9 @@ export default defineComponent({
       const trigger = e?.currentTarget ?? document.activeElement;
       opener = trigger instanceof HTMLElement ? trigger : null;
       go(i);
+      dir.value = 0;
       isOpen.value = true;
+      shown.value = true;
       dialog.showModal();
       unlockScroll = lockScroll();
       void nextTick(() => {
@@ -173,9 +184,11 @@ export default defineComponent({
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pointers.size === 2 && pinch) {
         const [a, b] = [...pointers.values()];
+        dragging.value = true;
         setZoom(pinch.zoom * (Math.hypot(a.x - b.x, a.y - b.y) / pinch.dist));
       } else if (pointers.size === 1 && zoom.value > 1) {
         // Drag pans 1:1 with the pointer (translate is applied before scale).
+        dragging.value = true;
         panX.value += e.clientX - prev.x;
         panY.value += e.clientY - prev.y;
       }
@@ -183,6 +196,7 @@ export default defineComponent({
     const onPointerUp = (e: PointerEvent) => {
       pointers.delete(e.pointerId);
       if (pointers.size < 2) pinch = null;
+      if (pointers.size === 0) dragging.value = false;
       if (swipe?.id === e.pointerId && zoom.value === 1 && e.pointerType !== 'mouse') {
         const dx = e.clientX - swipe.x;
         const dy = e.clientY - swipe.y;
@@ -225,7 +239,7 @@ export default defineComponent({
                   onClick: (e: MouseEvent) => open(i, e),
                 },
                 [
-                  h('span', { class: 'gv-thumb__frame' }, [
+                  h('span', { class: 'gv-thumb__frame', 'data-cursor': 'Open' }, [
                     h('img', { src: p.src, alt: '', width: p.width, height: p.height, loading: 'lazy', decoding: 'async' }),
                   ]),
                   h('span', { class: 'gv-thumb__label' }, [h('span', { class: 'gv-thumb__num' }, pageNumber(i)), p.title]),
@@ -245,7 +259,7 @@ export default defineComponent({
               if (e.target === dialogRef.value) close();
             },
           },
-          isOpen.value && current
+          shown.value && current
             ? [
                 h('div', { class: 'gv-bar' }, [
                   h('p', { class: 'gv-status', role: 'status' }, [
@@ -257,7 +271,8 @@ export default defineComponent({
                 h(
                   'div',
                   {
-                    class: ['gv-stage', { 'is-zoomed': zoom.value > 1 }],
+                    class: ['gv-stage', { 'is-zoomed': zoom.value > 1, 'is-dragging': dragging.value }],
+                    style: { '--dir': dir.value },
                     onPointerdown: onPointerDown,
                     onPointermove: onPointerMove,
                     onPointerup: onPointerUp,

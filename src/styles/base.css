@@ -13,17 +13,20 @@
     font-family: var(--font-body);
     font-size: var(--text-body);
     line-height: var(--leading-body);
+    font-kerning: normal;
     font-synthesis: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Serif display for h1–h3 only: Crimson Pro is never set below --text-h3. */
+  /* Serif display for h1–h3 only: Cormorant is never set below --text-h3.
+     Old-style figures sit in the line like lower-case letters. */
   h1,
   h2,
   h3 {
     font-family: var(--font-display);
     font-weight: var(--weight-display);
+    font-variant-numeric: oldstyle-nums;
     line-height: var(--leading-heading);
     letter-spacing: var(--tracking-heading);
     color: var(--color-heading);
@@ -41,6 +44,8 @@
 
   h3 {
     font-size: var(--text-h3);
+    font-weight: var(--weight-display-sm);
+    letter-spacing: 0;
   }
 
   h4,
@@ -55,35 +60,11 @@
   }
 
   /* Size classes decoupled from heading level, so the outline stays semantic. */
-  .t-hero,
-  .t-h1,
-  .t-display-2,
   .t-h2,
-  .t-h3,
   .t-quote {
     font-family: var(--font-display);
+    font-variant-numeric: oldstyle-nums;
     color: var(--color-heading);
-  }
-
-  .t-hero {
-    font-size: var(--text-hero);
-    font-weight: var(--weight-regular);
-    line-height: var(--leading-display);
-    letter-spacing: var(--tracking-display);
-  }
-
-  .t-h1 {
-    font-size: var(--text-h1);
-    font-weight: var(--weight-display);
-    line-height: var(--leading-display);
-    letter-spacing: var(--tracking-display);
-  }
-
-  .t-display-2 {
-    font-size: var(--text-display-2);
-    font-weight: var(--weight-display);
-    line-height: var(--leading-heading);
-    letter-spacing: var(--tracking-heading);
   }
 
   .t-h2 {
@@ -93,30 +74,11 @@
     letter-spacing: var(--tracking-heading);
   }
 
-  .t-h3 {
-    font-size: var(--text-h3);
-    font-weight: var(--weight-display);
-    line-height: var(--leading-heading);
-  }
-
   .t-quote {
     font-size: var(--text-quote);
     font-style: italic;
     font-weight: var(--weight-regular);
     line-height: var(--leading-snug);
-  }
-
-  .t-lede {
-    font-size: var(--text-lede);
-    line-height: 1.5;
-  }
-
-  .t-small {
-    font-size: var(--text-small);
-  }
-
-  .t-micro {
-    font-size: var(--text-micro);
   }
 
   a {
@@ -159,6 +121,11 @@
     color: var(--color-selection-text);
   }
 
+  [data-surface='inverse'] ::selection {
+    background: var(--clay);
+    color: var(--espresso);
+  }
+
   [data-surface] {
     background-color: var(--color-bg);
     background-image: var(--grain, none);
@@ -170,6 +137,21 @@
       transition:
         color var(--duration-fast) var(--ease-standard),
         text-decoration-thickness var(--duration-fast) var(--ease-standard);
+    }
+
+    /* The focus ring settles in around its control instead of snapping on. It
+       plays only as focus arrives: no element carries a hidden outline (forced
+       colours would show it). */
+    :focus-visible,
+    .card:has(.card__link:focus-visible) {
+      animation: focus-in var(--duration-base) var(--ease-out);
+    }
+
+    @keyframes focus-in {
+      from {
+        outline-offset: calc(var(--focus-offset) + 0.35em);
+        outline-width: 0;
+      }
     }
   }
 

@@ -1,0 +1,55 @@
+---
+// The "peachless." wordmark of the brand book (Minion Semibold), outlined so it
+// keeps its letterforms whatever the site's display face is.
+// Source: Crimson Pro 600 (@fontsource-variable/crimson-pro 5.3.0, latin),
+// shaped with HarfBuzz (kerning on), tracked -0.01em, 1024 units per em.
+// The viewBox is the line box of `line-height: 1` text (baseline 861 units
+// down), so the mark sits exactly where that text did; the "p" descends below
+// it, hence overflow: visible. Any other site name (set in the CMS) falls back
+// to live display text.
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends HTMLAttributes<'span'> {
+  /** The site name; also the accessible name. */
+  name: string;
+}
+
+const { name, class: className, ...rest } = Astro.props;
+const OUTLINED = 'peachless.';
+const WIDTH = 4269;
+const PATH =
+  'm20 220-3-43 62-16 1-20 2-39 1-56 1-71 2-214q0-30-2-56t-7-49l-64-14v-41l163-43 24 17-7 58 3 1q25-36 60-57t75-21q50 0 92 26 42 25 68 72 25 47 25 112 0 66-30 121-30 54-84 87T276 7q-19 0-40-3-21-4-39-11v67q0 35 2 64l2 37 82 15-3 44zM278-57q35 0 61-16 25-17 40-50 15-34 15-84 1-50-14-83-16-34-41-51t-56-17q-25 0-47 12-22 11-39 33v232q16 11 38 18 21 6 43 6M798 8q-62 0-112-28-49-28-77-77-28-50-28-114 0-70 31-122 31-53 81-82 50-30 107-29 87 1 132 55 46 54 46 141v22H682v-50h209l-14 21v-30q0-50-23-79-22-29-62-29-26 0-48 15t-35 45-13 75v18q0 74 38 118 39 44 103 44 34 0 61-12 28-13 55-44l29 26q-28 58-77 87Q857 8 798 8m390 0q-45 0-78-19-32-19-49-46t-17-52q0-35 22-58 22-24 70-39l156-48v-41q0-22-14-41t-37-31-50-12q-19 0-27 9-7 8-9 33l-4 54q-45 10-75-2-29-13-29-42 0-18 18-37t45-36 58-29 55-15q84 0 133 40 50 40 51 107l-3 148 1 42q2 16 6 26l65 12v38l-59 25-31 11q-14 3-26 3-36 0-50-38l-15-44 19 4q-31 37-63 58-32 20-63 20m43-80q17 0 32-7 16-7 29-22v-100l-83 18q-24 5-35 17-10 12-10 32 0 24 19 43 20 19 48 19m500 80q-61 0-110-27-50-27-79-76-30-49-30-113t31-117 86-86q54-33 124-33 44 0 78 12 33 11 52 31t19 44q0 22-13 34-14 12-35 12-18 0-31-7-14-7-32-23l-66-60 46 11q-33-7-64 9-32 15-52 51t-20 92q0 78 39 119 38 40 95 40 32 0 60-13 27-13 53-44l30 27q-28 58-76 88-48 29-105 29m200-8-3-43 62-16q2-9 3-35l2-63 1-79v-195l-1-69-2-60-2-41-74-10-2-39 173-46 25 16-2 61q-2 29-2 64l-2 80-2 105 3 1q32-38 68-56 36-19 77-19t75 21 53 60 20 98v104q0 34 2 64 1 29 3 38l62 16-3 43h-234l-3-43 57-16 3-23 2-35v-133q0-39-12-63-13-25-33-36-20-12-44-12-27 0-51 13-25 12-43 36v148q0 40 2 69 1 28 4 36l61 16-3 43zm561 0-3-44 65-15q2-9 3-35l2-63 1-79v-126l-1-71-1-70-1-58-2-40-74-10-2-39 175-46 25 16-3 83-2 90v122l-1 152 1 116q2 49 4 58l65 15-2 44zm512 8q-62 0-112-28-49-28-77-77-28-50-28-114 0-70 31-122 31-53 81-82 50-30 107-29 87 1 132 55 46 54 46 141v22h-296v-50h209l-14 21v-30q0-50-23-79-22-29-62-29-26 0-48 15t-35 45-13 75v18q0 74 38 118 39 44 103 44 34 0 61-12 28-13 55-44l29 26q-28 58-77 87-48 29-107 29m395 0q-40 0-80-9t-67-24l-5-114h59l21 72q36 23 79 23 32 0 50-14t18-37q0-24-18-41t-73-38q-73-28-102-59t-29-78q0-39 24-69t67-47 98-17q31 0 63 6 31 5 52 15l11 112h-58l-23-70q-10-6-24-9-14-4-28-4-32 0-51 15-20 14-20 37 0 25 23 42 22 17 80 42 66 28 94 58 27 30 27 74 0 60-52 97-53 37-136 37m399 0q-40 0-80-9t-67-24l-5-114h59l21 72q36 23 79 23 32 0 50-14t18-37q0-24-18-41t-73-38q-73-28-102-59t-29-78q0-39 24-69t67-47 98-17q31 0 63 6 31 5 52 15l11 112h-58l-23-70q-10-6-24-9-14-4-28-4-32 0-51 15-20 14-20 37 0 25 23 42 22 17 80 42 66 28 94 58 27 30 27 74 0 60-52 97-53 37-136 37m337 2q-34 0-59-23-24-24-24-58 0-23 11-41 11-19 30-30 18-11 42-11 35 0 59 24 25 23 25 58 0 34-25 58-24 23-59 23';
+---
+{
+  name === OUTLINED ? (
+    <span class:list={['wordmark', className]} {...rest}>
+      <svg viewBox={`0 -861 ${WIDTH} 1024`} width={`${WIDTH / 1024}em`} height="1em" aria-hidden="true" focusable="false">
+        <path d={PATH} />
+      </svg>
+      <span class="sr-only">{name}</span>
+    </span>
+  ) : (
+    <span class:list={['wordmark wordmark--text', className]} {...rest}>{name}</span>
+  )
+}
+
+<style>
+  /* One line box tall, so the mark centres exactly like the text it replaces. */
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    block-size: 1lh;
+  }
+
+  .wordmark svg {
+    display: block;
+    overflow: visible;
+    fill: currentColor;
+  }
+
+  .wordmark--text {
+    font-family: var(--font-display);
+    font-weight: var(--weight-display-sm);
+    letter-spacing: var(--tracking-heading);
+  }
+</style>

@@ -2,6 +2,7 @@
 import { getEntry } from 'astro:content';
 import { navCurrent } from '../../lib/nav';
 import PeachMark from '../ui/PeachMark.astro';
+import Wordmark from '../ui/Wordmark.astro';
 import Icon from '../ui/Icon.astro';
 
 const site = await getEntry('site', 'site');
@@ -15,7 +16,7 @@ const path = Astro.url.pathname;
     <div class="mobile-menu__top">
       <a class="mobile-menu__brand" href="/">
         <PeachMark class="mobile-menu__mark" />
-        <span>{siteName}</span>
+        <Wordmark name={siteName} />
       </a>
       <button class="btn btn--secondary btn--sm" type="button" data-menu-close>
         Close
@@ -33,21 +34,24 @@ const path = Astro.url.pathname;
               aria-current={navCurrent(item.href, path)}
               autofocus={i === 0}
             >
-              <span class="mobile-menu__num numeral" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-              <span>{item.label}</span>
+              {item.label}
             </a>
           </li>
         ))}
       </ol>
       {cta && (
-        <a class="btn btn--accent btn--lg mobile-menu__cta" href={cta.href} aria-current={navCurrent(cta.href, path)}>
+        <a
+          class="btn btn--accent btn--lg mobile-menu__cta"
+          href={cta.href}
+          aria-current={navCurrent(cta.href, path)}
+          style={`--i: ${links.length}`}
+        >
           {cta.label}
-          <Icon name="arrow-right" />
         </a>
       )}
     </nav>
 
-    <div class="mobile-menu__foot">
+    <div class="mobile-menu__foot" style={`--i: ${links.length + 1}`}>
       <ul class="mobile-menu__emails" role="list">
         {emails.map((e) => (
           <li><a class="link-quiet" href={`mailto:${e.address}`}>{e.address}</a></li>
@@ -128,9 +132,7 @@ const path = Astro.url.pathname;
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    font-family: var(--font-display);
     font-size: var(--step-2);
-    font-weight: var(--weight-display);
     color: var(--color-heading);
     text-decoration: none;
   }
@@ -164,13 +166,9 @@ const path = Astro.url.pathname;
     text-decoration: none;
   }
 
+  .mobile-menu__link:is(:hover, :focus-visible),
   .mobile-menu__link[aria-current] {
     color: var(--color-accent-text);
-  }
-
-  .mobile-menu__num {
-    font-size: var(--text-small);
-    min-width: 2ch;
   }
 
   .mobile-menu__cta {
@@ -192,16 +190,44 @@ const path = Astro.url.pathname;
   }
 
   .mobile-menu__tagline {
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: var(--step-1);
     color: var(--color-text-muted);
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .mobile-menu[open] .mobile-menu__list li {
+    /* The menu draws down like a blind and lifts away when it closes (its
+       opaque backdrop with it); links, the call to action and the foot follow
+       in a short stagger. */
+    .mobile-menu,
+    .mobile-menu::backdrop {
+      opacity: 1;
+      clip-path: inset(0 0 100% 0);
+      transition:
+        clip-path var(--duration-base) var(--ease-in),
+        display var(--duration-base) allow-discrete,
+        overlay var(--duration-base) allow-discrete;
+    }
+
+    .mobile-menu[open],
+    .mobile-menu[open]::backdrop {
+      clip-path: inset(0);
+      transition-duration: var(--duration-slow);
+      transition-timing-function: var(--ease-out);
+    }
+
+    @starting-style {
+      .mobile-menu[open],
+      .mobile-menu[open]::backdrop {
+        clip-path: inset(0 0 100% 0);
+      }
+    }
+
+    .mobile-menu__link {
+      transition: color var(--duration-fast) var(--ease-standard);
+    }
+
+    .mobile-menu[open] :is(.mobile-menu__list li, .mobile-menu__cta, .mobile-menu__foot) {
       animation: menu-in var(--duration-slow) var(--ease-out) both;
-      animation-delay: calc(var(--i) * var(--stagger));
+      animation-delay: calc(var(--duration-instant) + var(--i) * var(--stagger));
     }
 
     @keyframes menu-in {
