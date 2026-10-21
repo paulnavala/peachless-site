@@ -47,8 +47,12 @@ for (const width of widths) {
       }
       window.scrollTo(0, 0);
     });
-    await page.evaluate(() =>
-      Promise.all([
+    // Some lazy images never come into view on their own (the home reel's
+    // tiles past its clipped edge), so load every image now, and never wait
+    // longer than 15s for them.
+    await page.evaluate(() => {
+      for (const img of document.images) img.loading = 'eager';
+      const loaded = Promise.all([
         document.fonts.ready,
         ...Array.from(document.images)
           .filter((img) => !img.complete)
@@ -56,8 +60,9 @@ for (const width of widths) {
             img.addEventListener('load', resolve, { once: true });
             img.addEventListener('error', resolve, { once: true });
           })),
-      ])
-    );
+      ]);
+      return Promise.race([loaded, new Promise((resolve) => setTimeout(resolve, 15_000))]);
+    });
     await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});
     await page.waitForTimeout(400); // header condense + island hydration settle
     mkdirSync(`${outDir}/${width}`, { recursive: true });
