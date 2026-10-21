@@ -6,10 +6,12 @@ interface Props {
   heading?: string;
   caption?: string;
   variants: { image: ImageMetadata; alt: string; label?: string; panel: string }[];
+  /** Chapter anchor (src/lib/chapters.ts). */
+  id?: string;
 }
-const { heading, caption, variants } = Astro.props;
+const { heading, caption, variants, id } = Astro.props;
 ---
-<section class="logo-block is-wide">
+<section class="logo-block is-wide" id={id}>
   {heading && <h2 class="block-heading">{heading}</h2>}
   <ul class="logo-block__grid" role="list" style={`--count: ${Math.min(variants.length, 3)}`}>
     {
@@ -49,9 +51,11 @@ const { heading, caption, variants } = Astro.props;
   .logo-block__panel {
     aspect-ratio: 4 / 3;
     overflow: clip;
-    border-radius: var(--radius-lg);
-    box-shadow: inset 0 0 0 1px var(--color-border);
-    --panel-pad: 14%;
+    border-radius: var(--radius-xl);
+    box-shadow:
+      var(--shadow-sm),
+      inset 0 0 0 1px rgb(var(--espresso-rgb) / 0.06);
+    --panel-pad: 16%;
   }
 
   .logo-block__panel :global(picture) {

@@ -1,4 +1,7 @@
 ---
+// A large quotation that lights up word by word as it scrolls past.
+import LitStatement from '../ui/LitStatement.astro';
+
 interface Props {
   quote: string;
   attribution?: string;
@@ -7,7 +10,7 @@ const { quote, attribution } = Astro.props;
 ---
 <figure class="quote-block">
   <blockquote class="quote-block__quote t-quote">
-    <p>{quote}</p>
+    <LitStatement tag="p" text={quote} />
   </blockquote>
   {attribution && <figcaption class="quote-block__by">— {attribution}</figcaption>}
 </figure>
@@ -17,26 +20,26 @@ const { quote, attribution } = Astro.props;
     display: grid;
     gap: var(--space-s);
     justify-items: center;
-    padding-block: var(--space-l);
+    padding-block: var(--space-xl);
     text-align: center;
   }
 
   .quote-block__quote {
     margin: 0;
-    max-width: 24ch;
+    max-width: 22ch;
     font-size: var(--text-display-2);
     line-height: var(--leading-heading);
     color: var(--color-heading);
   }
 
-  .quote-block__quote p::before {
+  .quote-block__quote :global(p)::before {
     content: '“';
-    color: var(--color-accent-text);
+    color: var(--project-ink, var(--color-accent-text));
   }
 
-  .quote-block__quote p::after {
+  .quote-block__quote :global(p)::after {
     content: '”';
-    color: var(--color-accent-text);
+    color: var(--project-ink, var(--color-accent-text));
   }
 
   .quote-block__by {

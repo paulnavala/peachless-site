@@ -3,8 +3,10 @@
 // a visitor asks for the (multi-megabyte) embed. Fullscreen opens a <dialog>;
 // "Open in Figma" always works, even where embeds don't.
 import type { ImageMetadata } from 'astro';
+import type { Frame } from '../../lib/content-schema';
 import Media from '../ui/Media.astro';
 import Icon from '../ui/Icon.astro';
+import DeviceFrame from '../ui/DeviceFrame.astro';
 
 interface Props {
   url: string;
@@ -13,23 +15,61 @@ interface Props {
   /** Shown when there is no poster: the project's cover on its panel. */
   fallback: { image: ImageMetadata; panel: string; fit: 'cover' | 'contain' };
   projectTitle: string;
+  /** Show the prototype inside a phone (apps) or a browser window (websites). */
+  frame?: Frame;
 }
-const { url, label, poster, fallback, projectTitle } = Astro.props;
+const { url, label, poster, fallback, projectTitle, frame = 'none' } = Astro.props;
 const still = poster ? { image: poster, panel: 'none', fit: 'cover' as const } : fallback;
 const embed = `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(url)}`;
 const buttonLabel = label ?? `Try the ${projectTitle} prototype`;
+// A phone keeps its screen's proportions; a window shows a 16:10 page.
+const screen = frame === 'phone' && poster ? `${poster.width} / ${poster.height}` : frame === 'browser' ? '16 / 10' : undefined;
+const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-width: 75rem) 75rem, 100vw';
 ---
-<figure class="proto is-wide" data-prototype data-embed={embed} data-title={projectTitle}>
-  <div class="proto__frame" data-proto-frame data-panel={still.panel}>
-    <Media class="proto__still" image={still.image} alt="" sizes="(min-width: 75rem) 75rem, 100vw" fit={still.fit} />
-    <div class="proto__facade">
-      <button class="btn btn--accent btn--lg" type="button" data-proto-launch>
-        <Icon name="play" />
-        {buttonLabel}
-      </button>
-      <p class="proto__note">Loads an interactive Figma prototype.</p>
-    </div>
-  </div>
+<figure class:list={['proto is-wide', `proto--${frame}`]} data-prototype data-embed={embed} data-title={projectTitle}>
+  {
+    frame === 'none' ? (
+      <div class="proto__frame" data-proto-frame data-panel={still.panel}>
+        <Media class="proto__still" image={still.image} alt="" sizes={stillSizes} fit={still.fit} />
+        <div class="proto__facade" data-proto-facade>
+          <button class="btn btn--accent btn--lg" type="button" data-proto-launch>
+            <Icon name="play" />
+            {buttonLabel}
+          </button>
+          <p class="proto__note">Loads an interactive Figma prototype.</p>
+        </div>
+      </div>
+    ) : frame === 'browser' ? (
+      <DeviceFrame frame="browser" ratio={screen} caption={projectTitle}>
+        <div class="proto__frame" data-proto-frame data-panel={still.panel}>
+          <Media class="proto__still" image={still.image} alt="" sizes={stillSizes} fit={still.fit} />
+          <div class="proto__facade" data-proto-facade>
+            <button class="btn btn--accent btn--lg" type="button" data-proto-launch>
+              <Icon name="play" />
+              {buttonLabel}
+            </button>
+            <p class="proto__note">Loads an interactive Figma prototype.</p>
+          </div>
+        </div>
+      </DeviceFrame>
+    ) : (
+      <div class="proto__stage">
+        <DeviceFrame frame="phone" ratio={screen} class="proto__phone">
+          <div class="proto__frame" data-proto-frame data-panel={still.panel}>
+            <Media class="proto__still" image={still.image} alt="" sizes={stillSizes} fit={still.fit} />
+          </div>
+        </DeviceFrame>
+        <div class="proto__aside" data-proto-facade>
+          <p class="proto__lead">Try it yourself — every screen is clickable.</p>
+          <button class="btn btn--accent btn--lg" type="button" data-proto-launch>
+            <Icon name="play" />
+            {buttonLabel}
+          </button>
+          <p class="proto__note">Loads an interactive Figma prototype in the phone.</p>
+        </div>
+      </div>
+    )
+  }
   <figcaption class="proto__bar">
     <span class="proto__caption">Interactive prototype · Figma</span>
     <span class="cluster proto__actions">
@@ -87,6 +127,8 @@ const buttonLabel = label ?? `Try the ${projectTitle} prototype`;
       iframe.src = embed;
       frame.replaceChildren(iframe);
       frame.dataset.live = '';
+      // A facade outside the frame (beside a phone) has done its job.
+      root.querySelector('[data-proto-facade]')?.remove();
       iframe.focus();
     });
 
@@ -141,8 +183,64 @@ const buttonLabel = label ?? `Try the ${projectTitle} prototype`;
     height: 100%;
   }
 
-  .proto__frame[data-panel='none'] :global(.proto__still) {
+  /* Dim a photographic still only while the launch card sits on it. */
+  .proto__frame[data-panel='none']:has([data-proto-facade]) :global(.proto__still) {
     filter: saturate(0.85) brightness(0.8);
+  }
+
+  /* Long button labels wrap instead of overflowing narrow screens. */
+  .proto :global(.btn) {
+    white-space: normal;
+  }
+
+  /* Inside a device the frame fills the screen. */
+  .proto--browser .proto__frame,
+  .proto--phone .proto__frame {
+    aspect-ratio: auto;
+    height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* Phone: the device on one side, the invitation on the other. */
+  .proto__stage {
+    display: grid;
+    gap: var(--space-l);
+    justify-items: center;
+  }
+
+  .proto__stage :global(.proto__phone) {
+    inline-size: min(100%, 20rem);
+  }
+
+  .proto__aside {
+    display: grid;
+    gap: var(--space-s);
+    justify-items: center;
+    max-width: 26rem;
+    text-align: center;
+  }
+
+  .proto__lead {
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    font-weight: var(--weight-display);
+    line-height: var(--leading-heading);
+    color: var(--color-heading);
+  }
+
+  @media (min-width: 48em) {
+    .proto__stage {
+      grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+      align-items: center;
+      justify-items: start;
+      gap: var(--space-2xl);
+    }
+
+    .proto__aside {
+      justify-items: start;
+      text-align: start;
+    }
   }
 
   /* The launch control floats over the still in a frosted card, so it reads

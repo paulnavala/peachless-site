@@ -4,35 +4,39 @@ import ProjectCard from './ProjectCard.astro';
 
 interface Props {
   projects: Project[];
-  /** `featured`: the first project gets a wide card, the rest pair up.
-      `trio`: three across on wide screens (short suggestion lists). */
-  layout?: 'grid' | 'featured' | 'trio';
+  /** `grid`: the Work index, an editorial rhythm of wide and narrow cards with
+      numbers. `trio`: three across on wide screens (short suggestion lists). */
+  layout?: 'grid' | 'trio';
   headingLevel?: 2 | 3;
   /** Load the first card's image eagerly (it is above the fold). */
   priorityFirst?: boolean;
 }
 const { projects, layout = 'grid', headingLevel = 2, priorityFirst = false } = Astro.props;
-// Cards pair up two across (after the feature, which has its own row). A card
-// that would sit alone on the last row spans it instead of leaving a hole.
-const pairedFrom = layout === 'featured' ? 1 : 0;
-const isLone = (i: number) => i === projects.length - 1 && i >= pairedFrom && (i - pairedFrom) % 2 === 0;
+// Cards pair up; a card that would sit alone on the last row spans it instead
+// of leaving a hole.
+const isLone = (i: number) => i === projects.length - 1 && i % 2 === 0;
+// From 64em the grid alternates 7/5 and 5/7 rows (see the CSS): the narrow slots.
+const narrow = (i: number) => layout === 'grid' && !isLone(i) && (i % 4 === 1 || i % 4 === 2);
+const sizesFor = (i: number) =>
+  layout === 'trio'
+    ? '(min-width: 64em) 24rem, (min-width: 36em) 50vw, 100vw'
+    : narrow(i)
+      ? '(min-width: 64em) 31rem, (min-width: 36em) 50vw, 100vw'
+      : '(min-width: 64em) 44rem, (min-width: 36em) 50vw, 100vw';
 ---
 <ul class:list={['work-grid', `work-grid--${layout}`]} role="list">
   {
-    projects.map((project, i) => {
-      const feature = layout === 'featured' && i === 0;
-      return (
-        <li class:list={{ 'work-grid__feature': feature, 'work-grid__lone': isLone(i) }} data-reveal style={`--reveal-index: ${i % 2}`}>
-          <ProjectCard
-            project={project}
-            headingLevel={headingLevel}
-            feature={feature}
-            priority={priorityFirst && i === 0}
-            sizes={feature ? '(min-width: 75rem) 75rem, 100vw' : '(min-width: 64em) 38rem, (min-width: 36em) 50vw, 100vw'}
-          />
-        </li>
-      );
-    })
+    projects.map((project, i) => (
+      <li class:list={{ 'work-grid__lone': isLone(i) }} data-reveal style={{ '--reveal-index': i % 2 }}>
+        <ProjectCard
+          project={project}
+          headingLevel={headingLevel}
+          priority={priorityFirst && i === 0}
+          index={layout === 'grid' ? i + 1 : undefined}
+          sizes={sizesFor(i)}
+        />
+      </li>
+    ))
   }
 </ul>
 
@@ -49,7 +53,6 @@ const isLone = (i: number) => i === projects.length - 1 && i >= pairedFrom && (i
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .work-grid__feature,
     .work-grid__lone {
       grid-column: 1 / -1;
     }
@@ -66,13 +69,35 @@ const isLone = (i: number) => i === projects.length - 1 && i >= pairedFrom && (i
       gap: var(--space-2xl) var(--space-xl);
     }
 
+    /* The Work index: rows of 7/5 then 5/7 columns, the right-hand card set
+       lower, so the eye zigzags down the page like through a magazine. */
+    .work-grid--grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    .work-grid--grid > li:not(.work-grid__lone) {
+      grid-column: span 7;
+    }
+
+    .work-grid--grid > li:is(:nth-child(4n + 2), :nth-child(4n + 3)):not(.work-grid__lone) {
+      grid-column: span 5;
+    }
+
+    .work-grid--grid > li:nth-child(even):not(.work-grid__lone) {
+      margin-block-start: var(--space-3xl);
+    }
+
+    .work-grid--grid > li:is(:nth-child(4n + 2), :nth-child(4n + 3)) :global(.project-card__media[data-fit='contain']) {
+      --ratio: 4 / 5;
+    }
+
     .work-grid--trio {
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: var(--space-xl) var(--space-l);
     }
 
-    /* Three across, a trio leaves no card alone: back to the standard card
-       (gap as in ProjectCard). */
+    /* Three across, a trio leaves no card alone: back to the standard card. */
     .work-grid--trio .work-grid__lone {
       grid-column: auto;
     }
@@ -81,12 +106,6 @@ const isLone = (i: number) => i === projects.length - 1 && i >= pairedFrom && (i
       grid-template-columns: none;
       align-items: normal;
       gap: var(--space-s);
-    }
-
-    .work-grid--featured .work-grid__feature :global(.project-card) {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-      align-items: end;
-      gap: var(--space-xl);
     }
   }
 </style>

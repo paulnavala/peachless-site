@@ -1,21 +1,28 @@
 ---
+// A project's opening: a band in the project's own colour (it runs up under
+// the transparent header), the title, a line of credits, the chapters of the
+// story when there are enough of them, and the cover overlapping the band.
 import type { Project } from '../../lib/content';
+import type { Chapter } from '../../lib/chapters';
 import { DISCIPLINE_LABELS, TOOL_LABELS } from '../../lib/content-schema';
 import ArrowLink from '../ui/ArrowLink.astro';
 import Media from '../ui/Media.astro';
 
 interface Props {
   project: Project;
+  /** The story's chapters, for the "In this story" list (empty: no list). */
+  chapters?: Chapter[];
 }
-const { project } = Astro.props;
+const { project, chapters = [] } = Astro.props;
 const { title, summary, disciplines, year, client, role, tools, cover } = project.data;
-const meta = [
-  { term: disciplines.length > 1 ? 'Disciplines' : 'Discipline', value: disciplines.map((d) => DISCIPLINE_LABELS[d]).join(', ') },
+const credits = [
   { term: 'Year', value: year },
   { term: 'Context', value: client },
-  { term: 'My role', value: role },
+  { term: 'My role', value: role, wide: true },
+  { term: disciplines.length > 1 ? 'Disciplines' : 'Discipline', value: disciplines.map((d) => DISCIPLINE_LABELS[d]).join(', ') },
   { term: 'Tools', value: tools.map((t) => TOOL_LABELS[t]).join(', ') },
-].filter((m) => m.value);
+].filter((c) => c.value);
+const pad = (n: number) => String(n).padStart(2, '0');
 ---
 <header class="project-hero">
   <div class="container project-hero__top">
@@ -25,25 +32,48 @@ const meta = [
         {disciplines.map((d) => <li><a class="tag project-hero__tag" href={`/projects/${d}/`}>{DISCIPLINE_LABELS[d]}</a></li>)}
       </ul>
     </div>
+    <h1
+      class="project-hero__title work-title"
+      data-size={title.length <= 12 ? 'short' : 'long'}
+      style={{ '--vt-title': `work-title-${project.id}` }}
+    >
+      {title}
+    </h1>
     <div class="project-hero__intro">
-      <h1 class="project-hero__title">{title}</h1>
-      <div class="project-hero__aside">
-        <p class="lede">{summary}</p>
-        <dl class="project-hero__meta">
-          {
-            meta.map((m) => (
-              <div>
-                <dt>{m.term}</dt>
-                <dd>{m.value}</dd>
+      <p class="lede project-hero__lede">{summary}</p>
+      {
+        credits.length > 0 && (
+          <dl class="project-credits">
+            {credits.map((c) => (
+              <div class:list={{ 'is-wide': c.wide }}>
+                <dt>{c.term}</dt>
+                <dd>{c.value}</dd>
               </div>
-            ))
-          }
-        </dl>
-      </div>
+            ))}
+          </dl>
+        )
+      }
     </div>
+    {
+      chapters.length > 0 && (
+        <nav class="project-toc" aria-labelledby="project-toc-title">
+          <p id="project-toc-title" class="eyebrow">In this story</p>
+          <ol role="list">
+            {chapters.map((c, i) => (
+              <li>
+                <a href={`#${c.id}`}>
+                  <span class="project-toc__num" aria-hidden="true">{pad(i + 1)}</span>
+                  {c.title}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )
+    }
   </div>
   <div class="container container--wide">
-    <div class="project-hero__media work-media" data-panel={cover.panel} style={`--vt: work-${project.id}`}>
+    <div class="project-hero__media work-media" data-panel={cover.panel} style={{ '--vt': `work-${project.id}` }}>
       <Media image={cover.image} alt={cover.alt} sizes="(min-width: 90rem) 90rem, 100vw" fit={cover.fit} priority />
     </div>
   </div>
@@ -51,12 +81,17 @@ const meta = [
 
 <style>
   .project-hero {
-    padding-block: var(--space-m) var(--space-l-2xl);
+    --overlap: clamp(3rem, 12vw, 11rem);
+    /* The band starts under the transparent header and stops --overlap above
+       the cover's lower edge, so the cover sits half on it. */
+    margin-block-start: calc(-1 * var(--header-h));
+    padding-block: calc(var(--header-h) + var(--space-m)) var(--space-l-2xl);
+    background: linear-gradient(var(--project-tint, var(--blush)) 0 0) no-repeat 0 0 / 100% calc(100% - var(--overlap) - var(--space-l-2xl));
   }
 
   .project-hero__top {
     display: grid;
-    gap: var(--space-l);
+    gap: var(--space-m);
     margin-block-end: var(--space-l-2xl);
   }
 
@@ -74,12 +109,26 @@ const meta = [
   }
 
   .project-hero__tag {
+    background: var(--paper);
+    color: var(--ink-strong);
     text-decoration: none;
   }
 
   .project-hero__tag:hover {
-    background: var(--color-surface);
-    color: var(--color-text);
+    background: var(--espresso);
+    color: var(--linen);
+  }
+
+  .project-hero__title {
+    max-width: 16ch;
+    margin-block: var(--space-s) var(--space-2xs);
+    font-size: var(--text-hero);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+  }
+
+  .project-hero__title[data-size='short'] {
+    font-size: var(--text-display);
   }
 
   .project-hero__intro {
@@ -87,27 +136,21 @@ const meta = [
     gap: var(--space-m);
   }
 
-  .project-hero__title {
-    font-size: var(--text-h1);
-    max-width: 14ch;
+  .project-hero__lede {
+    max-width: 44ch;
+    color: var(--color-text);
   }
 
-  .project-hero__aside {
-    display: grid;
-    gap: var(--space-m);
-    align-content: end;
-  }
-
-  .project-hero__meta {
+  .project-credits {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-s) var(--space-m);
     margin: 0;
-    padding-block-start: var(--space-s);
-    border-top: 1px solid var(--color-border);
+    padding-block: var(--space-s);
+    border-block: 1px solid rgb(var(--espresso-rgb) / 0.14);
   }
 
-  .project-hero__meta dt {
+  .project-credits dt {
     font-size: var(--text-micro);
     font-weight: var(--weight-semibold);
     letter-spacing: var(--tracking-caps);
@@ -115,16 +158,72 @@ const meta = [
     color: var(--color-text-muted);
   }
 
-  .project-hero__meta dd {
+  .project-credits dd {
     margin: var(--space-3xs) 0 0;
     font-weight: var(--weight-medium);
+  }
+
+  .project-credits .is-wide {
+    grid-column: 1 / -1;
+  }
+
+  /* "In this story": the chapters, as anchors (a sideways rail on phones). */
+  .project-toc {
+    display: grid;
+    gap: var(--space-2xs);
+    min-width: 0;
+  }
+
+  .project-toc ol {
+    display: flex;
+    gap: var(--space-2xs);
+    margin: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding-block-end: var(--space-3xs);
+  }
+
+  .project-toc li {
+    flex: none;
+  }
+
+  .project-toc a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55em;
+    min-height: 2.75rem;
+    padding: 0.4em 1em 0.4em 0.5em;
+    border-radius: var(--radius-pill);
+    background: rgb(var(--linen-rgb) / 0.55);
+    color: var(--color-text);
+    font-size: var(--text-ui);
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .project-toc a:hover {
+    background: var(--paper);
+  }
+
+  .project-toc__num {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2em;
+    height: 2em;
+    border-radius: var(--radius-pill);
+    background: var(--paper);
+    color: var(--project-ink, var(--color-accent-text));
+    font-size: var(--text-micro);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
   }
 
   .project-hero__media {
     aspect-ratio: 16 / 9;
     overflow: clip;
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     --panel-pad: 9% 22%;
   }
 
@@ -132,11 +231,40 @@ const meta = [
     height: 100%;
   }
 
+  @media (min-width: 48em) {
+    .project-credits {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .project-credits > div {
+      flex: 1 1 8rem;
+    }
+
+    .project-credits .is-wide {
+      flex: 2.5 1 14rem;
+    }
+  }
+
   @media (min-width: 64em) {
     .project-hero__intro {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-      align-items: end;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      align-items: start;
       gap: var(--space-xl);
+    }
+
+    .project-toc ol {
+      flex-wrap: wrap;
+      overflow: visible;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .project-toc a,
+    .project-hero__tag {
+      transition:
+        background-color var(--duration-fast) var(--ease-standard),
+        color var(--duration-fast) var(--ease-standard);
     }
   }
 </style>

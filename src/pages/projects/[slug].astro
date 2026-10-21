@@ -8,6 +8,8 @@ import CtaBand from '../../components/CtaBand.astro';
 import ArrowLink from '../../components/ui/ArrowLink.astro';
 import { getPublishedProjects, getSingleton } from '../../lib/content';
 import { nextProject } from '../../lib/project-order';
+import { projectTheme } from '../../lib/project-theme';
+import { storyChapters, TOC_MIN_CHAPTERS } from '../../lib/chapters';
 import { projectLd } from '../../lib/structured-data';
 
 export async function getStaticPaths() {
@@ -20,7 +22,8 @@ export async function getStaticPaths() {
 }
 
 const { project, next } = Astro.props;
-const { title, summary, seo, cover } = project.data;
+const { title, summary, seo, cover, accent, blocks } = project.data;
+const chapters = storyChapters(blocks);
 
 // Share image: an explicit one, else a photographic cover cropped to 1200×630;
 // logo covers fall back to the site image (a cropped transparent logo reads badly).
@@ -34,9 +37,10 @@ const site = (await getSingleton('site')).data;
   ogImage={share?.src}
   jsonLd={projectLd(project, site, Astro.site!, share?.src)}
 >
-  <article class="project">
-    <ProjectHero project={project} />
-    <BlockRenderer blocks={project.data.blocks} projectTitle={title} cover={cover} />
+  <article class="project" style={projectTheme(accent)}>
+    <div class="project__progress" aria-hidden="true"></div>
+    <ProjectHero project={project} chapters={chapters.length >= TOC_MIN_CHAPTERS ? chapters : []} />
+    <BlockRenderer blocks={blocks} chapters={chapters} projectTitle={title} cover={cover} />
   </article>
   {
     next ? (
@@ -48,3 +52,43 @@ const site = (await getSingleton('site')).data;
     )
   }
 </Base>
+
+<style>
+  /* Reading progress: a line under the sticky header that fills as the story
+     scrolls by (the article's own timeline, so it ends with the story, not
+     the footer). Decoration: off without scroll timelines or under reduced
+     motion. Keep overflow: hidden off every ancestor, or it stops sticking. */
+  .project__progress {
+    display: none;
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .project {
+        view-timeline-name: --story;
+        view-timeline-axis: block;
+        view-timeline-inset: 0px;
+      }
+
+      .project__progress {
+        position: sticky;
+        top: var(--header-h-condensed);
+        z-index: var(--z-sticky);
+        display: block;
+        block-size: 2px;
+        margin-block-end: -2px;
+        background: var(--project-ink, var(--color-accent-text));
+        transform-origin: 0 50%;
+        animation: story-progress linear both;
+        animation-timeline: --story;
+        animation-range: contain 0% contain 100%;
+      }
+
+      @keyframes story-progress {
+        from {
+          transform: scaleX(0);
+        }
+      }
+    }
+  }
+</style>

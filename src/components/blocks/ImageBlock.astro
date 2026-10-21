@@ -12,7 +12,7 @@ const { image, alt, caption, size } = Astro.props;
 const sizes = size === 'full' ? '100vw' : size === 'wide' ? '(min-width: 75rem) 75rem, 100vw' : '(min-width: 46rem) 46rem, 100vw';
 ---
 <figure class:list={['image-block', `image-block--${size}`, { 'is-wide': size === 'wide', 'is-full': size === 'full' }]}>
-  <div class="image-block__frame">
+  <div class="image-block__frame" data-scroll={size === 'inline' ? undefined : 'unveil'}>
     <Media image={image} alt={alt} sizes={sizes} />
   </div>
   {caption && <figcaption class="block-caption">{caption}</figcaption>}

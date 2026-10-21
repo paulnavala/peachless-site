@@ -1,23 +1,33 @@
 ---
+// Brand colours as paint chips: the colour with its name on top, a paper label
+// with the copyable hex below. On wide screens a few chips stand in a row and
+// the one under the pointer (or focus) widens.
 import { readableTextToken } from '../../lib/color';
 
 interface Props {
   heading?: string;
   swatches: { name: string; hex: string }[];
+  /** Chapter anchor (src/lib/chapters.ts). */
+  id?: string;
 }
-const { heading, swatches } = Astro.props;
+const { heading, swatches, id } = Astro.props;
 ---
-<section class="palette-block is-wide" data-palette>
+<section class="palette-block is-wide" data-palette id={id}>
   {heading && <h2 class="block-heading">{heading}</h2>}
-  <ul class="palette-block__swatches" role="list">
+  <ul class="palette-block__chips" role="list" data-few={swatches.length <= 6 ? '' : undefined}>
     {
       swatches.map((s) => (
-        <li class="swatch" style={`--swatch: ${s.hex}; --swatch-text: ${readableTextToken(s.hex)}`}>
-          <span class="swatch__name">{s.name}</span>
-          <button class="swatch__copy" type="button" data-copy={s.hex.toUpperCase()}>
-            <span class="sr-only">Copy {s.name}, </span>
-            {s.hex.toUpperCase()}
-          </button>
+        <li class="paint-chip" style={{ '--swatch': s.hex, '--swatch-text': readableTextToken(s.hex) }}>
+          {/* The label is large text: readableTextToken promises 3:1 at worst. */}
+          <span class="paint-chip__colour">
+            <span class="paint-chip__name">{s.name}</span>
+          </span>
+          <span class="paint-chip__label">
+            <button class="paint-chip__copy" type="button" data-copy={s.hex.toUpperCase()}>
+              <span class="sr-only">Copy {s.name}, </span>
+              {s.hex.toUpperCase()}
+            </button>
+          </span>
         </li>
       ))
     }
@@ -51,45 +61,81 @@ const { heading, swatches } = Astro.props;
     gap: var(--space-m);
   }
 
-  .palette-block__swatches {
+  .palette-block__chips {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
     gap: var(--space-xs);
     margin: 0;
   }
 
-  .swatch {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: var(--space-l);
-    min-height: 11rem;
-    padding: var(--space-s);
+  .paint-chip {
+    display: grid;
+    grid-template-rows: minmax(9rem, 1fr) auto;
+    overflow: clip;
     border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow:
+      var(--shadow-sm),
+      inset 0 0 0 1px rgb(var(--espresso-rgb) / 0.08);
+  }
+
+  .paint-chip__colour {
+    display: flex;
+    align-items: flex-end;
+    padding: var(--space-s);
     background: var(--swatch);
     color: var(--swatch-text);
-    box-shadow: inset 0 0 0 1px rgb(var(--espresso-rgb) / 0.1);
   }
 
-  .swatch__name {
+  .paint-chip__name {
     font-family: var(--font-display);
-    font-size: var(--step-2);
+    font-size: var(--step-3);
     font-weight: var(--weight-display);
-    line-height: 1.1;
+    line-height: 1.05;
   }
 
-  .swatch__copy {
-    align-self: flex-start;
+  .paint-chip__label {
+    padding: var(--space-xs) var(--space-s);
+  }
+
+  .paint-chip__copy {
     min-height: 2.25rem;
     padding: 0.35em 0.8em;
+    border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-pill);
-    border: 1px solid currentColor;
+    color: var(--ink-strong);
     font-size: var(--text-small);
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.04em;
   }
 
-  .swatch__copy[data-copied]::after {
+  .paint-chip__copy:hover {
+    border-color: var(--ink-strong);
+  }
+
+  .paint-chip__copy[data-copied]::after {
     content: ' ✓';
+  }
+
+  @media (min-width: 48em) {
+    .palette-block__chips[data-few] {
+      display: flex;
+      block-size: clamp(18rem, 26vw, 24rem);
+    }
+
+    .palette-block__chips[data-few] .paint-chip {
+      flex: 1 1 0;
+      min-inline-size: 0;
+    }
+
+    .palette-block__chips[data-few] .paint-chip:is(:hover, :focus-within) {
+      flex-grow: 2.2;
+    }
+  }
+
+  @media (min-width: 48em) and (prefers-reduced-motion: no-preference) {
+    .palette-block__chips[data-few] .paint-chip {
+      transition: flex-grow var(--duration-slow) var(--ease-out);
+    }
   }
 </style>
