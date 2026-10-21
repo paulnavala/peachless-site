@@ -12,11 +12,14 @@ interface Props {
   widths?: number[];
   /** The page's LCP image: eager + high fetch priority. */
   priority?: boolean;
+  /** Load straight away without raising its priority (in the first screen, not the LCP). */
+  eager?: boolean;
   fit?: 'cover' | 'contain';
   class?: string;
 }
 
-const { image, alt, sizes, widths, priority = false, fit = 'cover', class: className } = Astro.props;
+const { image, alt, sizes, widths, priority = false, eager = false, fit = 'cover', class: className } = Astro.props;
+const loading = priority || eager ? 'eager' : 'lazy';
 const isSvg = image.format === 'svg' || /\.svg(\?|$)/.test(image.src);
 const candidates = (widths ?? [480, 800, 1200, 1600, 2400]).filter((w) => w <= image.width);
 const sources = candidates.length ? candidates : [image.width];
@@ -30,7 +33,7 @@ const classes = ['media', fit === 'contain' ? 'media--contain' : 'media--cover',
       width={image.width}
       height={image.height}
       alt={alt}
-      loading={priority ? 'eager' : 'lazy'}
+      loading={loading}
       decoding="async"
     />
   ) : (
@@ -41,7 +44,7 @@ const classes = ['media', fit === 'contain' ? 'media--contain' : 'media--cover',
       widths={sources}
       sizes={sizes}
       formats={['avif', 'webp']}
-      loading={priority ? 'eager' : 'lazy'}
+      loading={loading}
       decoding="async"
       fetchpriority={priority ? 'high' : undefined}
     />

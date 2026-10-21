@@ -1,10 +1,34 @@
-/* Motion: page transitions and scroll reveal. Everything here is progressive
-   enhancement — base styles are always the final state, and movement is only
-   authored inside prefers-reduced-motion: no-preference. */
+/* Motion: page transitions, one-shot reveals and scroll-linked effects. Base
+   styles are always the final state; movement is authored only inside
+   prefers-reduced-motion: no-preference, and scroll-linked effects only where
+   the browser has scroll timelines (elsewhere they simply don't exist).
 
-/* Cross-document View Transitions (Chrome/Edge 126+, Safari 18.2+). Other
-   browsers simply navigate. The root cross-fade is motion-safe; the shared
-   card ↔ hero morph is switched off under reduced motion. */
+   Two systems, one job each:
+   - data-reveal (src/lib/reveal.ts): a one-shot, time-based entrance that works
+     in every browser. The only effect allowed to fade text.
+   - data-scroll="unveil | parallax | drift | lit": scrubbed by the visitor's own
+     scroll. Decoration only — media transforms, clip-path and colour, never the
+     opacity of text. An element with both is a progressive replacement: where
+     scroll timelines exist, its reveal is switched off.
+
+   Property ownership, so effects compose instead of fighting: scroll keyframes
+   animate transform, clip-path and color; hovers, transitions and reveals own
+   translate, scale, rotate and opacity.
+
+   Pitfalls:
+   - write animation-timeline / animation-range after the animation shorthand,
+     which resets them;
+   - set view-timeline-inset explicitly: `auto` picks up scroll-padding-top;
+   - never put overflow: hidden/auto between an effect and the root (it captures
+     the timeline and breaks sticky); use overflow: clip;
+   - unveil and parallax move the frame's first child, so the frame (often what
+     visitors and tests click) holds still; drift moves the element itself;
+   - every range must finish while content still follows it, or the effect can
+     come to rest half done at the bottom of a page. */
+
+/* ── View transitions ───────────────────────────────────────────────────────
+   Cross-document (Chrome/Edge 126+, Safari 18.2+); other browsers navigate.
+   Under reduced motion only the short root cross-fade remains. */
 @view-transition {
   navigation: auto;
 }
@@ -17,35 +41,102 @@
   view-transition-name: site-header;
 }
 
+/* Shared elements: a card's cover ↔ the project hero, its title ↔ the h1, and
+   the home portrait ↔ the About portrait. Names must be unique per page. */
 .work-media {
   view-transition-name: var(--vt, none);
   view-transition-class: work-media;
 }
 
+.work-title {
+  /* The snapshot hugs the words, so both ends have similar proportions. */
+  width: fit-content;
+  view-transition-name: var(--vt-title, none);
+  view-transition-class: work-title;
+}
+
+.about-portrait {
+  view-transition-name: about-portrait;
+}
+
 @media (prefers-reduced-motion: no-preference) {
-  ::view-transition-group(*.work-media) {
+  /* A fade-through: the old page leaves quickly, the new one rises into place. */
+  ::view-transition-old(root) {
+    animation: vt-out var(--duration-fast) var(--ease-standard) both;
+  }
+
+  ::view-transition-new(root) {
+    animation: vt-in var(--duration-slow) var(--ease-out) var(--duration-instant) both;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-old(*.work-title),
+  ::view-transition-new(*.work-title) {
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-group(site-header) {
+    z-index: var(--z-sticky);
+  }
+
+  ::view-transition-group(*.work-media),
+  ::view-transition-group(*.work-title),
+  ::view-transition-group(about-portrait) {
     animation-duration: var(--duration-slower);
     animation-timing-function: var(--ease-out);
   }
 
   ::view-transition-old(*.work-media),
-  ::view-transition-new(*.work-media) {
+  ::view-transition-new(*.work-media),
+  ::view-transition-old(about-portrait),
+  ::view-transition-new(about-portrait) {
     height: 100%;
     object-fit: cover;
     overflow: clip;
   }
+
+  /* Text snapshots are images: keep their uniform scaling (never height: 100%),
+     drop the old title quickly and let the sharper new one take over. */
+  ::view-transition-old(*.work-title) {
+    animation: vt-out var(--duration-base) var(--ease-standard) both;
+  }
+
+  ::view-transition-new(*.work-title) {
+    animation: vt-fade var(--duration-slow) var(--ease-out) var(--duration-fast) both;
+  }
+
+  @keyframes vt-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes vt-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes vt-in {
+    from {
+      opacity: 0;
+      transform: translateY(var(--reveal-shift));
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .work-media {
+  .work-media,
+  .work-title,
+  .about-portrait {
     view-transition-name: none;
   }
 }
 
-/* Scroll reveal (src/lib/reveal.ts). Elements stay visible unless the script
-   has run (html.reveal-on) and the visitor allows motion. */
 @layer ui {
   @media (prefers-reduced-motion: no-preference) {
+    /* ── One-shot reveal (src/lib/reveal.ts) ─────────────────────────────── */
     .reveal-on [data-reveal]:not([data-revealed]) {
       opacity: 0;
       translate: 0 var(--reveal-shift);
@@ -56,6 +147,95 @@
         opacity var(--duration-slower) var(--ease-out),
         translate var(--duration-slower) var(--ease-out);
       transition-delay: calc(var(--reveal-index, 0) * var(--stagger));
+    }
+
+    /* ── Scroll-linked effects ───────────────────────────────────────────── */
+    @supports (animation-timeline: view()) {
+      .reveal-on [data-reveal][data-scroll]:not([data-revealed]) {
+        opacity: 1;
+        translate: none;
+      }
+
+      [data-scroll~='unveil'],
+      [data-scroll~='parallax'] {
+        view-timeline-name: --frame;
+        view-timeline-axis: block;
+        view-timeline-inset: 0;
+      }
+
+      /* Media opens like a window as it scrolls in. */
+      [data-scroll~='unveil'] > :first-child {
+        animation: unveil linear both;
+        animation-timeline: --frame;
+        animation-range: var(--scroll-range, entry 0% entry 100%);
+      }
+
+      /* Media drifts inside its frame. */
+      [data-scroll~='parallax'] > :first-child {
+        animation: parallax linear both;
+        animation-timeline: --frame;
+        animation-range: var(--scroll-range, cover 0% cover 100%);
+      }
+
+      /* The element floats at its own depth (--drift), centred mid-screen. */
+      [data-scroll~='drift'] {
+        animation: drift linear both;
+        animation-timeline: var(--drift-timeline, view(block 0px));
+        animation-range: var(--scroll-range, cover 0% cover 100%);
+      }
+
+      /* A statement lights up word by word (children carry --w, the statement
+         --lit-n); unlit words use --color-text-dim, so large text only. */
+      [data-scroll~='lit'] {
+        view-timeline-name: --lit;
+        view-timeline-axis: block;
+        view-timeline-inset: 0;
+      }
+
+      [data-scroll~='lit'] > * {
+        animation: lit linear both;
+        animation-timeline: --lit;
+        animation-range:
+          cover calc(10% + 36% * var(--w, 0) / var(--lit-n, 1))
+          cover calc(25% + 36% * var(--w, 0) / var(--lit-n, 1));
+      }
+
+      @keyframes unveil {
+        from {
+          clip-path: inset(var(--unveil-inset, 8% 6%) round var(--radius-md));
+          transform: scale(1.12);
+        }
+
+        to {
+          clip-path: inset(0 round 0);
+        }
+      }
+
+      @keyframes parallax {
+        from {
+          transform: translateY(calc(-1 * var(--parallax, 6%))) scale(1.14);
+        }
+
+        to {
+          transform: translateY(var(--parallax, 6%)) scale(1.14);
+        }
+      }
+
+      @keyframes drift {
+        from {
+          transform: translateY(var(--drift, 2rem));
+        }
+
+        to {
+          transform: translateY(calc(-1 * var(--drift, 2rem)));
+        }
+      }
+
+      @keyframes lit {
+        from {
+          color: var(--color-text-dim);
+        }
+      }
     }
   }
 }
