@@ -157,6 +157,7 @@ Change the order with **Reorder Entries** on the Photos list.
 - **Contact page**: heading, introduction, the contact form's texts and the fortunes (at least three).
 - **Photography page**: heading and introduction.
 - **Site settings**:
+  - **Site name**: the header, menu and footer draw the peachless. logo from it. Any other name shows there as plain text.
   - **Menu**: links start with `/` for a page on this site (e.g. `/projects/`) or `https://` for another site. **Show as a button** makes an item a pill, like Contact.
   - **Email addresses**: the first one is also offered when the contact form can't send.
   - **Social links**: Instagram, Behance, LinkedIn… They appear on the Contact page and in the footer.

@@ -18,6 +18,11 @@ History:
   - device frames
   - numbered chapters
   - a home page told as a story
+- **v2.2 (October 2026), "quiet craft":** typography, details and motion:
+  - Cormorant Garamond headlines and an outlined brand wordmark
+  - quiet sentence-case labels; numbers only on real sequences
+  - one motion language: overlays, images, focus and links never pop
+  - a "View" / "Open" label that follows the pointer over work
 
 Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep it in step with the admin).
 
@@ -27,10 +32,11 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 - `npm run build` — static build to `dist/`. Zod validates all content, and the build fails on schema violations, reserved or colliding slugs, or a missing image.
 - `npm run preview` — serve `dist/` at `http://localhost:4321`
 - `npm run check` — `astro check` (expect 0 errors, 0 warnings)
-- `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, ~640 tests, most of them project-tint accents)
-- `npm run budgets` — per-page gzipped JS / island / CSS / font-preload budgets on `dist/` (`scripts/check-budgets.mjs`). CI runs it between build and e2e. Raise a budget only with a reason.
-  - Project pages are closest to the limit (about 13.4 of 14 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
-- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~140 tests, `retries: 1`). **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
+- `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, ~650 tests, most of them project-tint accents)
+- `npm run budgets` — per-page gzipped JS / island / CSS / font-preload budgets on `dist/` (`scripts/check-budgets.mjs`). CI runs it between build and e2e. Raise a budget only with a reason, written next to the number.
+  - Project pages are closest to the limit (about 14.2 of 15 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
+  - JS on load includes inline scripts (Astro inlines small ones, and its ~2 KB island bootstrap on island pages). Keep comments out of `is:inline` scripts: they ship as written.
+- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~150 tests, `retries: 1`). **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
 - `node scripts/capture-screens.mjs <base-url> docs/reference/screens/v2` — full-page reference screenshots (10 pages × 1440/768/390).
 
 ## Architecture
@@ -77,6 +83,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - `project-order.ts`: also `reelPicks`.
   - `dom.ts`: `trapFocus`, ref-counted `lockScroll`, reduced-motion helpers.
   - `reveal.ts`: one observer for `[data-reveal]`.
+  - `cursor-label.ts`: the pointer's "View" / "Open" label over `[data-cursor]` media.
   - `nav.ts`: `navCurrent`.
   - `masonry.ts`: the photo-column dealing.
   - `structured-data.ts`: JSON-LD builders.
@@ -94,10 +101,12 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - One documented height query: the home `StoryDeck` only stacks at `(min-width: 48em) and (min-height: 40em)`. Sticky cards taller than the screen would hide content; being in em, the query also switches off at 200% zoom.
 - **Cascade:** `global.css` declares `@layer reset, base, primitives, ui`. Component and page `<style>` blocks are unlayered, so they win without specificity hacks. `!important` is allowed only in reset, base and primitives.
 - **Type:**
-  - Crimson Pro (display serif, look-alike of the brand book's Minion) and Inter (body/UI, look-alike of Neue Haas Grotesk).
-  - Both are self-hosted through the Astro Fonts API `local()` provider from pinned `@fontsource-variable/*` packages.
-  - Serif only at 23px and up; h4 and below, eyebrows and UI text are Inter. `font-synthesis: none`.
-  - `Base.astro` preloads Inter normal plus one Crimson face (`preloadSerif`).
+  - Cormorant Garamond (display serif: the brand book's Minion at large sizes) and Inter (body/UI, look-alike of Neue Haas Grotesk).
+  - Both are self-hosted through the Astro Fonts API `local()` provider from pinned `@fontsource-variable/*` packages (latin only: a latin-ext variant would be a third preload).
+  - Cormorant's x-height is small, so the serif tokens run 1.12× the scale, and the serif is **never below `--text-h3`** (about 26px; `tokens.spec` checks). Weights: 500 from `--text-h2` up (`--weight-display`), 600 at `--text-h3` / `--text-title` (`--weight-display-sm`), italic 400 for the hero and quotes. Headings use old-style figures; counters use lining tabular ones. h4 and below, labels and UI text are Inter. `font-synthesis: none`.
+  - The "peachless." wordmark is `ui/Wordmark.astro`: Crimson Pro 600 outlined with HarfBuzz (the brand book's Minion stand-in), so it never follows the display face. Another CMS site name falls back to live text.
+  - Labels (`.eyebrow`) are sentence case and quiet; the style guard forbids `text-transform: uppercase`. Numbers mark real sequences only (chapters, "In this story", the deck); arrows only point somewhere (back, forward links, external, top).
+  - `Base.astro` preloads Inter normal plus one Cormorant face (`preloadSerif`).
 - **Motion** (`src/styles/motion.css`):
   - Base styles are the **final state**. Animation and transition live only inside `@media (prefers-reduced-motion: no-preference)`. There is no global kill switch; e2e checks that nothing runs under reduced motion.
   - **Two systems:**
@@ -111,7 +120,12 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
     - Always set `view-timeline-inset`, since `auto` picks up `scroll-padding-top`.
     - Write `animation-timeline` and `animation-range` after the `animation` shorthand.
     - Never put `overflow: hidden` or `auto` between an effect (or a sticky element) and the root; use `clip`.
-  - **Neither system goes on the hero or the LCP element.** (The project hero's cover and the About portrait are LCPs.)
+  - **Neither system goes on the hero or the LCP element.** (The project hero's cover and the About portrait are LCPs.) The home hero's own first-visit entrance (eyebrow, lede, actions; never the h1) shares the tagline's session flag.
+  - **One vocabulary** (header of `motion.css`): enter with `--ease-out` (base/slow), exit with `--ease-in` (fast), state changes with `--ease-standard` (fast), travel with `--ease-in-out`. No raw durations.
+  - **Overlays** fade with CSS only: `dialog` (and the lightbox's `[hidden]`) transition `opacity` plus `display`/`overlay` with `allow-discrete` and an `@starting-style`, so `open`/`hidden`, the `close` event and focus return stay synchronous (tests rely on it). Keep an overlay's content rendered while it closes. Dialogs are `position: fixed` with `--z-modal` in the reset, so a closing one stays put where `overlay` isn't supported. The mobile menu is a curtain (`clip-path`).
+  - **Media own their motion:** `.media` (and `.pg-masonry__img`) carries the zoom and fade transitions; components only set `scale`, on `:hover` and keyboard focus alike. Lazy images fade in via the inline `img-fade` script in `Base.astro`'s `<head>` (it must stay inline there: `load` doesn't bubble and fires early). Eager/LCP images never fade.
+  - **Icons lean** the way they point: `Icon.astro` sets `--nudge` / `--turn` per icon; one `ui.css` rule applies them on hover and focus.
+  - **Cursor label:** `data-cursor="View"` on work media opts in (`lib/cursor-label.ts`, CSS in `styles/components/cursor-label.css`). Mouse, motion and no forced colours only; `pointer-events: none`, `aria-hidden`, `--z-overlay`.
   - **Page transitions** are native cross-document View Transitions (`@view-transition`): a fade-through for the page. Names must be unique per page:
     - `work-<id>` (card media ↔ hero, via `--vt`)
     - `work-title-<id>` (`.work-title` with `--vt-title`)
@@ -128,7 +142,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - Modal UI uses native `<dialog>` plus `trapFocus` and `lockScroll`.
   - axe (WCAG 2.2 AA) runs on every route at 1280 and 390px, plus the open overlays.
 - **Links:** internal hrefs use the trailing-slash form (`/projects/`). Cloudflare answers the bare form with a redirect.
-- **Visual reference:** `docs/reference/screens/v2/` is the signed-off look (recaptured for v2.1). Recapture and compare after visual changes; the captures use reduced motion, so they show final states. Review motion itself on the Cloudflare preview. `v1-parity/` is the retired v1 contract, kept for history.
+- **Visual reference:** `docs/reference/screens/v2/` is the signed-off look (recaptured for v2.1; recapture for v2.2 once it is signed off). Recapture and compare after visual changes; the captures use reduced motion, so they show final states. Review motion itself on the Cloudflare preview. `v1-parity/` is the retired v1 contract, kept for history.
 
 ## Content & CMS
 
@@ -166,6 +180,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 - **Vitest and CSS:** Vitest blanks CSS imports, so `vitest.config.ts` lets `tokens.css` through (`css.include`) for the `?raw` import in `src/lib/tokens.ts`.
 - **Islands:** specs that drive an island should first `await waitForIsland(page, selector)` (`tests/e2e/utils.ts`), because `client:visible` islands ignore input until hydrated.
 - **Figma:** prototype specs stub `https://www.figma.com/**`. Never wait on `networkidle` with a live Figma embed, because its telemetry never goes idle.
+- **Cursor label:** drive it with `page.mouse` at the media's centre. A locator `hover()` aims at the card's stretched link, and on touch emulation the label is never built (`motion.spec`).
 - **Windows:** Git Bash rewrites `/path` arguments, so prefix commands with `MSYS_NO_PATHCONV=1` when passing site paths. Kill a stray `astro preview` with `taskkill //PID <pid> //T //F`.
 
 ## Hard rules
