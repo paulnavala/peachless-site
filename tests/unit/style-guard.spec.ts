@@ -88,6 +88,11 @@ function violations(rel: string, raw: string): string[] {
   }
   // Labels are sentence case: tracked capitals read as template chrome.
   for (const _ of css.matchAll(/text-transform\s*:\s*uppercase/g)) found.push('text-transform: uppercase (labels are sentence case)');
+  // Control characters are never wanted in source: they are what a mangled
+  // escape (say a CSS '\2013' run through a string that read it as octal)
+  // leaves behind, and they render as garbage.
+  for (const m of raw.matchAll(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f]/g))
+    found.push(`control character U+${m[0].charCodeAt(0).toString(16).padStart(4, '0')}`);
   for (const m of code.matchAll(/['"`]#[0-9a-fA-F]{3,8}['"`]/g)) found.push(`hex colour ${m[0]} in script`);
   if (!rel.endsWith('.css')) {
     const markup = text.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
