@@ -87,7 +87,9 @@ const sizesFor = (i: number) =>
       margin-block-start: var(--space-3xl);
     }
 
-    .work-grid--grid > li:is(:nth-child(4n + 2), :nth-child(4n + 3)) :global(.project-card__media[data-fit='contain']) {
+    /* Logos stand taller in the narrow slots; a lone last card spans the row
+       (its own 7/5 split), so it keeps the standard panel. */
+    .work-grid--grid > li:is(:nth-child(4n + 2), :nth-child(4n + 3)):not(.work-grid__lone) :global(.project-card__media[data-fit='contain']) {
       --ratio: 4 / 5;
     }
 

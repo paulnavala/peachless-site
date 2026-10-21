@@ -163,7 +163,7 @@ const stillSizes = frame === 'phone' ? '(min-width: 48em) 22rem, 80vw' : '(min-w
       );
       dialogFrame.src = embed;
       dialog.showModal();
-      unlock = lockScroll();
+      unlock = lockScroll('dark');
       release = trapFocus(dialog, 'a[href], button, iframe');
       closeBtn.focus();
     });

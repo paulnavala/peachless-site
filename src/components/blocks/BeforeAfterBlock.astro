@@ -16,7 +16,9 @@ const [afterImg, beforeImg] = await Promise.all([
 ]);
 ---
 <figure class="before-after-block is-wide">
-  <div class="before-after-block__frame">
+  {/* The slider fills its frame (both photos are laid over each other), so the
+      frame takes the after-photo's proportions; without them it has no height. */}
+  <div class="before-after-block__frame" style={{ 'aspect-ratio': `${after.width} / ${after.height}` }}>
     <BeforeAfterSlider client:visible afterSrc={afterImg.src} beforeSrc={beforeImg.src} alt={alt} />
   </div>
   {caption && <figcaption class="block-caption">{caption}</figcaption>}

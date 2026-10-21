@@ -117,7 +117,7 @@ export default defineComponent({
       isOpen.value = true;
       shown.value = true;
       dialog.showModal();
-      unlockScroll = lockScroll();
+      unlockScroll = lockScroll('dark');
       void nextTick(() => {
         releaseTrap = trapFocus(dialog, 'button, [href]');
         dialog.querySelector<HTMLElement>('.gv-close')?.focus();
