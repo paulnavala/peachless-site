@@ -66,6 +66,16 @@ test.describe('project pages', () => {
     await expect.poll(() => rail.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
   });
 
+  const bulleted = publishedProjects().find((p) =>
+    p.data.blocks.some((b) => b.type === 'text' && /^\s*[-*] /m.test(b.body))
+  );
+  test('case-study lists are marked with an en dash', async ({ page }) => {
+    test.skip(!bulleted, 'no text block has a bulleted list');
+    await page.goto(`/projects/${bulleted!.id}/`);
+    const marker = await page.locator('.text-block__body ul').first().evaluate((ul) => getComputedStyle(ul).listStyleType);
+    expect(marker).toBe('"– "');
+  });
+
   for (const project of hiddenProjects()) {
     test(`hidden /projects/${project.id}/ has no page`, async ({ page }) => {
       const response = await page.goto(`/projects/${project.id}/`);
