@@ -34,7 +34,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 - `npm run check` — `astro check` (expect 0 errors, 0 warnings)
 - `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, ~650 tests, most of them project-tint accents)
 - `npm run budgets` — per-page gzipped JS / island / CSS / font-preload budgets on `dist/` (`scripts/check-budgets.mjs`). CI runs it between build and e2e. Raise a budget only with a reason, written next to the number.
-  - Project pages are closest to the limit (about 14.2 of 15 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
+  - Project pages are closest to the limit (about 14.7 of 15 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
   - JS on load includes inline scripts (Astro inlines small ones, and its ~2 KB island bootstrap on island pages). Keep comments out of `is:inline` scripts: they ship as written.
 - `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~150 tests, `retries: 1`). **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
 - `node scripts/capture-screens.mjs <base-url> docs/reference/screens/v2` — full-page reference screenshots (10 pages × 1440/768/390).
@@ -102,7 +102,8 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 - **Cascade:** `global.css` declares `@layer reset, base, primitives, ui`. Component and page `<style>` blocks are unlayered, so they win without specificity hacks. `!important` is allowed only in reset, base and primitives.
 - **Type:**
   - Cormorant Garamond (display serif: the brand book's Minion at large sizes) and Inter (body/UI, look-alike of Neue Haas Grotesk).
-  - Both are self-hosted through the Astro Fonts API `local()` provider from pinned `@fontsource-variable/*` packages (latin only: a latin-ext variant would be a third preload).
+  - Both are self-hosted through the Astro Fonts API `local()` provider from pinned `@fontsource-variable/*` packages, latin subset.
+  - **Romanian letters** (ă ș ț and the cedilla forms; â î are latin) come from two ~3 KB subset families, `Inter RO` and `Cormorant Garamond RO`. Their files in `src/assets/fonts/` are cut from the packages' latin-ext files with `pyftsubset` (command in `astro.config.mjs`). They come first in `--font-body` / `--font-display` with a unicode-range, so a page fetches them only when it has those letters, and they are never preloaded. As variants of the main families they would be preloaded, because Astro's preload filter can't tell local subsets apart. `fonts.spec` checks this.
   - Cormorant's x-height is small, so the serif tokens run 1.12× the scale, and the serif is **never below `--text-h3`** (about 26px; `tokens.spec` checks). Weights: 500 from `--text-h2` up (`--weight-display`), 600 at `--text-h3` / `--text-title` (`--weight-display-sm`), italic 400 for the hero and quotes. Headings use old-style figures; counters use lining tabular ones. h4 and below, labels and UI text are Inter. `font-synthesis: none`.
   - The "peachless." wordmark is `ui/Wordmark.astro`: Crimson Pro 600 outlined with HarfBuzz (the brand book's Minion stand-in), so it never follows the display face. Another CMS site name falls back to live text.
   - Labels (`.eyebrow`) are sentence case and quiet; the style guard forbids `text-transform: uppercase`. Numbers mark real sequences only (chapters, "In this story", the deck); arrows only point somewhere (back, forward links, external, top).

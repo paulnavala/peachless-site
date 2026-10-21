@@ -56,8 +56,10 @@
   --focus-offset: 3px;
 
   /* ── Type (font variables are registered by the Astro Fonts API) ─────── */
-  --font-display: var(--font-cormorant);
-  --font-body: var(--font-inter);
+  /* The Romanian-letters families go first: their unicode-range covers only
+     ă ș ț (and the cedilla forms), so every other letter falls through. */
+  --font-display: var(--font-cormorant-ro), var(--font-cormorant);
+  --font-body: var(--font-inter-ro), var(--font-inter);
   --step--2: clamp(0.75rem, 0.7333rem + 0.0741vw, 0.8rem);
   --step--1: clamp(0.8333rem, 0.8111rem + 0.0988vw, 0.9rem);
   --step-0: clamp(1rem, 0.9583rem + 0.1852vw, 1.125rem);
