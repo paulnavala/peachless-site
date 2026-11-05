@@ -1,9 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { compareProjects, featured, isPublished, nextProject, published, reelPicks, sortProjects, toolCounts, workView } from '../../src/lib/project-order';
+import { compareProjects, featured, hasPrototype, isPublished, nextProject, published, reelPicks, sortProjects, toolCounts, workView } from '../../src/lib/project-order';
 
 const p = (id: string, data: Partial<{ order: number; year: number; title: string; hidden: boolean; featured: boolean }> = {}) => ({
   id,
   data: { title: id, ...data },
+});
+
+describe('hasPrototype', () => {
+  it('finds a prototype block anywhere in the story', () => {
+    expect(hasPrototype({ data: { blocks: [{ type: 'text' }, { type: 'prototype' }] } })).toBe(true);
+    expect(hasPrototype({ data: { blocks: [{ type: 'text' }, { type: 'logo' }] } })).toBe(false);
+  });
 });
 
 describe('workView', () => {

@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 import { publishedPhotos, publishedProjects, readYaml } from './content';
-import { featured, reelPicks } from '../../src/lib/project-order';
+import { featured, hasPrototype, reelPicks } from '../../src/lib/project-order';
 
 const home = readYaml('pages', 'home.yaml');
 const work = readYaml('pages', 'work.yaml');
@@ -46,6 +46,7 @@ test.describe('home page', () => {
     await expect(cards).toHaveCount(expected.length);
     for (const [i, p] of expected.entries()) {
       await expect(cards.nth(i).locator('a.card__link')).toHaveAttribute('href', `/projects/${p.id}/`);
+      await expect(cards.nth(i).locator('.deck-card__meta').getByText('Live prototype'), p.id).toHaveCount(hasPrototype(p) ? 1 : 0);
     }
 
     const strip = page.locator('.photo-strip__link');

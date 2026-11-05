@@ -117,6 +117,18 @@ collections:
         maxlength: 80
         required: false
         hint: e.g. “Brand identity and UI design”.
+      - name: challenge
+        label: The challenge
+        widget: text
+        maxlength: 160
+        required: false
+        hint: One sentence near the top of the page, for readers who skim. What needed solving?
+      - name: outcome
+        label: The outcome
+        widget: text
+        maxlength: 160
+        required: false
+        hint: One sentence on what came of it, such as a test result or what was delivered.
       - name: tools
         label: Tools used
         widget: select

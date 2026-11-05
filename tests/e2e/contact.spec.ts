@@ -27,6 +27,7 @@ test.describe('/contact', () => {
       });
     });
     await page.goto('/contact');
+    await waitForIsland(page, '.contact-form-container');
     const form = page.locator('.contact-form-container form');
     await expect(form.locator('input[name="name"]')).toHaveAttribute('required', '');
     // formHidden from site.yaml must render as a hidden input inside the form

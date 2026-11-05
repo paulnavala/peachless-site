@@ -53,6 +53,16 @@ test.describe('project pages', () => {
   }
 
   const phoneGallery = publishedProjects().find((p) => p.data.blocks.some((b) => b.type === 'gallery' && b.frame === 'phone'));
+  test('a case study opens with its challenge and outcome, when it has them', async ({ page }) => {
+    for (const { id, data } of publishedProjects()) {
+      await page.goto(`/projects/${id}/`);
+      const brief = page.locator('.project-brief');
+      await expect(brief, id).toHaveCount(data.challenge || data.outcome ? 1 : 0);
+      if (data.challenge) await expect(brief, id).toContainText(data.challenge);
+      if (data.outcome) await expect(brief, id).toContainText(data.outcome);
+    }
+  });
+
   test('a phone gallery is a keyboard-scrollable rail on small screens', async ({ page }) => {
     test.skip(!phoneGallery, 'no phone gallery');
     await page.setViewportSize({ width: 390, height: 844 });

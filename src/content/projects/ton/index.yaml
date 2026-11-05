@@ -6,6 +6,8 @@ disciplines:
 year: 2025
 client: Concept project
 role: "Sole designer: research, UX/UI, prototype and testing"
+challenge: Music students only learn that a practice room is taken by walking to it.
+outcome: In a small first-contact test with no walkthrough, people booked a room in about two minutes.
 tools:
   - figma
   - miro

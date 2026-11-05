@@ -50,6 +50,10 @@ export function workView<T extends { data: { compact?: boolean } }>(list: T[]) {
   return large.length > 0 && compact.length > 1 ? { large, compact } : { large: list, compact: [] as T[] };
 }
 
+/** Does the project's story hold a prototype visitors can try? */
+export const hasPrototype = (project: { data: { blocks: readonly { type: string }[] } }) =>
+  project.data.blocks.some((block) => block.type === 'prototype');
+
 /** Featured entries for the home page; when none are marked, the first `fallback`. */
 export function featured<T extends Orderable>(ordered: T[], fallback = 3): T[] {
   const picked = ordered.filter((p) => p.data.featured);

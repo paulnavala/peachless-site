@@ -143,6 +143,8 @@ export const projectSchema = <T extends z.ZodType>(image: () => T) =>
     year: z.number().int().min(2000).max(2100).optional(),
     client: opt(80),
     role: opt(80),
+    challenge: opt(160),
+    outcome: opt(160),
     tools: z.array(z.enum(TOOLS)).default([]),
     cover: z.object({
       image: image(),

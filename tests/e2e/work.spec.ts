@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
-import { TOOLS, TOOL_LABELS, type Tool } from '../../src/lib/content-schema';
-import { workView } from '../../src/lib/project-order';
+import { sortTools, TOOLS, TOOL_LABELS, type Tool } from '../../src/lib/content-schema';
+import { hasPrototype, workView } from '../../src/lib/project-order';
 import { hiddenProjects, publishedProjects, readYaml, toolRoutes, toolsInUse } from './content';
 
 const work = readYaml('pages', 'work.yaml');
@@ -31,6 +31,15 @@ test.describe('Work index', () => {
     // One pill, in the current chip: it slides between the filtered pages.
     await expect(page.locator('.filter-chips .chip__indicator')).toHaveCount(1);
     await expect(page.locator('.filter-chips a[aria-current="page"] .chip__indicator')).toHaveCount(1);
+  });
+
+  test('a card says so when its project has a live prototype, in text outside the link', async ({ page }) => {
+    await page.goto('/projects/');
+    for (const p of large) {
+      const meta = page.getByTestId('work-card').filter({ has: page.locator(`a.card__link[href="/projects/${p.id}/"]`) }).locator('.project-card__meta');
+      await expect(meta.getByText('Live prototype'), p.id).toHaveCount(hasPrototype(p) ? 1 : 0);
+    }
+    await expect(page.locator('a.card__link', { hasText: 'Live prototype' })).toHaveCount(0);
   });
 
   test('each card invites a visit without adding words to its link', async ({ page }) => {
@@ -126,9 +135,12 @@ test.describe('Work index', () => {
   test('a case study links each of its tools to that tool\'s page', async ({ page }) => {
     for (const p of projects.filter((x) => x.data.tools?.length)) {
       await page.goto(`/projects/${p.id}/`);
-      for (const tool of p.data.tools ?? []) {
-        await expect(page.locator(`.project-credits a[href="/projects/tools/${tool}/"]`), `${p.id} ${tool}`).toHaveText(TOOL_LABELS[tool as Tool]);
+      const tools = sortTools((p.data.tools ?? []) as Tool[]);
+      for (const tool of tools) {
+        await expect(page.locator(`.project-credits a[href="/projects/tools/${tool}/"]`), `${p.id} ${tool}`).toHaveText(TOOL_LABELS[tool]);
       }
+      const credit = page.locator('.project-credits dd', { has: page.locator('a[href^="/projects/tools/"]') });
+      expect((await credit.textContent())?.trim(), p.id).toBe(tools.map((t) => TOOL_LABELS[t]).join(', '));
     }
   });
 

@@ -32,6 +32,7 @@ History:
   - Selected work comes before What I do on the home page
   - a quiet "Made with" filter by software, one page per tool in use; Photography left the filter row and is its own section
   - case studies large, single logos as small tiles below them (`compact`, `workView`)
+  - a challenge and outcome near the top of a case study, and a "Live prototype" note on cards (`hasPrototype`)
 
 Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep it in step with the admin).
 

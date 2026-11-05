@@ -68,6 +68,7 @@ You can always check your change before anyone sees it.
    - **One-line summary**: one sentence: what it is and who it's for.
    - **Type of work**: UI/UX, Graphic design, or both. This decides which Work filters show it.
    - **Year**, **Client or context** (a client's name, or "Concept project", "University coursework"…), **My role**: all optional, but they help tell the story. Employers look for your role.
+   - **The challenge** and **The outcome**: one sentence each, shown near the top of the project page for readers who skim. Say what needed solving and what came of it, such as a test result or what you delivered. Leave them empty for a simple logo.
    - **Tools used**: tick everything you used. Each tool appears on the project page and adds the project to that tool's **Made with** filter on the Work page. A tool shows up in the filter as soon as one published project uses it, and disappears again when none do.
 3. **The address.** When you create a project you also choose its web address, e.g. `peachless.design/projects/fish-seafood`. Use lowercase letters, numbers and dashes. **It can't be changed later**, because people may link to it, so pick something short and lasting.
 4. **Cover image**: the picture on the Work page and at the top of the project page (see [Images](#6-images)).

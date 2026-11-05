@@ -31,6 +31,8 @@ export interface ProjectData {
   title: string;
   summary: string;
   disciplines: string[];
+  challenge?: string;
+  outcome?: string;
   tools?: string[];
   year?: number;
   cover: { image: string; alt: string; panel?: string; fit?: string };

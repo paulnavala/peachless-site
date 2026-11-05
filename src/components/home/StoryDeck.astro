@@ -4,6 +4,7 @@
 // card recedes. Phones, short or zoomed screens get a plain list.
 import type { Project } from '../../lib/content';
 import { disciplineList } from '../../lib/content-schema';
+import { hasPrototype } from '../../lib/project-order';
 import { projectTheme } from '../../lib/project-theme';
 import Media from '../ui/Media.astro';
 import Icon from '../ui/Icon.astro';
@@ -42,6 +43,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
                 <p class="deck-card__meta">
                   <span>{disciplineList(disciplines)}</span>
                   {year && <span class="deck-card__year">{year}</span>}
+                  {hasPrototype(project) && <span>Live prototype</span>}
                 </p>
                 <Heading class="deck-card__title work-title" style={{ '--vt-title': `work-title-${project.id}` }}>
                   <a class="card__link" href={`/projects/${project.id}/`}>
