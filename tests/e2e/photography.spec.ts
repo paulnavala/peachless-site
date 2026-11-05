@@ -15,6 +15,7 @@ test.describe('/photography', () => {
 
   test('opens the lightbox with a before/after slider and closes on Escape', async ({ page }) => {
     await page.goto('/photography');
+    await waitForIsland(page, '.pg-masonry');
     await page.locator('.pg-masonry__item').first().click();
     await expect(page.locator('.pg-modal')).toBeVisible();
     await expect(page.locator('.pg-modal .image-compare')).toBeVisible(); // first photo has a before image

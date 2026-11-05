@@ -211,7 +211,7 @@
 
   .chip__count {
     font-variant-numeric: tabular-nums;
-    opacity: 0.7;
+    opacity: 0.75; /* 5:1 on linen; 0.7 is just under 4.5:1 */
   }
 
   .tag {

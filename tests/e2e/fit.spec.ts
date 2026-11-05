@@ -207,6 +207,7 @@ test.describe('the narrowest phones (320)', () => {
   });
 
   test('the lightbox close button never shrinks', async ({ page }) => {
+    test.setTimeout(120_000); // pages through every photo, up to 400ms each
     await page.goto('/photography/');
     await waitForIsland(page, '.pg-masonry');
     await page.locator('.pg-masonry__item').first().click();
