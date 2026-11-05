@@ -179,6 +179,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 ## Deployment
 
 - **Cloudflare Pages**, git-integrated, project `peachless`. Push to `main` → CF builds (`npm run build`, Node from `.node-version`) and deploys to peachless.design. Every PR gets a preview at `https://<branch>.peachless.pages.dev` plus a "Cloudflare Pages" commit status.
+- **Build cache:** on in the Cloudflare dashboard (Settings → Build → Build cache, beta), not in this repo. It keeps `node_modules/.astro`, so a build reuses its optimised images: about 1.5 minutes instead of 6–9. Cloudflare purges it 7 days after its last read, so the first build after a quiet week runs at full length. If a deploy ever looks stale, use Clear Cache there first.
 - **GitHub Actions (`ci.yml`) is the test gate only:** check → unit → build → budgets → e2e. It does not deploy. `concurrency` cancels superseded runs, because CMS saves push many small commits.
 - **Redirects:** `redirects.config.mjs` is the single source. It feeds the `astro.config.mjs` `redirects` (portable meta-refresh fallback), and `public/_redirects` mirrors it in both slash forms (CF-native 301s). `tests/unit/redirects.spec.ts` keeps them in sync and forbids redirecting `/projects/graphic-design`, `/projects/uiux` or `/projects/logo-design`.
 - `public/_headers` — immutable caching for `/_astro/*` plus security headers.

@@ -44,6 +44,8 @@ You can always check your change before anyone sees it.
 | Fix a small typo | **Save and Publish** | About 2 minutes |
 | Change the order of projects or photos | **Reorder Entries** → drag → **Done Reordering Entries** | About 2 minutes |
 
+> **After a quiet week.** If nothing has been saved for a week or more, your next change takes longer: up to 10 minutes, for the preview and for going live, because the site has to redo all its images. After that, changes are quick again.
+
 ### Save → View Preview → Publish
 
 1. Make your changes, then click **Save**. Your change is now a **draft**; the live site hasn't changed.
@@ -183,7 +185,7 @@ Change the order with **Reorder Entries** on the Photos list.
 | Problem | What to do |
 |---|---|
 | **"The preview couldn't be built."** | The live site is safe. Open the entry and look for red messages under the fields. If there are none, tell your developer which entry you changed. |
-| **My change isn't live yet.** | Publishing takes about two minutes. Refresh the page. Check **Drafts**: if your change is there, it hasn't been published yet. |
+| **My change isn't live yet.** | Publishing takes about two minutes, or up to 10 after a quiet week. Refresh the page. Check **Drafts**: if your change is there, it hasn't been published yet. |
 | **I can't sign in.** | Accept the GitHub invitation (check your email), then try again. Still stuck? Ask your developer. |
 | **An image looks blurry.** | Upload a bigger original (see the sizes above). |
 | **Brand book pages show the wrong font.** | Re-export the pages from Illustrator with text converted to outlines, or as PNGs. |
