@@ -26,7 +26,7 @@ The menu on the left:
 | **Photos** | Your photography, with optional before/after comparisons. |
 | **Home page** | The headline, introduction and section titles on the home page. |
 | **Work page** | The Work page's title and introduction, and the text for each kind of work (UI/UX, Graphic design, Photography). |
-| **About page** | Your portrait, statement and story. |
+| **About page** | Your portrait, statement and story, plus **How I work** and **Experience**. Each of those two sections appears once you add something to it. The list of tools builds itself from your projects. |
 | **Contact page** | The heading, introduction, contact-form texts and the fortunes in the fortune peach. |
 | **Photography page** | The heading and introduction of the photography page. |
 | **Site settings** | Site name, your name, tagline, menu, email addresses, social links and the "Let's create together" invitation in the footer. |
@@ -129,6 +129,14 @@ You don't need to shrink or compress anything: the site makes small, fast versio
 - ❌ "image", "logo.png", "photo of…"
 
 One sentence is plenty.
+
+---
+
+## Your résumé
+
+In **Site settings**, **Résumé (PDF)** takes one PDF. Once it's there, a download link appears on the About and Contact pages. To update it, upload the new file in the same place.
+
+**Before you upload:** anyone can download this file, and because the site's history is public, an old version can't be fully erased later. Leave out your phone number, home address and date of birth. Your email address and LinkedIn are enough.
 
 ---
 

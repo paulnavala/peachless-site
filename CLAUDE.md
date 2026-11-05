@@ -33,6 +33,7 @@ History:
   - a quiet "Made with" filter by software, one page per tool in use; Photography left the filter row and is its own section
   - case studies large, single logos as small tiles below them (`compact`, `workView`)
   - a challenge and outcome near the top of a case study, and a "Live prototype" note on cards (`hasPrototype`)
+  - About gains How I work, Tools and Experience, and a résumé PDF linked from About and Contact
 
 Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep it in step with the admin).
 
@@ -180,13 +181,14 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - Var `ALLOWED_DOMAINS=peachless.design`. Secrets `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` (GitHub OAuth app "peachless. admin") are set in the Cloudflare dashboard.
   - Access, secret rotation and redeploy steps are in `docs/EDITING.md`.
 - **Contact form:** the Web3Forms endpoint and `access_key` (public by design) live in `src/content/site/form.yaml`, read-only in the CMS ("Contact form — developer"). The `form` schema fails the build if a Web3Forms endpoint has no `access_key`.
+- **Résumé:** `site.resume` is a CMS `file` field with its own `media_folder: /public/files`, so it stays out of Astro's image pipeline; `/files/*` is `noindex`. Its `pattern` must only test the extension: Sveltia checks the uploaded file's original name, so a pattern on the stored path would pass CI and refuse every upload. The repository is public, so a committed PDF stays in history.
 - **Hidden vs. featured:** `hidden: true` removes a project or photo from every list, the sitemap and next-links, and gives it no page. `featured` puts it on the home page; if none are featured, the first three are shown.
 - **Migration:** `scripts/migrate-v2.mjs` (with `migrate-v2.data.mjs` and `migrate-v2-assets/`) built the v2 content from the v1 content. It is a dry run by default (`--write`, `--prune`). It is history after launch; don't run it against v2 content.
 
 ## Deployment
 
 - **Cloudflare Pages**, git-integrated, project `peachless`. Push to `main` → CF builds (`npm run build`, Node from `.node-version`) and deploys to peachless.design. Every PR gets a preview at `https://<branch>.peachless.pages.dev` plus a "Cloudflare Pages" commit status.
-- **Build cache:** on in the Cloudflare dashboard (Settings → Build → Build cache, beta), not in this repo. It keeps `node_modules/.astro`, so a build reuses its optimised images: about 1.5 minutes instead of 6–9. Cloudflare purges it 7 days after its last read, so the first build after a quiet week runs at full length. If a deploy ever looks stale, use Clear Cache there first.
+- **Build cache:** on in the Cloudflare dashboard (Settings → Build → Build cache, beta), not in this repo. It keeps `node_modules/.astro`, so a build reuses its optimised images: about 1.5 minutes instead of 6–9. That folder also holds Astro's content store, which only clears when `src/content.config.ts` itself changes, so an unchanged entry keeps the old schema's data (a new `.default([])` would be `undefined`). The `// content-schema:` hash in that file ties the two together: `content-files.spec` prints the new value after a schema change. Cloudflare purges it 7 days after its last read, so the first build after a quiet week runs at full length. If a deploy ever looks stale, use Clear Cache there first.
 - **GitHub Actions (`ci.yml`) is the test gate only:** check → unit → build → budgets → e2e. It does not deploy. `concurrency` cancels superseded runs, because CMS saves push many small commits.
 - **Redirects:** `redirects.config.mjs` is the single source. It feeds the `astro.config.mjs` `redirects` (portable meta-refresh fallback), and `public/_redirects` mirrors it in both slash forms (CF-native 301s). `tests/unit/redirects.spec.ts` keeps them in sync and forbids redirecting `/projects/graphic-design`, `/projects/uiux` or `/projects/logo-design`.
 - `public/_headers` — immutable caching for `/_astro/*` plus security headers.

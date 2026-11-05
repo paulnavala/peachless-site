@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, normalize } from 'node:path';
 import { parse } from 'yaml';
@@ -19,6 +20,22 @@ function imageRefs(value: unknown, out: string[] = []): string[] {
   else if (value && typeof value === 'object') Object.values(value).forEach((v) => imageRefs(v, out));
   return out;
 }
+
+describe('the content cache', () => {
+  it('is tied to the schema, which Astro does not watch', () => {
+    const schema = readFileSync(join(ROOT, 'src/lib/content-schema.ts'), 'utf8').replaceAll('\r\n', '\n');
+    const hash = createHash('sha256').update(schema).digest('hex').slice(0, 12);
+    const config = readFileSync(join(ROOT, 'src/content.config.ts'), 'utf8');
+    expect(config, `The schema changed: set the line in src/content.config.ts to "// content-schema: ${hash}"`).toContain(`// content-schema: ${hash}`);
+  });
+});
+
+describe('the résumé', () => {
+  it('exists when the site links to it (the build would not notice)', () => {
+    const { resume } = parse(readFileSync(join(ROOT, 'src/content/site/site.yaml'), 'utf8'));
+    if (resume) expect(existsSync(join(ROOT, 'public', resume)), resume).toBe(true);
+  });
+});
 
 describe.each(['src/content/projects', 'src/content/photos'])('%s', (dir) => {
   const ids = folders(dir);

@@ -8,7 +8,7 @@ import Icon from '../components/ui/Icon.astro';
 import { getSingleton } from '../lib/content';
 
 const contact = (await getSingleton('contact')).data;
-const { emails, socials } = (await getSingleton('site')).data;
+const { emails, socials, resume } = (await getSingleton('site')).data;
 // Long addresses may wrap; offer the break before the @ ("name / @domain").
 const splitAt = (address: string) => [address.slice(0, address.indexOf('@')), address.slice(address.indexOf('@'))];
 const form = (await getSingleton('form')).data;
@@ -34,7 +34,7 @@ const form = (await getSingleton('form')).data;
           }
         </ul>
         {
-          socials.length > 0 && (
+          (socials.length > 0 || resume) && (
             <ul class="cluster contact__socials" role="list">
               {socials.map((s) => (
                 <li>
@@ -43,6 +43,13 @@ const form = (await getSingleton('form')).data;
                   </a>
                 </li>
               ))}
+              {resume && (
+                <li>
+                  <a class="chip" href={resume} download>
+                    Résumé (PDF)
+                  </a>
+                </li>
+              )}
             </ul>
           )
         }

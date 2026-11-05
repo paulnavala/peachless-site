@@ -31,7 +31,7 @@ const config = parse(read('public/admin/config.yml'));
 
 const IMAGE = 'cms:image';
 const image = () => z.string().describe(IMAGE);
-const WIDGETS = new Set(['string', 'text', 'richtext', 'markdown', 'image', 'number', 'boolean', 'select', 'list', 'object', 'color', 'keyvalue']);
+const WIDGETS = new Set(['string', 'text', 'richtext', 'markdown', 'image', 'file', 'number', 'boolean', 'select', 'list', 'object', 'color', 'keyvalue']);
 
 type Zod = any;
 type Field = Record<string, any>;
@@ -75,7 +75,7 @@ function compareField(path: string, field: Field, schema: Zod, mediaRelative: bo
     const relative = mediaRelative || (typeof field.media_folder === 'string' && !field.media_folder.startsWith('/'));
     if (!relative) say('image uploads must land beside the entry (entry-relative media_folder)');
   } else if (d.type === 'string') {
-    if (!['string', 'text', 'richtext', 'markdown', 'color'].includes(field.widget)) say(`string field uses widget ${field.widget}`);
+    if (!['string', 'text', 'richtext', 'markdown', 'color', 'file'].includes(field.widget)) say(`string field uses widget ${field.widget}`);
     const max = maxOf(s);
     if (max !== undefined && field.maxlength !== max) say(`maxlength ${field.maxlength} ≠ zod max ${max}`);
     const pattern = patternOf(s);
@@ -193,6 +193,16 @@ describe('admin config ↔ content schema', () => {
     const fields = singleton('about').fields.filter((f: Field) => f.name !== 'body');
     expect(compareFields('about', fields, aboutSchema(image), false)).toEqual([]);
     expect(singleton('about').fields.find((f: Field) => f.name === 'body')?.widget).toBe('richtext');
+  });
+
+  it('the résumé upload lands in public/ and tests only the file extension', () => {
+    const resume = singleton('site').fields.find((f: Field) => f.name === 'resume');
+    expect(resume).toMatchObject({ widget: 'file', choose_url: false, media_folder: '/public/files', public_folder: '/files' });
+    // Sveltia tests the pattern against the uploaded file's own name.
+    const pattern = new RegExp(resume.pattern[0]);
+    expect(pattern.test('Patricia CV.PDF')).toBe(true);
+    expect(pattern.test('/files/patricia-cv.pdf')).toBe(true);
+    expect(pattern.test('photo.png')).toBe(false);
   });
 
   it('collections and singletons point at the files the site reads', () => {

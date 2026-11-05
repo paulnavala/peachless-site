@@ -71,6 +71,9 @@ export const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const HEX_RE = /^#[0-9A-Fa-f]{6}$/;
 export const FIGMA_RE = /^https:\/\/(www\.)?figma\.com\/(proto|design|file|make|board)\//;
 export const LINK_RE = /^(\/|https:\/\/|mailto:)/;
+// Only the extension: on upload the CMS tests this against the file's own name,
+// so a pattern on the stored path would refuse every upload.
+export const PDF_RE = /\.[Pp][Dd][Ff]$/;
 
 const req = (max: number) => z.string().trim().min(1).max(max);
 const opt = (max: number) => z.string().trim().max(max).optional();
@@ -215,6 +218,8 @@ export const aboutSchema = <T extends z.ZodType>(image: () => T) =>
     portrait: image(),
     portraitAlt: req(200),
     closing: opt(200),
+    process: z.array(z.object({ title: req(60), body: req(200) })).max(6).default([]),
+    experience: z.array(z.object({ period: req(40), role: req(80), place: opt(80) })).default([]),
     seo,
   });
 
@@ -255,6 +260,7 @@ export const siteSchema = <T extends z.ZodType>(image: () => T) =>
       .max(6),
     emails: z.array(z.object({ label: req(30), address: z.email() })).min(1),
     socials: z.array(z.object({ label: req(30), url: z.url() })).default([]),
+    resume: z.string().regex(PDF_RE).optional(),
     cta: z.object({
       eyebrow: opt(60),
       heading: req(80),

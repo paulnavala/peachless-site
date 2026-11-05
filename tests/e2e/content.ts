@@ -22,6 +22,7 @@ export interface SiteSettings {
   tagline: string;
   emails: { label: string; address: string }[];
   socials?: { label: string; url: string }[];
+  resume?: string;
   cta?: { eyebrow?: string; heading: string; buttonLabel: string; buttonLink: string };
 }
 

@@ -614,6 +614,30 @@ singletons:
         hint: A tall photo, shown at 4:5 on the About page and the home page. At least 1200 px wide.
       - { name: portraitAlt, label: Describe the portrait, widget: string, maxlength: 200 }
       - { name: closing, label: Closing line, widget: string, maxlength: 200, required: false }
+      - name: process
+        label: How I work
+        label_singular: step
+        widget: list
+        required: false
+        collapsed: auto
+        max: 6
+        summary: '{{title}}'
+        hint: The steps of your process, in order. The section appears once you add a step.
+        fields:
+          - { name: title, label: Step, widget: string, maxlength: 60, hint: 'e.g. Research.' }
+          - { name: body, label: What happens, widget: text, maxlength: 200 }
+      - name: experience
+        label: Experience
+        label_singular: entry
+        widget: list
+        required: false
+        collapsed: auto
+        summary: '{{role}}'
+        hint: Jobs, studies or courses, newest first. The section appears once you add an entry.
+        fields:
+          - { name: period, label: When, widget: string, maxlength: 40, hint: 'e.g. 2023–2025.' }
+          - { name: role, label: Role or course, widget: string, maxlength: 80 }
+          - { name: place, label: Where, widget: string, maxlength: 80, required: false }
       - name: seo
         label: Search & sharing
         widget: object
@@ -741,6 +765,16 @@ singletons:
         fields:
           - { name: label, label: Name, widget: string, maxlength: 30, hint: 'e.g. Instagram, Behance, LinkedIn.' }
           - { name: url, label: Link, widget: string, type: url, pattern: ['^https:\/\/', 'Start with https://'] }
+      - name: resume
+        label: Résumé (PDF)
+        widget: file
+        required: false
+        choose_url: false
+        accept: application/pdf
+        media_folder: /public/files
+        public_folder: /files
+        pattern: ['\.[Pp][Dd][Ff]$', 'Upload a PDF']
+        hint: Linked from the About and Contact pages. Anyone can download it, and old versions stay in the site’s history for good, so leave out your phone number, home address and date of birth.
       - name: cta
         label: Footer invitation
         widget: object
