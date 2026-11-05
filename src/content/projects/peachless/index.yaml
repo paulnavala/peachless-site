@@ -14,7 +14,7 @@ cover:
 accent: "#E1A892"
 featured: true
 hidden: false
-order: 1
+order: 4
 blocks:
   - type: text
     heading: The idea

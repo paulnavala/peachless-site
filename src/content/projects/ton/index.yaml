@@ -12,14 +12,14 @@ tools:
   - figma
   - miro
 cover:
-  image: logo.png
-  alt: "The TON logo: a wordmark with a musical note rising from the O"
-  panel: accent
-  fit: contain
+  image: cover.webp
+  alt: "Three phones showing the TON app: booking a piano room, rooms recommended with their live availability, and upcoming practice sessions"
+  panel: none
+  fit: cover
 accent: "#909CA8"
 featured: true
 hidden: false
-order: 2
+order: 1
 blocks:
   - type: text
     heading: The problem

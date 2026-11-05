@@ -16,7 +16,7 @@ cover:
 accent: "#0B2443"
 featured: false
 hidden: false
-order: 4
+order: 3
 blocks:
   - type: text
     heading: The idea

@@ -34,6 +34,7 @@ History:
   - case studies large, single logos as small tiles below them (`compact`, `workView`)
   - a challenge and outcome near the top of a case study, and a "Live prototype" note on cards (`hasPrototype`)
   - About gains How I work, Tools and Experience, and a résumé PDF linked from About and Contact
+  - UI/UX covers show the interface, not the logo: opaque 2400×1800 art, `fit: cover`, key content between about 28% and 72% of the height (the deck crops hard at 48–64em, the hero keeps the top 75%). A `contain` cover shows an interface too small, because the panel padding is tuned for logos.
 
 Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep it in step with the admin).
 
@@ -43,11 +44,11 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 - `npm run build` — static build to `dist/`. Zod validates all content, and the build fails on schema violations, reserved or colliding slugs, or a missing image.
 - `npm run preview` — serve `dist/` at `http://localhost:4321`
 - `npm run check` — `astro check` (expect 0 errors, 0 warnings)
-- `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, ~670 tests, most of them project-tint accents)
+- `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, ~800 tests, most of them project-tint accents)
 - `npm run budgets` — per-page gzipped JS / island / CSS / font-preload budgets on `dist/` (`scripts/check-budgets.mjs`). CI runs it between build and e2e. Raise a budget only with a reason, written next to the number.
-  - Project pages are closest to the limit (about 15.1 of 16 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
+  - Project pages are closest to the limit (about 15.2 of 16 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
   - JS on load includes inline scripts (Astro inlines small ones, and its ~2 KB island bootstrap on island pages). Keep comments out of `is:inline` scripts: they ship as written.
-- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~180 tests, `retries: 1`). **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
+- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~205 tests, `retries: 1`). **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
 - `node scripts/capture-screens.mjs <base-url> docs/reference/screens/v2` — full-page reference screenshots (11 pages × 1440/768/390).
 
 ## Architecture

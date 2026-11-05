@@ -1,12 +1,12 @@
 ---
 eyebrow: About
 title: Hi, I’m Patricia.
-statement: I’m a visual designer driven by the belief that design is more than what we see — it’s what we feel.
+statement: I’m a UI/UX designer driven by the belief that design is more than what we see — it’s what we feel.
 portrait: images/portrait.jpg
 portraitAlt: Portrait of Patricia, the designer behind peachless.
 closing: Every pixel tells a story. Let the world know yours.
 seo:
-  description: About Patricia — a visual designer exploring the space between art and functionality.
+  description: About Patricia — a UI/UX designer exploring the space between art and functionality.
 ---
 My work explores the space between art and functionality, between emotion and interaction. Through thoughtful composition, balance, and detail, I craft visual stories that connect with people on a deeper level.
 
