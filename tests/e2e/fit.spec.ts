@@ -266,6 +266,16 @@ test.describe('the launch button over a large still (1280)', () => {
   }
 });
 
+test.describe('the footer on tablets (768)', () => {
+  test.use({ viewport: { width: 768, height: 900 } });
+
+  test('its link columns share one row', async ({ page }) => {
+    await page.goto('/');
+    const tops = await page.locator('.site-footer__col').evaluateAll((cols) => cols.map((c) => Math.round(c.getBoundingClientRect().top)));
+    expect(new Set(tops).size, tops.join(' / ')).toBe(1);
+  });
+});
+
 test.describe('palette names (768 at rest, 1024 with a chip widened)', () => {
   for (const p of withBlock('palette')) {
     test(`${p.id}: names and values stay inside their chips`, async ({ page }) => {
