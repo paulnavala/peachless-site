@@ -1,0 +1,14 @@
+---
+// One "Made with" page per tool in use, so no filter ever leads to an empty page.
+import WorkIndex from '../../../components/work/WorkIndex.astro';
+import { getPublishedProjects } from '../../../lib/content';
+import { TOOLS, type Tool } from '../../../lib/content-schema';
+import { toolCounts } from '../../../lib/project-order';
+
+export async function getStaticPaths() {
+  return toolCounts(await getPublishedProjects(), TOOLS).map(({ tool }) => ({ params: { tool } }));
+}
+
+const { tool } = Astro.params as { tool: Tool };
+---
+<WorkIndex tool={tool} />

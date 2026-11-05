@@ -1,9 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import { compareProjects, featured, isPublished, nextProject, published, reelPicks, sortProjects } from '../../src/lib/project-order';
+import { compareProjects, featured, isPublished, nextProject, published, reelPicks, sortProjects, toolCounts } from '../../src/lib/project-order';
 
 const p = (id: string, data: Partial<{ order: number; year: number; title: string; hidden: boolean; featured: boolean }> = {}) => ({
   id,
   data: { title: id, ...data },
+});
+
+describe('toolCounts', () => {
+  const tool = (...tools: string[]) => ({ data: { tools } });
+
+  it('counts projects per tool, in the given order, leaving out tools nobody used', () => {
+    const list = [tool('miro', 'figma'), tool('figma'), tool()];
+    expect(toolCounts(list, ['figma', 'xd', 'miro'])).toEqual([
+      { tool: 'figma', count: 2 },
+      { tool: 'miro', count: 1 },
+    ]);
+  });
+
+  it('accepts projects with no tools at all (the CMS omits empty lists)', () => {
+    expect(toolCounts([{ data: {} }], ['figma'])).toEqual([]);
+  });
 });
 
 describe('project ordering', () => {

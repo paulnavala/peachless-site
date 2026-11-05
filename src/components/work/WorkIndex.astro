@@ -1,50 +1,67 @@
 ---
-// The Work index and its pre-filtered discipline views share this template.
+// The Work index and its pre-filtered views (a discipline, a tool) share this template.
 import Base from '../../layouts/Base.astro';
 import CtaBand from '../CtaBand.astro';
 import ArrowLink from '../ui/ArrowLink.astro';
 import FilterChips, { type WorkFilter } from './FilterChips.astro';
 import WorkGrid from './WorkGrid.astro';
-import { getPublishedPhotos, getPublishedProjects, getSingleton } from '../../lib/content';
-import { DISCIPLINES, type Discipline } from '../../lib/content-schema';
+import { getPublishedProjects, getSingleton } from '../../lib/content';
+import { DISCIPLINES, TOOLS, TOOL_LABELS, type Discipline, type Tool } from '../../lib/content-schema';
+import { toolCounts } from '../../lib/project-order';
 
 interface Props {
   discipline?: Discipline;
+  /** A "Made with" view: the projects made with this tool. */
+  tool?: Tool;
   /** For alias URLs (/projects/logo-design/): point search engines at the real page. */
   canonical?: string;
 }
-const { discipline, canonical } = Astro.props;
+const { discipline, tool, canonical } = Astro.props;
 
 const work = (await getSingleton('work')).data;
+const site = (await getSingleton('site')).data;
 const all = await getPublishedProjects();
-const photos = await getPublishedPhotos();
-const inDiscipline = discipline ? all.filter((p) => p.data.disciplines.includes(discipline)) : all;
+const inView = all.filter((p) => (!discipline || p.data.disciplines.includes(discipline)) && (!tool || p.data.tools.includes(tool)));
 // Shared projects open on their screens, so Graphic design leads with its own.
 const projects =
   discipline === 'graphic-design'
-    ? [...inDiscipline.filter((p) => p.data.disciplines.length === 1), ...inDiscipline.filter((p) => p.data.disciplines.length > 1)]
-    : inDiscipline;
+    ? [...inView.filter((p) => p.data.disciplines.length === 1), ...inView.filter((p) => p.data.disciplines.length > 1)]
+    : inView;
 
 const copy = {
   'graphic-design': work.disciplines.graphicDesign,
   uiux: work.disciplines.uiux,
 } as const;
-const current: WorkFilter = discipline ?? 'all';
+const current: WorkFilter = tool ?? discipline ?? 'all';
 const counts = {
   all: all.length,
   ...Object.fromEntries(DISCIPLINES.map((d) => [d, all.filter((p) => p.data.disciplines.includes(d)).length])),
-  photography: photos.length,
 };
-const heading = discipline ? copy[discipline].title : work.heading;
-const lede = discipline ? copy[discipline].description : work.intro;
-const title = discipline ? copy[discipline].title : 'Work';
-const description = discipline ? copy[discipline].description : (work.seo.description ?? work.intro ?? heading);
 
-// "Keep exploring": the other views, so the page never dead-ends.
+/** A tool's page describes itself from its projects, so it needs no copy of its own. */
+const madeWith = (t: Tool) => {
+  const names = projects.slice(0, 3).map((p) => p.data.title);
+  const list = new Intl.ListFormat('en-GB').format(projects.length > 3 ? [...names, 'more'] : names);
+  return {
+    heading: `Made with ${TOOL_LABELS[t]}`,
+    lede: `Every project where I used ${TOOL_LABELS[t]}.`,
+    description: `Work made with ${TOOL_LABELS[t]} by ${site.ownerName ?? site.siteName}: ${list}.`,
+  };
+};
+const view = tool
+  ? madeWith(tool)
+  : discipline
+    ? { heading: copy[discipline].title, lede: copy[discipline].description, description: copy[discipline].description }
+    : { heading: work.heading, lede: work.intro, description: work.seo.description ?? work.intro ?? work.heading };
+const { heading, lede, description } = view;
+const title = tool || discipline ? heading : 'Work';
+
+// "Keep exploring": the other views, so the page never dead-ends. Three links
+// at most, so they sit on one line or stack.
 const others = [
-  ...(discipline ? [{ href: '/projects/', label: 'All work' }] : []),
+  ...(discipline || tool ? [{ href: '/projects/', label: 'All work' }] : []),
   ...DISCIPLINES.filter((d) => d !== discipline).map((d) => ({ href: `/projects/${d}/`, label: copy[d].title })),
-  { href: '/photography/', label: work.disciplines.photography.title },
+  ...(tool ? [] : [{ href: '/photography/', label: work.disciplines.photography.title }]),
 ];
 ---
 <Base title={title} description={description} canonical={canonical}>
@@ -60,8 +77,8 @@ const others = [
           labels={{
             graphicDesign: work.disciplines.graphicDesign.title,
             uiux: work.disciplines.uiux.title,
-            photography: work.disciplines.photography.title,
           }}
+          tools={toolCounts(all, TOOLS)}
         />
       </div>
     </div>

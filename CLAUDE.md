@@ -30,6 +30,7 @@ History:
 - **v2.4 (November 2026), "UI/UX first":** the site works as a UI/UX designer's portfolio, for employers first and freelance clients second:
   - UI/UX leads everywhere disciplines are listed (`DISCIPLINES` order; `sortDisciplines()` for lists read from a project file)
   - Selected work comes before What I do on the home page
+  - a quiet "Made with" filter by software, one page per tool in use; Photography left the filter row and is its own section
 
 Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep it in step with the admin).
 
@@ -44,7 +45,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - Project pages are closest to the limit (about 15.1 of 16 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
   - JS on load includes inline scripts (Astro inlines small ones, and its ~2 KB island bootstrap on island pages). Keep comments out of `is:inline` scripts: they ship as written.
 - `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~180 tests, `retries: 1`). **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
-- `node scripts/capture-screens.mjs <base-url> docs/reference/screens/v2` — full-page reference screenshots (10 pages × 1440/768/390).
+- `node scripts/capture-screens.mjs <base-url> docs/reference/screens/v2` — full-page reference screenshots (11 pages × 1440/768/390).
 
 ## Architecture
 
@@ -57,6 +58,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
     5. the `PhotoStrip` collage
     6. the about teaser
   - `projects/index.astro`, `graphic-design.astro`, `uiux.astro` and `logo-design.astro` are thin wrappers around `components/work/WorkIndex.astro`. `logo-design` is an **alias page** with `rel=canonical` to graphic-design. It is deliberately not a redirect, because browsers cache 301s and a reverse redirect would loop.
+  - `projects/tools/[tool].astro`: a "Made with" page for each tool at least one published project uses (`toolCounts`), so a filter never leads to an empty page. They reuse `WorkIndex` with a `tool` prop and describe themselves from their projects, so they need no copy. `/projects/tools/` itself redirects to Work.
   - `projects/[slug].astro`: one page per **published** project:
     - an `article.project` carrying the project theme
     - a reading-progress line
@@ -145,7 +147,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - **Page transitions** are native cross-document View Transitions (`@view-transition`): a fade-through for the page. Names must be unique per page:
     - `work-<id>` (card media ↔ hero, via `--vt`)
     - `work-title-<id>` (`.work-title` with `--vt-title`)
-    - `chip-<key>` and `filter-indicator` (the sliding pill)
+    - `chip-<key>` and `filter-indicator` (the sliding pill, across both filter rows)
     - `about-portrait`
     - `site-header`
 

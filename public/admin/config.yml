@@ -63,7 +63,7 @@ collections:
       editable: [create]
       hint: The project’s web address, e.g. peachless.design/projects/fish-seafood. It can’t be changed later.
       pattern:
-        - '^(?!(graphic-design|uiux|ui-ux|logo-design|guidelines|index|all|page|projects)$)[a-z0-9]+(?:-[a-z0-9]+)*$'
+        - '^(?!(graphic-design|uiux|ui-ux|logo-design|guidelines|index|all|page|projects|tools)$)[a-z0-9]+(?:-[a-z0-9]+)*$'
         - Use lowercase letters, numbers and dashes — and not the name of a site page.
     summary: "{{title}}{{hidden | ternary(' · hidden', '')}}{{featured | ternary(' · on the home page', '')}}"
     thumbnail: cover.image
@@ -122,14 +122,15 @@ collections:
         widget: select
         multiple: true
         required: false
+        hint: Shown on the project page. Each one also adds the project to that tool’s “Made with” filter on the Work page.
         options:
-          - { label: Photoshop, value: photoshop }
+          - { label: Figma, value: figma }
+          - { label: Adobe XD, value: xd }
+          - { label: Miro, value: miro }
           - { label: Illustrator, value: illustrator }
+          - { label: Photoshop, value: photoshop }
           - { label: InDesign, value: indesign }
           - { label: Canva, value: canva }
-          - { label: Adobe XD, value: xd }
-          - { label: Figma, value: figma }
-          - { label: Miro, value: miro }
           - { label: Lightroom, value: lightroom }
       - name: cover
         label: Cover image

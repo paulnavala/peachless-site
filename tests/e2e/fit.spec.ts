@@ -1,6 +1,6 @@
 import type { Locator } from '@playwright/test';
 import { test, expect } from './fixtures';
-import { publishedPhotos, publishedProjects } from './content';
+import { publishedPhotos, publishedProjects, toolRoutes } from './content';
 import { waitForIsland } from './utils';
 
 /**
@@ -35,6 +35,14 @@ const lineCount = (el: Locator) =>
   });
 
 const rect = (el: Locator) => el.evaluate((node) => node.getBoundingClientRect().toJSON() as DOMRect);
+
+/** Neither row of Work filters ends on a lone item once it wraps. */
+const expectFiltersEven = async (page: import('@playwright/test').Page, path: string) => {
+  for (const row of ['kinds', 'tools']) {
+    const lines = await rows(page.locator(`.filter-chips__row--${row} li`));
+    if (lines.length > 1) expect(lines.at(-1), `${path} ${row}: ${lines.join(' + ')}`).toBeGreaterThan(1);
+  }
+};
 
 const openViewer = async (page: import('@playwright/test').Page, id: string) => {
   await page.goto(`/projects/${id}/`);
@@ -140,10 +148,9 @@ test.describe('phones', () => {
   });
 
   test('filter chips and closing links never leave one behind on a row', async ({ page }) => {
-    for (const path of ['/projects/', '/photography/']) {
+    for (const path of ['/projects/', ...toolRoutes(), '/photography/']) {
       await page.goto(path);
-      const chips = await rows(page.locator('.filter-chips li'));
-      if (chips.length > 1) expect(chips.at(-1), `${path} chips: ${chips.join(' + ')}`).toBeGreaterThan(1);
+      await expectFiltersEven(page, path);
       const links = await rows(page.locator('.cta-band__actions > *'));
       if (links.length > 1) expect(links.every((n) => n === 1), `${path} links: ${links.join(' + ')}`).toBe(true);
     }
@@ -198,6 +205,13 @@ test.describe('phones', () => {
 
 test.describe('the narrowest phones (320)', () => {
   test.use({ viewport: { width: 320, height: 640 } });
+
+  test('filter chips never leave one behind on a row', async ({ page }) => {
+    for (const path of ['/projects/', ...toolRoutes()]) {
+      await page.goto(path);
+      await expectFiltersEven(page, path);
+    }
+  });
 
   test('stacked hero buttons share one width', async ({ page }) => {
     await page.goto('/');

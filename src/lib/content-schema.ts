@@ -27,7 +27,8 @@ export function disciplineList(disciplines: readonly Discipline[]): string {
   return labels.length > 1 ? `${labels.slice(0, -1).join(', ')} & ${labels.at(-1)}` : (labels[0] ?? '');
 }
 
-export const TOOLS = ['photoshop', 'illustrator', 'indesign', 'canva', 'xd', 'figma', 'miro', 'lightroom'] as const;
+// The order is the "Made with" filter's: interface tools first.
+export const TOOLS = ['figma', 'xd', 'miro', 'illustrator', 'photoshop', 'indesign', 'canva', 'lightroom'] as const;
 export type Tool = (typeof TOOLS)[number];
 export const TOOL_LABELS: Record<Tool, string> = {
   photoshop: 'Photoshop',
@@ -39,6 +40,9 @@ export const TOOL_LABELS: Record<Tool, string> = {
   miro: 'Miro',
   lightroom: 'Lightroom',
 };
+
+/** A project's tools in the site's order, whatever order its file lists them in. */
+export const sortTools = (tools: readonly Tool[]): Tool[] => TOOLS.filter((t) => tools.includes(t));
 
 /** Token-named backgrounds for logos and other transparent artwork. `accent` is
  *  the project's own colour, softened (src/lib/project-theme.ts). */
@@ -60,6 +64,7 @@ export const RESERVED_PROJECT_IDS = [
   'all',
   'page',
   'projects',
+  'tools',
 ] as const;
 
 export const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

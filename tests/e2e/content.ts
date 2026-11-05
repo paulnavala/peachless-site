@@ -1,7 +1,8 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parse } from 'yaml';
-import { nextProject, published } from '../../src/lib/project-order';
+import { TOOLS } from '../../src/lib/content-schema';
+import { nextProject, published, toolCounts } from '../../src/lib/project-order';
 
 /**
  * Specs read their expectations from the content files instead of hardcoding
@@ -30,6 +31,7 @@ export interface ProjectData {
   title: string;
   summary: string;
   disciplines: string[];
+  tools?: string[];
   year?: number;
   cover: { image: string; alt: string; panel?: string; fit?: string };
   accent?: string;
@@ -61,12 +63,17 @@ export const hiddenProjects = () => allProjects().filter((p) => p.data.hidden);
 export const nextOf = (id: string) => nextProject(publishedProjects(), id);
 export const publishedPhotos = () => published(entries<PhotoData>('photos'));
 
+/** Tools in use and how many projects use each, in the site's order. */
+export const toolsInUse = () => toolCounts(publishedProjects(), TOOLS);
+export const toolRoutes = () => toolsInUse().map(({ tool }) => `/projects/tools/${tool}/`);
+
 /** Every public page, for checks that sweep the whole site. */
 export const allRoutes = () => [
   '/',
   '/projects/',
   '/projects/graphic-design/',
   '/projects/uiux/',
+  ...toolRoutes(),
   ...publishedProjects().map((p) => `/projects/${p.id}/`),
   '/photography/',
   '/about/',

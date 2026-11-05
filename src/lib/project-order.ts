@@ -33,6 +33,13 @@ export function nextProject<T extends Orderable>(ordered: T[], id: string): T | 
   return ordered[(i + 1) % ordered.length];
 }
 
+/** The tools a list of projects uses and how often, in `order`: tools no project uses are left out. */
+export function toolCounts<T extends string>(projects: { data: { tools?: readonly string[] } }[], order: readonly T[]) {
+  return order
+    .map((tool) => ({ tool, count: projects.filter((p) => p.data.tools?.includes(tool)).length }))
+    .filter(({ count }) => count > 0);
+}
+
 /** Featured entries for the home page; when none are marked, the first `fallback`. */
 export function featured<T extends Orderable>(ordered: T[], fallback = 3): T[] {
   const picked = ordered.filter((p) => p.data.featured);

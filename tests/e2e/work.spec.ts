@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures';
-import { hiddenProjects, publishedProjects, readYaml } from './content';
+import { TOOLS, TOOL_LABELS, type Tool } from '../../src/lib/content-schema';
+import { hiddenProjects, publishedProjects, readYaml, toolRoutes, toolsInUse } from './content';
 
 const work = readYaml('pages', 'work.yaml');
 const projects = publishedProjects();
@@ -20,10 +21,11 @@ test.describe('Work index', () => {
 
   test('filter chips are links, with the current view marked', async ({ page }) => {
     await page.goto('/projects/');
-    const chips = page.locator('.filter-chips a');
-    await expect(chips).toHaveCount(4);
+    const chips = page.locator('.filter-chips__row--kinds a');
+    await expect(chips).toHaveCount(3);
     await expect(chips.first()).toHaveAttribute('aria-current', 'page');
-    await expect(chips.nth(3)).toHaveAttribute('href', '/photography/');
+    await expect(chips.nth(1)).toHaveAttribute('href', '/projects/uiux/');
+    await expect(chips.nth(2)).toHaveAttribute('href', '/projects/graphic-design/');
     // One pill, in the current chip: it slides between the filtered pages.
     await expect(page.locator('.filter-chips .chip__indicator')).toHaveCount(1);
     await expect(page.locator('.filter-chips a[aria-current="page"] .chip__indicator')).toHaveCount(1);
@@ -52,6 +54,65 @@ test.describe('Work index', () => {
     });
   }
 
+  test('Graphic design leads with projects that are graphic design alone', async ({ page }) => {
+    await page.goto('/projects/graphic-design/');
+    const only = byDiscipline('graphic-design').filter((p) => p.data.disciplines.length === 1);
+    const shared = byDiscipline('graphic-design').filter((p) => p.data.disciplines.length > 1);
+    const links = await page.locator('a.card__link').evaluateAll((els) => els.map((a) => a.getAttribute('href')));
+    expect(links).toEqual([...only, ...shared].map((p) => `/projects/${p.id}/`));
+  });
+
+  test('photography is its own section, not a filter of these projects', async ({ page }) => {
+    await page.goto('/projects/');
+    await expect(page.locator('.filter-chips a[href="/photography/"]')).toHaveCount(0);
+    await page.goto('/photography/');
+    await expect(page.locator('.filter-chips')).toHaveCount(0);
+  });
+
+  test('the Made with line lists every tool in use, in order, with its count', async ({ page }) => {
+    await page.goto('/projects/');
+    const tools = page.locator('.filter-chips__row--tools a');
+    test.skip(toolsInUse().length < 2, 'one tool alone is no choice');
+    await expect(tools).toHaveCount(toolsInUse().length);
+    for (const [i, { tool, count }] of toolsInUse().entries()) {
+      await expect(tools.nth(i)).toHaveAttribute('href', `/projects/tools/${tool}/`);
+      await expect(tools.nth(i)).toContainText(TOOL_LABELS[tool]);
+      await expect(tools.nth(i).locator('.chip__count')).toHaveText(String(count));
+    }
+  });
+
+  for (const { tool, count } of toolsInUse()) {
+    const path = `/projects/tools/${tool}/`;
+    test(`${path} shows only the projects made with it, with one current filter`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.locator('h1')).toHaveText(`Made with ${TOOL_LABELS[tool]}`);
+      const expected = projects.filter((p) => p.data.tools?.includes(tool));
+      expect(expected).toHaveLength(count);
+      await expect(page.getByTestId('work-card')).toHaveCount(count);
+      for (const p of expected) await expect(page.locator(`a.card__link[href="/projects/${p.id}/"]`)).toBeVisible();
+      await expect(page.locator('.filter-chips a[aria-current]')).toHaveCount(1);
+      await expect(page.locator('.filter-chips__row--tools a[aria-current="page"]')).toHaveAttribute('href', path);
+      await expect(page.locator('.filter-chips .chip__indicator')).toHaveCount(1);
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', new RegExp(`${path}$`));
+    });
+  }
+
+  test('a tool no published project uses has no page', async ({ request }) => {
+    const used = new Set<string>(toolsInUse().map((t) => t.tool));
+    for (const tool of TOOLS.filter((t: Tool) => !used.has(t))) {
+      expect((await request.get(`/projects/tools/${tool}/`)).status(), tool).toBe(404);
+    }
+  });
+
+  test('a case study links each of its tools to that tool\'s page', async ({ page }) => {
+    for (const p of projects.filter((x) => x.data.tools?.length)) {
+      await page.goto(`/projects/${p.id}/`);
+      for (const tool of p.data.tools ?? []) {
+        await expect(page.locator(`.project-credits a[href="/projects/tools/${tool}/"]`), `${p.id} ${tool}`).toHaveText(TOOL_LABELS[tool as Tool]);
+      }
+    }
+  });
+
   test('/projects/logo-design/ is an alias page pointing search engines at graphic-design', async ({ page }) => {
     const response = await page.goto('/projects/logo-design/');
     expect(response?.status()).toBe(200);
@@ -61,7 +122,7 @@ test.describe('Work index', () => {
   });
 
   test('hidden projects appear on no listing', async ({ page }) => {
-    for (const path of ['/', '/projects/', '/projects/graphic-design/', '/projects/uiux/']) {
+    for (const path of ['/', '/projects/', '/projects/graphic-design/', '/projects/uiux/', ...toolRoutes()]) {
       await page.goto(path);
       for (const p of hiddenProjects()) {
         await expect(page.locator(`a[href^="/projects/${p.id}"]`), `${path} links ${p.id}`).toHaveCount(0);
@@ -70,7 +131,7 @@ test.describe('Work index', () => {
   });
 
   test('every Work view ends with a next step', async ({ page }) => {
-    for (const path of ['/projects/', '/projects/graphic-design/', '/projects/uiux/']) {
+    for (const path of ['/projects/', '/projects/graphic-design/', '/projects/uiux/', ...toolRoutes()]) {
       await page.goto(path);
       await expect(page.locator('main [data-next-step]')).toHaveCount(1);
     }

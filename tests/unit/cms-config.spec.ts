@@ -14,6 +14,7 @@ import {
   photographyPageSchema,
   photoSchema,
   projectSchema,
+  RESERVED_PROJECT_IDS,
   siteSchema,
   workSchema,
 } from '../../src/lib/content-schema';
@@ -163,6 +164,12 @@ describe('admin config ↔ content schema', () => {
     const c = collection('projects');
     expect(c.reorder).toBe(true);
     expect(compareFields('projects', c.fields, projectSchema(image), true, ['order'])).toEqual([]);
+  });
+
+  it('a project address can never be a reserved id (the pattern is a hand copy of the list)', () => {
+    const pattern = new RegExp(collection('projects').slug.pattern[0]);
+    for (const id of RESERVED_PROJECT_IDS) expect(pattern.test(id), id).toBe(false);
+    expect(pattern.test('fish-seafood')).toBe(true);
   });
 
   it('photos match photoSchema', () => {

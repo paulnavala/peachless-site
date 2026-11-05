@@ -4,7 +4,7 @@
 // story when there are enough of them, and the cover overlapping the band.
 import type { Project } from '../../lib/content';
 import type { Chapter } from '../../lib/chapters';
-import { DISCIPLINE_LABELS, TOOL_LABELS, disciplineList, sortDisciplines } from '../../lib/content-schema';
+import { DISCIPLINE_LABELS, TOOL_LABELS, disciplineList, sortDisciplines, sortTools } from '../../lib/content-schema';
 import ArrowLink from '../ui/ArrowLink.astro';
 import Media from '../ui/Media.astro';
 
@@ -20,8 +20,8 @@ const credits = [
   { term: 'Context', value: client },
   { term: 'My role', value: role, wide: true },
   { term: disciplines.length > 1 ? 'Disciplines' : 'Discipline', value: disciplineList(disciplines) },
-  { term: 'Tools', value: tools.map((t) => TOOL_LABELS[t]).join(', ') },
 ].filter((c) => c.value);
+const toolLinks = sortTools(tools).map((t) => ({ href: `/projects/tools/${t}/`, label: TOOL_LABELS[t] }));
 const pad = (n: number) => String(n).padStart(2, '0');
 ---
 <header class="project-hero">
@@ -42,7 +42,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     <div class="project-hero__intro">
       <p class="lede project-hero__lede">{summary}</p>
       {
-        credits.length > 0 && (
+        credits.length + toolLinks.length > 0 && (
           <dl class="project-credits">
             {credits.map((c) => (
               <div class:list={{ 'is-wide': c.wide }}>
@@ -50,6 +50,21 @@ const pad = (n: number) => String(n).padStart(2, '0');
                 <dd>{c.value}</dd>
               </div>
             ))}
+            {
+              toolLinks.length > 0 && (
+                <div>
+                  <dt>Tools</dt>
+                  <dd>
+                    {toolLinks.map((link, i) => (
+                      <>
+                        {i > 0 && ', '}
+                        <a href={link.href}>{link.label}</a>
+                      </>
+                    ))}
+                  </dd>
+                </div>
+              )
+            }
           </dl>
         )
       }

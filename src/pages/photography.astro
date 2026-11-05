@@ -2,16 +2,12 @@
 import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import PhotographyGallery from '../components/islands/PhotographyGallery.vue';
-import FilterChips from '../components/work/FilterChips.astro';
 import CtaBand from '../components/CtaBand.astro';
 import ArrowLink from '../components/ui/ArrowLink.astro';
-import { getPublishedPhotos, getPublishedProjects, getSingleton } from '../lib/content';
-import { DISCIPLINES } from '../lib/content-schema';
+import { getPublishedPhotos, getSingleton } from '../lib/content';
 
 const page = (await getSingleton('photographyPage')).data;
-const work = (await getSingleton('work')).data;
 const entries = await getPublishedPhotos();
-const projects = await getPublishedProjects();
 
 const items = await Promise.all(
   entries.map(async (e) => {
@@ -42,11 +38,6 @@ const items = await Promise.all(
   })
 );
 
-const counts = {
-  all: projects.length,
-  ...Object.fromEntries(DISCIPLINES.map((d) => [d, projects.filter((p) => p.data.disciplines.includes(d)).length])),
-  photography: entries.length,
-};
 ---
 <Base title="Photography" description={page.seo.description ?? page.lede ?? page.heading}>
   <section class="section section--tight photo-header">
@@ -54,17 +45,6 @@ const counts = {
       {page.eyebrow && <p class="eyebrow">{page.eyebrow}</p>}
       <h1 class="photo-header__title">{page.heading}</h1>
       {page.lede && <p class="lede">{page.lede}</p>}
-      <div class="photo-header__filters">
-        <FilterChips
-          current="photography"
-          counts={counts}
-          labels={{
-            graphicDesign: work.disciplines.graphicDesign.title,
-            uiux: work.disciplines.uiux.title,
-            photography: work.disciplines.photography.title,
-          }}
-        />
-      </div>
     </div>
   </section>
 
@@ -74,7 +54,7 @@ const counts = {
     </div>
   </section>
 
-  <CtaBand heading="See the brand and interface work." tone="paper">
+  <CtaBand heading="See the interface and brand work." tone="paper">
     <ArrowLink href="/projects/">All work</ArrowLink>
     <ArrowLink href="/about/">About me</ArrowLink>
   </CtaBand>
@@ -92,10 +72,6 @@ const counts = {
 
   .photo-header__title {
     font-size: var(--text-h1);
-  }
-
-  .photo-header__filters {
-    margin-block-start: var(--space-s);
   }
 
   .photo-gallery {

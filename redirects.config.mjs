@@ -13,4 +13,5 @@ export const REDIRECTS = {
   '/uiux': '/projects/uiux/',
   '/projects/ui-ux': '/projects/uiux/',
   '/projects/guidelines': '/projects/peachless/',
+  '/projects/tools': '/projects/', // the "Made with" pages live below it; it has no page of its own
 };
