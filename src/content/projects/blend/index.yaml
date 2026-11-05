@@ -11,6 +11,7 @@ cover:
   fit: contain
 accent: "#DA5D18"
 featured: false
+compact: true
 hidden: false
 order: 5
 blocks:

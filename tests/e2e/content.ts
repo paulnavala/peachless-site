@@ -36,6 +36,7 @@ export interface ProjectData {
   cover: { image: string; alt: string; panel?: string; fit?: string };
   accent?: string;
   featured?: boolean;
+  compact?: boolean;
   hidden?: boolean;
   order?: number;
   seo?: { title?: string; description?: string };

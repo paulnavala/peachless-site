@@ -11,6 +11,7 @@ cover:
   fit: contain
 accent: "#3F7823"
 featured: false
+compact: true
 hidden: false
 order: 8
 blocks:

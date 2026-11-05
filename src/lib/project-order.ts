@@ -40,6 +40,16 @@ export function toolCounts<T extends string>(projects: { data: { tools?: readonl
     .filter(({ count }) => count > 0);
 }
 
+/**
+ * A Work view: large cards, then small tiles. Tiles only read as a group under
+ * something larger, so with no large card, or a single tile, all are large.
+ */
+export function workView<T extends { data: { compact?: boolean } }>(list: T[]) {
+  const large = list.filter((p) => !p.data.compact);
+  const compact = list.filter((p) => p.data.compact);
+  return large.length > 0 && compact.length > 1 ? { large, compact } : { large: list, compact: [] as T[] };
+}
+
 /** Featured entries for the home page; when none are marked, the first `fallback`. */
 export function featured<T extends Orderable>(ordered: T[], fallback = 3): T[] {
   const picked = ordered.filter((p) => p.data.featured);

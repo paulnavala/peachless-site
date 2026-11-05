@@ -156,6 +156,13 @@ test.describe('phones', () => {
     }
   });
 
+  test('logo tiles sit in pairs, an odd last one filling its row', async ({ page }) => {
+    await page.goto('/projects/');
+    const tiles = await rows(page.locator('.work-tiles > li'));
+    test.skip(tiles.length === 0, 'no small tiles in the content');
+    expect(tiles.slice(0, -1).every((n) => n === 2), tiles.join(' + ')).toBe(true);
+  });
+
   test('the contact message box opens with room for several lines', async ({ page }) => {
     await page.goto('/contact/');
     const lines = await page

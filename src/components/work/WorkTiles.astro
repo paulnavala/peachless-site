@@ -1,0 +1,49 @@
+---
+// The small end of the Work page: logos as tiles under the case studies, each
+// still opening its own page.
+import type { Project } from '../../lib/content';
+import { evenColumns } from '../../lib/grid';
+import ProjectCard from './ProjectCard.astro';
+
+interface Props {
+  projects: Project[];
+}
+const { projects } = Astro.props;
+const columns = evenColumns(projects.length, [4, 3]);
+---
+<ul class="work-tiles" role="list" style={{ '--tile-columns': columns }}>
+  {
+    projects.map((project, i) => (
+      <li data-reveal style={{ '--reveal-index': i % columns }}>
+        <ProjectCard project={project} headingLevel={3} tile sizes="(min-width: 36em) 20rem, 50vw" />
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .work-tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-m) var(--space-s);
+    margin: 0;
+  }
+
+  /* Pairs on phones: an odd last tile fills its row instead of standing alone. */
+  @media (width < 36em) {
+    .work-tiles > :last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+
+    .work-tiles > :last-child:nth-child(odd) :global(.project-card__media) {
+      --ratio: 2 / 1;
+    }
+  }
+
+  /* Capped, so two tiles stay tiles instead of filling the row. */
+  @media (min-width: 36em) {
+    .work-tiles {
+      grid-template-columns: repeat(var(--tile-columns), minmax(0, 20rem));
+    }
+  }
+</style>

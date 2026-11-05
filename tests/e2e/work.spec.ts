@@ -1,18 +1,20 @@
 import { test, expect } from './fixtures';
 import { TOOLS, TOOL_LABELS, type Tool } from '../../src/lib/content-schema';
+import { workView } from '../../src/lib/project-order';
 import { hiddenProjects, publishedProjects, readYaml, toolRoutes, toolsInUse } from './content';
 
 const work = readYaml('pages', 'work.yaml');
 const projects = publishedProjects();
 const byDiscipline = (d: string) => projects.filter((p) => p.data.disciplines.includes(d));
+const { large, compact } = workView(projects);
 
 test.describe('Work index', () => {
-  test('lists every published project, in order, as linked cards', async ({ page }) => {
+  test('lists every published project, in order, large cards before small tiles', async ({ page }) => {
     await page.goto('/projects/');
     await expect(page.locator('h1')).toHaveText(work.heading);
     const cards = page.getByTestId('work-card');
     await expect(cards).toHaveCount(projects.length);
-    for (const [i, p] of projects.entries()) {
+    for (const [i, p] of [...large, ...compact].entries()) {
       const link = cards.nth(i).locator('a.card__link');
       await expect(link).toHaveText(p.data.title);
       await expect(link).toHaveAttribute('href', `/projects/${p.id}/`);
@@ -33,7 +35,7 @@ test.describe('Work index', () => {
 
   test('each card invites a visit without adding words to its link', async ({ page }) => {
     await page.goto('/projects/');
-    await expect(page.locator('.project-card__cta')).toHaveCount(projects.length);
+    await expect(page.locator('.project-card__cta')).toHaveCount(large.length);
     await expect(page.locator('a.card__link .project-card__cta')).toHaveCount(0);
     for (const card of await page.getByTestId('work-card').all()) {
       await expect(card).toHaveAttribute('style', /--project-tint:/);
@@ -58,8 +60,25 @@ test.describe('Work index', () => {
     await page.goto('/projects/graphic-design/');
     const only = byDiscipline('graphic-design').filter((p) => p.data.disciplines.length === 1);
     const shared = byDiscipline('graphic-design').filter((p) => p.data.disciplines.length > 1);
+    const view = workView([...only, ...shared]);
     const links = await page.locator('a.card__link').evaluateAll((els) => els.map((a) => a.getAttribute('href')));
-    expect(links).toEqual([...only, ...shared].map((p) => `/projects/${p.id}/`));
+    expect(links).toEqual([...view.large, ...view.compact].map((p) => `/projects/${p.id}/`));
+  });
+
+  test('small tiles sit in their own section, and each still opens its project', async ({ page }) => {
+    await page.goto('/projects/');
+    test.skip(compact.length === 0, 'no small tiles in the content');
+    await expect(page.locator('#work-logos-title')).toHaveText(work.logos.heading);
+    const tiles = page.locator('.work-tiles').getByTestId('work-card');
+    await expect(tiles).toHaveCount(compact.length);
+    for (const [i, p] of compact.entries()) {
+      const tile = tiles.nth(i);
+      await expect(tile.locator('h3 a.card__link')).toHaveAttribute('href', `/projects/${p.id}/`);
+      await expect(tile.locator('.project-card__summary')).toHaveCount(0);
+      // The morph into the project page.
+      await expect(tile.locator('.work-media')).toHaveAttribute('style', new RegExp(`--vt:\\s*work-${p.id}`));
+      await expect(tile.locator('.work-title')).toHaveAttribute('style', new RegExp(`--vt-title:\\s*work-title-${p.id}`));
+    }
   });
 
   test('photography is its own section, not a filter of these projects', async ({ page }) => {

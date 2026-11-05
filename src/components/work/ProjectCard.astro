@@ -11,37 +11,49 @@ interface Props {
   /** Layout width hint for the cover image. */
   sizes?: string;
   priority?: boolean;
+  /** A small tile: the cover and the title, nothing more. */
+  tile?: boolean;
 }
-const { project, headingLevel = 2, sizes = '(min-width: 64em) 38rem, (min-width: 36em) 50vw, 100vw', priority = false } = Astro.props;
+const { project, headingLevel = 2, sizes = '(min-width: 64em) 38rem, (min-width: 36em) 50vw, 100vw', priority = false, tile = false } = Astro.props;
 const { title, summary, disciplines, year, cover, accent } = project.data;
 const Heading = `h${headingLevel}` as 'h2' | 'h3';
 ---
-<article class="project-card card" data-testid="work-card" style={projectTheme(accent)}>
+<article class:list={['project-card card', { 'project-card--tile': tile }]} data-testid="work-card" style={projectTheme(accent)}>
   <div
     class="card__media project-card__media work-media"
     data-panel={cover.panel}
     data-fit={cover.fit}
-    data-scroll={cover.fit === 'cover' ? 'parallax' : undefined}
+    data-scroll={!tile && cover.fit === 'cover' ? 'parallax' : undefined}
     data-cursor="View"
     style={{ '--vt': `work-${project.id}` }}
   >
-    <div class="project-card__drift" data-scroll={cover.fit === 'contain' ? 'drift' : undefined}>
+    <div class="project-card__drift" data-scroll={!tile && cover.fit === 'contain' ? 'drift' : undefined}>
       <Media image={cover.image} alt="" sizes={sizes} fit={cover.fit} priority={priority} />
     </div>
   </div>
   <div class="project-card__body">
-    <p class="project-card__meta">
-      <span>{disciplineList(disciplines)}</span>
-      {year && <span class="project-card__year">{year}</span>}
-    </p>
+    {
+      !tile && (
+        <p class="project-card__meta">
+          <span>{disciplineList(disciplines)}</span>
+          {year && <span class="project-card__year">{year}</span>}
+        </p>
+      )
+    }
     <Heading class="project-card__title work-title" style={{ '--vt-title': `work-title-${project.id}` }}>
       <a class="card__link" href={`/projects/${project.id}/`}>{title}</a>
     </Heading>
-    <p class="project-card__summary">{summary}</p>
-    <span class="project-card__cta" aria-hidden="true">
-      View case study
-      <Icon name="arrow-right" />
-    </span>
+    {
+      !tile && (
+        <>
+          <p class="project-card__summary">{summary}</p>
+          <span class="project-card__cta" aria-hidden="true">
+            View case study
+            <Icon name="arrow-right" />
+          </span>
+        </>
+      )
+    }
   </div>
 </article>
 
@@ -94,6 +106,19 @@ const Heading = `h${headingLevel}` as 'h2' | 'h3';
     font-weight: var(--weight-display-sm);
     line-height: var(--leading-heading);
     letter-spacing: 0;
+  }
+
+  /* A tile's title is a caption: Inter, because the serif stops at --text-h3. */
+  .project-card--tile .project-card__media {
+    --ratio: 1 / 1;
+    --panel-pad: 18%;
+  }
+
+  .project-card--tile .project-card__title {
+    font-family: var(--font-body);
+    font-size: var(--text-ui);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-ui);
   }
 
   /* Shown in full: summaries are short (160 characters at most). */

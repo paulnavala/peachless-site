@@ -152,6 +152,7 @@ export const projectSchema = <T extends z.ZodType>(image: () => T) =>
     }),
     accent: z.string().regex(HEX_RE).optional(),
     featured: z.boolean().default(false),
+    compact: z.boolean().default(false),
     hidden: z.boolean().default(false),
     order: z.number().int().min(0).default(0),
     seo: z.object({ title: opt(60), description: opt(160), image: image().optional() }).optional(),
@@ -200,6 +201,7 @@ export const workSchema = z.object({
     uiux: disciplineCopy,
     photography: disciplineCopy,
   }),
+  logos: section,
   seo,
 });
 

@@ -131,12 +131,13 @@ One sentence is plenty.
 
 ---
 
-## 7. Hide or feature
+## 7. Hide, feature or shrink
 
 | Switch | What it does |
 |---|---|
 | **Hide from site** | The project (or photo) disappears everywhere: no page, no card, not in Google. Use it for work in progress, or to retire something without deleting it. Switch it off to bring it back. |
 | **Feature on the home page** | Projects appear under "Selected work" on the home page; photos appear in the photography strip. With nothing featured, the first three projects and the first five photos are shown. Three projects and five photos look best. The row of work at the top of the home page shows the rest: projects and photos that aren't featured. |
+| **Show as a small tile** | For a single logo. On the Work page the project moves to the small tiles under the case studies, and it keeps its own page. Switch it off once it has grown into a full story. A lone tile joins the large cards, so tiles always come in twos or more. |
 
 **Prefer hiding to deleting.** A deleted project's address stops working, and anyone who saved or shared the link lands on the "page not found" page.
 

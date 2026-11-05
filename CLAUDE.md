@@ -31,6 +31,7 @@ History:
   - UI/UX leads everywhere disciplines are listed (`DISCIPLINES` order; `sortDisciplines()` for lists read from a project file)
   - Selected work comes before What I do on the home page
   - a quiet "Made with" filter by software, one page per tool in use; Photography left the filter row and is its own section
+  - case studies large, single logos as small tiles below them (`compact`, `workView`)
 
 Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep it in step with the admin).
 
@@ -57,7 +58,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
     4. `DisciplineIndex` (what I do)
     5. the `PhotoStrip` collage
     6. the about teaser
-  - `projects/index.astro`, `graphic-design.astro`, `uiux.astro` and `logo-design.astro` are thin wrappers around `components/work/WorkIndex.astro`. `logo-design` is an **alias page** with `rel=canonical` to graphic-design. It is deliberately not a redirect, because browsers cache 301s and a reverse redirect would loop.
+  - `projects/index.astro`, `graphic-design.astro`, `uiux.astro` and `logo-design.astro` are thin wrappers around `components/work/WorkIndex.astro`. Every Work view shows `WorkGrid` (large cards), then `WorkTiles` for `compact` projects; `workView()` in `project-order.ts` makes the split and folds everything into large cards when tiles wouldn't read as a group. `logo-design` is an **alias page** with `rel=canonical` to graphic-design. It is deliberately not a redirect, because browsers cache 301s and a reverse redirect would loop.
   - `projects/tools/[tool].astro`: a "Made with" page for each tool at least one published project uses (`toolCounts`), so a filter never leads to an empty page. They reuse `WorkIndex` with a `tool` prop and describe themselves from their projects, so they need no copy. `/projects/tools/` itself redirects to Work.
   - `projects/[slug].astro`: one page per **published** project:
     - an `article.project` carrying the project theme

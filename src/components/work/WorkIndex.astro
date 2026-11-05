@@ -3,11 +3,13 @@
 import Base from '../../layouts/Base.astro';
 import CtaBand from '../CtaBand.astro';
 import ArrowLink from '../ui/ArrowLink.astro';
+import SectionHeader from '../ui/SectionHeader.astro';
 import FilterChips, { type WorkFilter } from './FilterChips.astro';
 import WorkGrid from './WorkGrid.astro';
+import WorkTiles from './WorkTiles.astro';
 import { getPublishedProjects, getSingleton } from '../../lib/content';
 import { DISCIPLINES, TOOLS, TOOL_LABELS, type Discipline, type Tool } from '../../lib/content-schema';
-import { toolCounts } from '../../lib/project-order';
+import { toolCounts, workView } from '../../lib/project-order';
 
 interface Props {
   discipline?: Discipline;
@@ -27,6 +29,7 @@ const projects =
   discipline === 'graphic-design'
     ? [...inView.filter((p) => p.data.disciplines.length === 1), ...inView.filter((p) => p.data.disciplines.length > 1)]
     : inView;
+const { large, compact } = workView(projects);
 
 const copy = {
   'graphic-design': work.disciplines.graphicDesign,
@@ -87,14 +90,25 @@ const others = [
   <section class="section work-list" aria-label={heading}>
     <div class="container">
       {
-        projects.length ? (
-          <WorkGrid projects={projects} priorityFirst />
+        large.length ? (
+          <WorkGrid projects={large} priorityFirst />
         ) : (
           <p class="lede">New work is on its way.</p>
         )
       }
     </div>
   </section>
+
+  {
+    compact.length > 0 && (
+      <section class="section work-logos" aria-labelledby="work-logos-title">
+        <div class="container">
+          <SectionHeader id="work-logos-title" title={work.logos.heading} lede={work.logos.intro} />
+          <WorkTiles projects={compact} />
+        </div>
+      </section>
+    )
+  }
 
   <CtaBand heading="There’s more to see." tone="paper">
     {others.map((o) => <ArrowLink href={o.href}>{o.label}</ArrowLink>)}
@@ -121,5 +135,9 @@ const others = [
 
   .work-list {
     padding-block-start: var(--space-l-2xl);
+  }
+
+  .work-logos {
+    padding-block-start: 0;
   }
 </style>

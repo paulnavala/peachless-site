@@ -1,9 +1,36 @@
 import { describe, expect, it } from 'vitest';
-import { compareProjects, featured, isPublished, nextProject, published, reelPicks, sortProjects, toolCounts } from '../../src/lib/project-order';
+import { compareProjects, featured, isPublished, nextProject, published, reelPicks, sortProjects, toolCounts, workView } from '../../src/lib/project-order';
 
 const p = (id: string, data: Partial<{ order: number; year: number; title: string; hidden: boolean; featured: boolean }> = {}) => ({
   id,
   data: { title: id, ...data },
+});
+
+describe('workView', () => {
+  const card = (id: string, compact = false) => ({ id, data: { compact } });
+  const ids = (list: { id: string }[]) => list.map((p) => p.id);
+
+  it('puts large cards first and keeps each group in order', () => {
+    const { large, compact } = workView([card('a'), card('b', true), card('c'), card('d', true)]);
+    expect(ids(large)).toEqual(['a', 'c']);
+    expect(ids(compact)).toEqual(['b', 'd']);
+  });
+
+  it('makes a lone tile a large card, in its place', () => {
+    const { large, compact } = workView([card('a'), card('b', true), card('c')]);
+    expect(ids(large)).toEqual(['a', 'b', 'c']);
+    expect(compact).toEqual([]);
+  });
+
+  it('shows tiles as large cards when nothing else is large', () => {
+    const { large, compact } = workView([card('a', true), card('b', true)]);
+    expect(ids(large)).toEqual(['a', 'b']);
+    expect(compact).toEqual([]);
+  });
+
+  it('copes with an empty view', () => {
+    expect(workView([])).toEqual({ large: [], compact: [] });
+  });
 });
 
 describe('toolCounts', () => {
