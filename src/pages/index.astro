@@ -1,6 +1,6 @@
 ---
 // Home tells the story in one scroll: who (with a reel of the work) → what I
-// believe → what I do → selected stories → through my lens → hello →
+// believe → selected stories → what I do → through my lens → hello →
 // (footer) let's create together.
 import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
@@ -58,8 +58,11 @@ const firstOf = (discipline: 'graphic-design' | 'uiux') => {
   const pick = list.find((p) => p.data.cover.fit === 'cover') ?? list[0];
   return { list, pick };
 };
-const graphic = firstOf('graphic-design');
 const uiux = firstOf('uiux');
+const graphic = firstOf('graphic-design');
+// Shared projects lead with their screens, so Graphic design previews a project
+// that is graphic design alone.
+const graphicPreview = graphic.list.find((p) => !p.data.disciplines.includes('uiux')) ?? graphic.list[0];
 const preview = (project?: (typeof projects)[number]) =>
   project && {
     image: { image: project.data.cover.image, panel: project.data.cover.panel, fit: project.data.cover.fit },
@@ -67,16 +70,16 @@ const preview = (project?: (typeof projects)[number]) =>
   };
 const disciplines: DisciplineEntry[] = [
   {
-    ...work.disciplines.graphicDesign,
-    href: '/projects/graphic-design/',
-    count: plural(graphic.list.length, 'project'),
-    ...preview(graphic.list[0]),
-  },
-  {
     ...work.disciplines.uiux,
     href: '/projects/uiux/',
     count: plural(uiux.list.length, 'project'),
     ...preview(uiux.pick),
+  },
+  {
+    ...work.disciplines.graphicDesign,
+    href: '/projects/graphic-design/',
+    count: plural(graphic.list.length, 'project'),
+    ...preview(graphicPreview),
   },
   {
     ...work.disciplines.photography,
@@ -87,6 +90,7 @@ const disciplines: DisciplineEntry[] = [
 ];
 ---
 <Base
+  title={site.ownerName && site.jobTitle ? `${site.ownerName}, ${site.jobTitle}` : undefined}
   description={home.seo.description ?? site.seo.description}
   preloadSerif="italic"
   jsonLd={[websiteLd(site, Astro.site!), personLd(site, Astro.site!, portrait.src)]}
@@ -111,13 +115,6 @@ const disciplines: DisciplineEntry[] = [
     </div>
   </section>
 
-  <section class="section" aria-labelledby="services-title">
-    <div class="container">
-      <SectionHeader id="services-title" title={home.services.heading} lede={home.services.intro} />
-      <DisciplineIndex entries={disciplines} />
-    </div>
-  </section>
-
   <section class="section selected-work" aria-labelledby="featured-title">
     <div class="container">
       <SectionHeader
@@ -127,6 +124,13 @@ const disciplines: DisciplineEntry[] = [
         action={{ href: '/projects/', label: 'All work' }}
       />
       <StoryDeck projects={featured} />
+    </div>
+  </section>
+
+  <section class="section what-i-do" aria-labelledby="services-title">
+    <div class="container">
+      <SectionHeader id="services-title" title={home.services.heading} lede={home.services.intro} />
+      <DisciplineIndex entries={disciplines} />
     </div>
   </section>
 
@@ -189,7 +193,7 @@ const disciplines: DisciplineEntry[] = [
     }
   }
 
-  .selected-work {
+  .what-i-do {
     padding-block-start: 0;
   }
 </style>

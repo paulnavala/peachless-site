@@ -30,6 +30,11 @@ test('home describes the site and the person behind it', async ({ page }) => {
   const person = node(nodes, 'Person');
   expect(person).toMatchObject({ name: site().ownerName, url: `${ORIGIN}/about/` });
   expect(person!.image).toMatch(new RegExp(`^${ORIGIN}/_astro/`));
+  const { ownerName, jobTitle, siteName } = site();
+  if (jobTitle) {
+    expect(person).toMatchObject({ jobTitle });
+    await expect(page).toHaveTitle(`${ownerName}, ${jobTitle} — ${siteName}`);
+  }
 });
 
 test('about describes the same person', async ({ page }) => {

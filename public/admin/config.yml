@@ -76,8 +76,8 @@ collections:
       filters:
         - { name: featured, label: On the home page, field: featured, eq: true }
         - { name: hidden, label: Hidden from the site, field: hidden, eq: true }
-        - { name: graphic-design, label: Graphic design, field: disciplines, pattern: graphic-design }
         - { name: uiux, label: UI/UX, field: disciplines, pattern: uiux }
+        - { name: graphic-design, label: Graphic design, field: disciplines, pattern: graphic-design }
     fields:
       - name: title
         label: Project name
@@ -95,8 +95,8 @@ collections:
         multiple: true
         min: 1
         options:
-          - { label: Graphic design, value: graphic-design }
           - { label: UI/UX, value: uiux }
+          - { label: Graphic design, value: graphic-design }
         hint: Decides which Work filters show the project. Choose both for a logo with an app.
       - name: year
         label: Year
@@ -676,6 +676,7 @@ singletons:
         maxlength: 40
         hint: 'The header, menu and footer draw the logo for "peachless."; any other name appears there as plain text.'
       - { name: ownerName, label: Your name, widget: string, maxlength: 40, required: false, hint: Used to introduce you. Leave empty to stay “peachless.” only. }
+      - { name: jobTitle, label: Your job title, widget: string, maxlength: 60, required: false, hint: "e.g. “UI/UX designer”. Shown after your name in the browser tab on the home page and in Google." }
       - { name: tagline, label: Tagline, widget: string, maxlength: 120, hint: Shown in the footer and the mobile menu. }
       - name: nav
         label: Menu

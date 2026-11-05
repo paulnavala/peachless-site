@@ -9,16 +9,21 @@ import { z } from 'astro/zod';
 // Schemas with images take Astro's `image()` helper (tests pass a string stub).
 // They are generic over its return type so ImageMetadata survives inference.
 
-export const DISCIPLINES = ['graphic-design', 'uiux'] as const;
+// The order is the site's: UI/UX leads wherever disciplines are listed.
+export const DISCIPLINES = ['uiux', 'graphic-design'] as const;
 export type Discipline = (typeof DISCIPLINES)[number];
 export const DISCIPLINE_LABELS: Record<Discipline, string> = {
   'graphic-design': 'Graphic design',
   uiux: 'UI/UX',
 };
 
-/** Disciplines as a reader would say them: "Graphic design & UI/UX". */
+/** A project's disciplines in the site's order, whatever order its file lists them in. */
+export const sortDisciplines = (disciplines: readonly Discipline[]): Discipline[] =>
+  DISCIPLINES.filter((d) => disciplines.includes(d));
+
+/** Disciplines as a reader would say them: "UI/UX & Graphic design". */
 export function disciplineList(disciplines: readonly Discipline[]): string {
-  const labels = disciplines.map((d) => DISCIPLINE_LABELS[d]);
+  const labels = sortDisciplines(disciplines).map((d) => DISCIPLINE_LABELS[d]);
   return labels.length > 1 ? `${labels.slice(0, -1).join(', ')} & ${labels.at(-1)}` : (labels[0] ?? '');
 }
 
@@ -233,6 +238,7 @@ export const siteSchema = <T extends z.ZodType>(image: () => T) =>
   z.object({
     siteName: req(40),
     ownerName: opt(40),
+    jobTitle: opt(60),
     tagline: req(120),
     nav: z
       .array(z.object({ label: req(30), href: z.string().regex(LINK_RE), cta: z.boolean().default(false) }))

@@ -4,7 +4,7 @@
 // story when there are enough of them, and the cover overlapping the band.
 import type { Project } from '../../lib/content';
 import type { Chapter } from '../../lib/chapters';
-import { DISCIPLINE_LABELS, TOOL_LABELS, disciplineList } from '../../lib/content-schema';
+import { DISCIPLINE_LABELS, TOOL_LABELS, disciplineList, sortDisciplines } from '../../lib/content-schema';
 import ArrowLink from '../ui/ArrowLink.astro';
 import Media from '../ui/Media.astro';
 
@@ -29,7 +29,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     <div class="project-hero__nav">
       <ArrowLink href="/projects/" direction="back">All work</ArrowLink>
       <ul class="cluster project-hero__tags" role="list" aria-label="Disciplines">
-        {disciplines.map((d) => <li><a class="tag project-hero__tag" href={`/projects/${d}/`}>{DISCIPLINE_LABELS[d]}</a></li>)}
+        {sortDisciplines(disciplines).map((d) => <li><a class="tag project-hero__tag" href={`/projects/${d}/`}>{DISCIPLINE_LABELS[d]}</a></li>)}
       </ul>
     </div>
     <h1

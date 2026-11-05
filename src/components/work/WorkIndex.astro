@@ -18,7 +18,12 @@ const { discipline, canonical } = Astro.props;
 const work = (await getSingleton('work')).data;
 const all = await getPublishedProjects();
 const photos = await getPublishedPhotos();
-const projects = discipline ? all.filter((p) => p.data.disciplines.includes(discipline)) : all;
+const inDiscipline = discipline ? all.filter((p) => p.data.disciplines.includes(discipline)) : all;
+// Shared projects open on their screens, so Graphic design leads with its own.
+const projects =
+  discipline === 'graphic-design'
+    ? [...inDiscipline.filter((p) => p.data.disciplines.length === 1), ...inDiscipline.filter((p) => p.data.disciplines.length > 1)]
+    : inDiscipline;
 
 const copy = {
   'graphic-design': work.disciplines.graphicDesign,

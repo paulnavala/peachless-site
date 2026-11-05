@@ -16,6 +16,7 @@ export const readYaml = <T = any>(...parts: string[]): T =>
 export interface SiteSettings {
   siteName?: string;
   ownerName?: string;
+  jobTitle?: string;
   nav: { label: string; href: string; cta?: boolean }[];
   tagline: string;
   emails: { label: string; address: string }[];

@@ -27,6 +27,9 @@ History:
   - full summaries, two-line titles, and rows that never strand one item
   - overlays, the brand-book viewer and the prototype phone fit short and narrow windows
   - sharper images, and screenshot covers cropped from the bottom
+- **v2.4 (November 2026), "UI/UX first":** the site works as a UI/UX designer's portfolio, for employers first and freelance clients second:
+  - UI/UX leads everywhere disciplines are listed (`DISCIPLINES` order; `sortDisciplines()` for lists read from a project file)
+  - Selected work comes before What I do on the home page
 
 Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep it in step with the admin).
 
@@ -49,8 +52,8 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - `index.astro`: the home story, in `components/home/`:
     1. the hero: the typed tagline plus `WorkReel`, a drifting row of work the rest of the page doesn't show yet (`reelPicks`)
     2. a `LitStatement` manifesto
-    3. `DisciplineIndex` (what I do)
-    4. `StoryDeck` (selected work)
+    3. `StoryDeck` (selected work)
+    4. `DisciplineIndex` (what I do)
     5. the `PhotoStrip` collage
     6. the about teaser
   - `projects/index.astro`, `graphic-design.astro`, `uiux.astro` and `logo-design.astro` are thin wrappers around `components/work/WorkIndex.astro`. `logo-design` is an **alias page** with `rel=canonical` to graphic-design. It is deliberately not a redirect, because browsers cache 301s and a reverse redirect would loop.

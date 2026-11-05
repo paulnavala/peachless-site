@@ -25,7 +25,7 @@ The menu on the left:
 | **Projects** | Your portfolio. Each project has its own page and a card on the Work page. |
 | **Photos** | Your photography, with optional before/after comparisons. |
 | **Home page** | The headline, introduction and section titles on the home page. |
-| **Work page** | The Work page's title and introduction, and the text for each filter (Graphic design, UI/UX, Photography). |
+| **Work page** | The Work page's title and introduction, and the text for each kind of work (UI/UX, Graphic design, Photography). |
 | **About page** | Your portrait, statement and story. |
 | **Contact page** | The heading, introduction, contact-form texts and the fortunes in the fortune peach. |
 | **Photography page** | The heading and introduction of the photography page. |
@@ -66,7 +66,7 @@ You can always check your change before anyone sees it.
 2. Fill in the basics:
    - **Project name**: shown on the card, at the top of the page and in Google.
    - **One-line summary**: one sentence: what it is and who it's for.
-   - **Type of work**: Graphic design, UI/UX, or both. This decides which Work filters show it.
+   - **Type of work**: UI/UX, Graphic design, or both. This decides which Work filters show it.
    - **Year**, **Client or context** (a client's name, or "Concept project", "University coursework"…), **My role**, **Tools used**: all optional, but they help tell the story.
 3. **The address.** When you create a project you also choose its web address, e.g. `peachless.design/projects/fish-seafood`. Use lowercase letters, numbers and dashes. **It can't be changed later**, because people may link to it, so pick something short and lasting.
 4. **Cover image**: the picture on the Work page and at the top of the project page (see [Images](#6-images)).
