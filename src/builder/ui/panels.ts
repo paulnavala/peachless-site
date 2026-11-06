@@ -85,6 +85,7 @@ function AddPanel(): VNode[] {
   };
 
   return [
+    page.value.id === 'work' ? h('p', { class: 'notice' }, 'This page is shared by every Work view, so what you add here shows on all of them: UI/UX, Graphic design and each Made with page.') : null,
     inGrid
       ? h('section', { class: 'library' }, [
           h('h3', { class: 'group__title' }, 'Add to this section'),

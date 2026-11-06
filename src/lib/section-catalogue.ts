@@ -53,6 +53,8 @@ export interface SectionDef {
   required?: boolean;
   /** Pages it can't go on, because view-transition names would collide. */
   notOn?: BuiltInPage[];
+  /** Shows projects or photos, so the canvas has them as last published. */
+  published?: boolean;
   fields: FieldDef[];
 }
 
@@ -79,6 +81,7 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     group: 'Page openers',
     note: 'Tagline, introduction, two buttons and a row of work.',
     page: 'home',
+    published: true,
     opener: true,
     once: true,
     required: true,
@@ -125,6 +128,7 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     group: 'Showing work',
     note: 'The projects marked “On home page”, as a stack of cards.',
     once: true,
+    published: true,
     notOn: ['work'],
     fields: [text('heading', 'Heading'), area('intro', 'Introduction'), text('action.label', 'Link text'), link('action.link')],
   },
@@ -133,6 +137,7 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     group: 'Showing work',
     note: 'One large row per kind of work, each linking to it.',
     once: true,
+    published: true,
     fields: [text('heading', 'Heading'), area('intro', 'Introduction')],
   },
   'photo-strip': {
@@ -140,6 +145,7 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     group: 'Showing work',
     note: 'A small collage that leads to the gallery.',
     once: true,
+    published: true,
     fields: [text('heading', 'Heading'), area('intro', 'Introduction'), text('action.label', 'Link text'), link('action.link')],
   },
   'about-teaser': {
@@ -221,6 +227,7 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     group: 'Showing work',
     note: 'All your photographs, with before and after.',
     page: 'photography',
+    published: true,
     once: true,
     required: true,
     fields: [],
@@ -240,6 +247,7 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     group: 'Showing work',
     note: 'Large project cards. It follows the filters on the page.',
     page: 'work',
+    published: true,
     once: true,
     required: true,
     fields: [{ key: 'emptyText', label: 'Text when nothing matches', kind: 'text', inspectorOnly: true }],
@@ -249,6 +257,7 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     group: 'Showing work',
     note: 'Small tiles for the projects marked “Small tile”.',
     page: 'work',
+    published: true,
     once: true,
     fields: [text('heading', 'Heading'), area('intro', 'Introduction')],
   },

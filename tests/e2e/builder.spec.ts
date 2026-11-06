@@ -132,6 +132,15 @@ test.describe('sections', () => {
     await expect(page.getByRole('toolbar', { name: 'Big statement section' })).toBeVisible();
   });
 
+  test('says which sections update after publishing', async ({ page }) => {
+    await openBuilder(page);
+    await page.getByRole('tab', { name: 'Layers' }).click();
+    await page.locator('.layer__name', { hasText: 'Selected work' }).click();
+    await expect(page.getByText('Updates after publishing')).toBeVisible();
+    await page.locator('.layer__name', { hasText: 'Big statement' }).click();
+    await expect(page.getByText('Updates after publishing')).toHaveCount(0);
+  });
+
   test('editing a field updates the page as you type', async ({ page }) => {
     await openBuilder(page);
     await page.getByRole('tab', { name: 'Layers' }).click();
@@ -327,6 +336,29 @@ test.describe('pages', () => {
     expect(await inFrame(page, (doc) => doc.querySelector('.site-header') !== null)).toBe(true);
     await page.getByRole('tab', { name: /Checks/ }).click();
     await expect(page.getByText('This page is ready to publish.')).toBeVisible();
+  });
+
+  test('a new page can be taken off the site, and can’t stay in the menu', async ({ page }) => {
+    await openBuilder(page);
+    await page.getByRole('tab', { name: 'Pages' }).click();
+    await page.getByLabel('Page name').fill('Client stories');
+    await page.getByRole('button', { name: 'Add page' }).click();
+    await page.getByLabel('Show this page in the menu').check();
+    await page.getByLabel('Hide from site').check();
+    await expect(page.getByLabel('Show this page in the menu')).not.toBeChecked();
+  });
+
+  test('built-in pages can’t be hidden', async ({ page }) => {
+    await openBuilder(page);
+    await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible();
+    await expect(page.getByLabel('Hide from site')).toHaveCount(0);
+  });
+
+  test('Work says its sections are shared by every view', async ({ page }) => {
+    await openBuilder(page);
+    await openPage(page, 'Work');
+    await page.getByRole('tab', { name: 'Add' }).click();
+    await expect(page.getByText('shared by every Work view')).toBeVisible();
   });
 
   test('won’t take an address the site already uses', async ({ page }) => {

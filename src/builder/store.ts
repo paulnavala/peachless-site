@@ -410,6 +410,15 @@ export function setInMenu(id: string, on: boolean): void {
   state.revision++;
 }
 
+/** Takes a page off the site, or puts it back. A hidden page can't stay in the menu: its link would lead nowhere. */
+export function setPageHidden(id: string, hidden: boolean): void {
+  change((raw) => {
+    if (hidden) raw.hidden = true;
+    else delete raw.hidden;
+  });
+  if (hidden) setInMenu(id, false);
+}
+
 /** A new page: a title and somewhere to go next, which the page rules ask for. */
 export function addPage(id: string, title: string): void {
   const raw: RawPage = {

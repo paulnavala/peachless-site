@@ -16,9 +16,9 @@ import {
   SURFACES,
   TEXT_SIZES,
 } from '../../lib/content-schema';
-import { definitionOf, type FieldDef } from '../../lib/section-catalogue';
+import { definitionOf, PAGE_IDS, type FieldDef } from '../../lib/section-catalogue';
 import { uploadImage } from '../images';
-import { getPath, page, placeElement, selectedElement, selectedSection, setElementField, setField, state, change, type RawElement, type RawSection } from '../store';
+import { getPath, page, placeElement, selectedElement, selectedSection, setElementField, setField, setPageHidden, state, change, type RawElement, type RawSection } from '../store';
 import { choiceField, group, numberField, textField, toggleField } from './controls';
 
 const SURFACE_LABELS: Record<(typeof SURFACES)[number], string> = { default: 'Page', paper: 'Paper', blush: 'Blush', inverse: 'Dark' };
@@ -277,6 +277,14 @@ function pageSettings(): VNode[] {
             raw.seo = { ...raw.seo, description: value || undefined };
           }, 'page-description'),
       }),
+      (PAGE_IDS as readonly string[]).includes(entry.id)
+        ? null
+        : toggleField({
+            label: 'Hide from site',
+            hint: 'It leaves the site, Google and the menu. Your work on it stays here.',
+            value: !!entry.raw.hidden,
+            onChange: (hidden) => setPageHidden(entry.id, hidden),
+          }),
     ]),
   ];
 }
@@ -316,6 +324,7 @@ export const Inspector = defineComponent({
         content = [
           h('h2', { class: 'panel-title' }, def.name),
           h('p', { class: 'panel-note' }, def.note),
+          def.published ? h('p', { class: 'notice' }, 'Updates after publishing: the projects and photos here are the ones on the live site.') : null,
           ...sectionFields(s),
           page.value.raw.story ? null : group('Design', designFields(s)),
         ];

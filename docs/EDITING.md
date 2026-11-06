@@ -65,6 +65,10 @@ Words never get cut off: if text needs more room, its row grows. An image fills 
 2. It starts with a title and a closing band, because every page needs both. Add what you like between them.
 3. To put it in the menu, switch on **Show this page in the menu**. The menu holds six items.
 
+Pages can't be deleted in the builder. To take one down, click an empty part of the canvas and switch on **Hide from site**. Switch it off to bring the page back.
+
+The **Work** page is shared by every view of your work, so anything you add to it shows on UI/UX, Graphic design and each Made with page too.
+
 ### Case studies
 
 Open one from **Pages**. You can edit the words of each block, change their order, and add **Text** and **Quote** blocks. Pictures, the title, the cover and the credits stay in the admin.
