@@ -27,6 +27,14 @@ History:
   - full summaries, two-line titles, and rows that never strand one item
   - overlays, the brand-book viewer and the prototype phone fit short and narrow windows
   - sharper images, and screenshot covers cropped from the bottom
+- **v2.4 (November 2026), "UI/UX first":** the site works as a UI/UX designer's portfolio, for employers first and freelance clients second:
+  - UI/UX leads everywhere disciplines are listed (`DISCIPLINES` order; `sortDisciplines()` for lists read from a project file)
+  - Selected work comes before What I do on the home page
+  - a quiet "Made with" filter by software, one page per tool in use; Photography left the filter row and is its own section
+  - case studies large, single logos as small tiles below them (`compact`, `workView`)
+  - a challenge and outcome near the top of a case study, and a "Live prototype" note on cards (`hasPrototype`)
+  - About gains How I work, Tools and Experience, and a résumé PDF linked from About and Contact
+  - UI/UX covers show the interface, not the logo: opaque 2400×1800 art, `fit: cover`, key content between about 28% and 72% of the height (the deck crops hard at 48–64em, the hero keeps the top 75%). A `contain` cover shows an interface too small, because the panel padding is tuned for logos.
 
 Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep it in step with the admin).
 
@@ -36,12 +44,12 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 - `npm run build` — static build to `dist/`. Zod validates all content, and the build fails on schema violations, reserved or colliding slugs, or a missing image.
 - `npm run preview` — serve `dist/` at `http://localhost:4321`
 - `npm run check` — `astro check` (expect 0 errors, 0 warnings)
-- `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, ~670 tests, most of them project-tint accents)
+- `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, ~800 tests, most of them project-tint accents)
 - `npm run budgets` — per-page gzipped JS / island / CSS / font-preload budgets on `dist/` (`scripts/check-budgets.mjs`). CI runs it between build and e2e. Raise a budget only with a reason, written next to the number.
-  - Project pages are closest to the limit (about 15.1 of 16 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
+  - Project pages are closest to the limit (about 15.2 of 16 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
   - JS on load includes inline scripts (Astro inlines small ones, and its ~2 KB island bootstrap on island pages). Keep comments out of `is:inline` scripts: they ship as written.
-- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~180 tests, `retries: 1`). **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
-- `node scripts/capture-screens.mjs <base-url> docs/reference/screens/v2` — full-page reference screenshots (10 pages × 1440/768/390).
+- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~205 tests, `retries: 1`). **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
+- `node scripts/capture-screens.mjs <base-url> docs/reference/screens/v2` — full-page reference screenshots (11 pages × 1440/768/390).
 
 ## Architecture
 
@@ -49,11 +57,12 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - `index.astro`: the home story, in `components/home/`:
     1. the hero: the typed tagline plus `WorkReel`, a drifting row of work the rest of the page doesn't show yet (`reelPicks`)
     2. a `LitStatement` manifesto
-    3. `DisciplineIndex` (what I do)
-    4. `StoryDeck` (selected work)
+    3. `StoryDeck` (selected work)
+    4. `DisciplineIndex` (what I do)
     5. the `PhotoStrip` collage
     6. the about teaser
-  - `projects/index.astro`, `graphic-design.astro`, `uiux.astro` and `logo-design.astro` are thin wrappers around `components/work/WorkIndex.astro`. `logo-design` is an **alias page** with `rel=canonical` to graphic-design. It is deliberately not a redirect, because browsers cache 301s and a reverse redirect would loop.
+  - `projects/index.astro`, `graphic-design.astro`, `uiux.astro` and `logo-design.astro` are thin wrappers around `components/work/WorkIndex.astro`. Every Work view shows `WorkGrid` (large cards), then `WorkTiles` for `compact` projects; `workView()` in `project-order.ts` makes the split and folds everything into large cards when tiles wouldn't read as a group. `logo-design` is an **alias page** with `rel=canonical` to graphic-design. It is deliberately not a redirect, because browsers cache 301s and a reverse redirect would loop.
+  - `projects/tools/[tool].astro`: a "Made with" page for each tool at least one published project uses (`toolCounts`), so a filter never leads to an empty page. They reuse `WorkIndex` with a `tool` prop and describe themselves from their projects, so they need no copy. `/projects/tools/` itself redirects to Work.
   - `projects/[slug].astro`: one page per **published** project:
     - an `article.project` carrying the project theme
     - a reading-progress line
@@ -142,7 +151,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - **Page transitions** are native cross-document View Transitions (`@view-transition`): a fade-through for the page. Names must be unique per page:
     - `work-<id>` (card media ↔ hero, via `--vt`)
     - `work-title-<id>` (`.work-title` with `--vt-title`)
-    - `chip-<key>` and `filter-indicator` (the sliding pill)
+    - `chip-<key>` and `filter-indicator` (the sliding pill, across both filter rows)
     - `about-portrait`
     - `site-header`
 
@@ -173,13 +182,14 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - Var `ALLOWED_DOMAINS=peachless.design`. Secrets `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` (GitHub OAuth app "peachless. admin") are set in the Cloudflare dashboard.
   - Access, secret rotation and redeploy steps are in `docs/EDITING.md`.
 - **Contact form:** the Web3Forms endpoint and `access_key` (public by design) live in `src/content/site/form.yaml`, read-only in the CMS ("Contact form — developer"). The `form` schema fails the build if a Web3Forms endpoint has no `access_key`.
+- **Résumé:** `site.resume` is a CMS `file` field with its own `media_folder: /public/files`, so it stays out of Astro's image pipeline; `/files/*` is `noindex`. Its `pattern` must only test the extension: Sveltia checks the uploaded file's original name, so a pattern on the stored path would pass CI and refuse every upload. The repository is public, so a committed PDF stays in history.
 - **Hidden vs. featured:** `hidden: true` removes a project or photo from every list, the sitemap and next-links, and gives it no page. `featured` puts it on the home page; if none are featured, the first three are shown.
 - **Migration:** `scripts/migrate-v2.mjs` (with `migrate-v2.data.mjs` and `migrate-v2-assets/`) built the v2 content from the v1 content. It is a dry run by default (`--write`, `--prune`). It is history after launch; don't run it against v2 content.
 
 ## Deployment
 
 - **Cloudflare Pages**, git-integrated, project `peachless`. Push to `main` → CF builds (`npm run build`, Node from `.node-version`) and deploys to peachless.design. Every PR gets a preview at `https://<branch>.peachless.pages.dev` plus a "Cloudflare Pages" commit status.
-- **Build cache:** on in the Cloudflare dashboard (Settings → Build → Build cache, beta), not in this repo. It keeps `node_modules/.astro`, so a build reuses its optimised images: about 1.5 minutes instead of 6–9. Cloudflare purges it 7 days after its last read, so the first build after a quiet week runs at full length. If a deploy ever looks stale, use Clear Cache there first.
+- **Build cache:** on in the Cloudflare dashboard (Settings → Build → Build cache, beta), not in this repo. It keeps `node_modules/.astro`, so a build reuses its optimised images: about 1.5 minutes instead of 6–9. That folder also holds Astro's content store, which only clears when `src/content.config.ts` itself changes, so an unchanged entry keeps the old schema's data (a new `.default([])` would be `undefined`). The `// content-schema:` hash in that file ties the two together: `content-files.spec` prints the new value after a schema change. Cloudflare purges it 7 days after its last read, so the first build after a quiet week runs at full length. If a deploy ever looks stale, use Clear Cache there first.
 - **GitHub Actions (`ci.yml`) is the test gate only:** check → unit → build → budgets → e2e. It does not deploy. `concurrency` cancels superseded runs, because CMS saves push many small commits.
 - **Redirects:** `redirects.config.mjs` is the single source. It feeds the `astro.config.mjs` `redirects` (portable meta-refresh fallback), and `public/_redirects` mirrors it in both slash forms (CF-native 301s). `tests/unit/redirects.spec.ts` keeps them in sync and forbids redirecting `/projects/graphic-design`, `/projects/uiux` or `/projects/logo-design`.
 - `public/_headers` — immutable caching for `/_astro/*` plus security headers.

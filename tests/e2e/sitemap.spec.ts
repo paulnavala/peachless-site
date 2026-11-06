@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { hiddenProjects, publishedProjects } from './content';
+import { hiddenProjects, publishedProjects, toolRoutes } from './content';
 import { REDIRECTS } from '../../redirects.config.mjs';
 
 test('the sitemap lists every published page and nothing else', async ({ request }) => {
@@ -9,6 +9,7 @@ test('the sitemap lists every published page and nothing else', async ({ request
   for (const path of ['/', '/projects/', '/projects/graphic-design/', '/projects/uiux/', '/photography/', '/about/', '/contact/']) {
     expect(urls.has(path), path).toBe(true);
   }
+  for (const path of toolRoutes()) expect(urls.has(path), path).toBe(true);
   for (const p of publishedProjects()) expect(urls.has(`/projects/${p.id}/`), p.id).toBe(true);
   for (const p of hiddenProjects()) expect(urls.has(`/projects/${p.id}/`), p.id).toBe(false);
   expect(urls.has('/projects/logo-design/')).toBe(false);

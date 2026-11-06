@@ -11,6 +11,7 @@ cover:
   fit: contain
 accent: "#0071BC"
 featured: false
+compact: true
 hidden: false
 order: 6
 blocks:

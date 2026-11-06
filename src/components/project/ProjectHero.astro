@@ -4,7 +4,7 @@
 // story when there are enough of them, and the cover overlapping the band.
 import type { Project } from '../../lib/content';
 import type { Chapter } from '../../lib/chapters';
-import { DISCIPLINE_LABELS, TOOL_LABELS, disciplineList } from '../../lib/content-schema';
+import { DISCIPLINE_LABELS, TOOL_LABELS, disciplineList, sortDisciplines, sortTools } from '../../lib/content-schema';
 import ArrowLink from '../ui/ArrowLink.astro';
 import Media from '../ui/Media.astro';
 
@@ -14,14 +14,19 @@ interface Props {
   chapters?: Chapter[];
 }
 const { project, chapters = [] } = Astro.props;
-const { title, summary, disciplines, year, client, role, tools, cover } = project.data;
+const { title, summary, disciplines, year, client, role, challenge, outcome, tools, cover } = project.data;
+// For readers who skim: the case study in two lines.
+const brief = [
+  { term: 'The challenge', value: challenge },
+  { term: 'The outcome', value: outcome },
+].filter((b) => b.value);
 const credits = [
   { term: 'Year', value: year },
   { term: 'Context', value: client },
   { term: 'My role', value: role, wide: true },
   { term: disciplines.length > 1 ? 'Disciplines' : 'Discipline', value: disciplineList(disciplines) },
-  { term: 'Tools', value: tools.map((t) => TOOL_LABELS[t]).join(', ') },
 ].filter((c) => c.value);
+const toolLinks = sortTools(tools).map((t) => ({ href: `/projects/tools/${t}/`, label: TOOL_LABELS[t] }));
 const pad = (n: number) => String(n).padStart(2, '0');
 ---
 <header class="project-hero">
@@ -29,7 +34,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     <div class="project-hero__nav">
       <ArrowLink href="/projects/" direction="back">All work</ArrowLink>
       <ul class="cluster project-hero__tags" role="list" aria-label="Disciplines">
-        {disciplines.map((d) => <li><a class="tag project-hero__tag" href={`/projects/${d}/`}>{DISCIPLINE_LABELS[d]}</a></li>)}
+        {sortDisciplines(disciplines).map((d) => <li><a class="tag project-hero__tag" href={`/projects/${d}/`}>{DISCIPLINE_LABELS[d]}</a></li>)}
       </ul>
     </div>
     <h1
@@ -42,7 +47,19 @@ const pad = (n: number) => String(n).padStart(2, '0');
     <div class="project-hero__intro">
       <p class="lede project-hero__lede">{summary}</p>
       {
-        credits.length > 0 && (
+        brief.length > 0 && (
+          <dl class="project-brief">
+            {brief.map((b) => (
+              <div>
+                <dt>{b.term}</dt>
+                <dd>{b.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )
+      }
+      {
+        credits.length + toolLinks.length > 0 && (
           <dl class="project-credits">
             {credits.map((c) => (
               <div class:list={{ 'is-wide': c.wide }}>
@@ -50,6 +67,14 @@ const pad = (n: number) => String(n).padStart(2, '0');
                 <dd>{c.value}</dd>
               </div>
             ))}
+            {
+              toolLinks.length > 0 && (
+                <div>
+                  <dt>Tools</dt>
+                  <dd>{toolLinks.map((link, i) => <>{i > 0 && ', '}<a href={link.href}>{link.label}</a></>)}</dd>
+                </div>
+              )
+            }
           </dl>
         )
       }
@@ -152,13 +177,29 @@ const pad = (n: number) => String(n).padStart(2, '0');
     border-block: 1px solid rgb(var(--espresso-rgb) / 0.14);
   }
 
-  .project-credits dt {
+  .project-brief {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--space-s) var(--space-m);
+    margin: 0;
+  }
+
+  .project-credits dt,
+  .project-brief dt {
     font-size: var(--text-small);
     color: var(--color-text-muted);
   }
 
-  .project-credits dd {
+  .project-credits dd,
+  .project-brief dd {
     margin: var(--space-3xs) 0 0;
+  }
+
+  .project-brief dd {
+    text-wrap: pretty;
+  }
+
+  .project-credits dd {
     font-weight: var(--weight-medium);
   }
 
@@ -261,9 +302,17 @@ const pad = (n: number) => String(n).padStart(2, '0');
     .project-hero__intro {
       grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
       align-items: start;
-      gap: var(--space-xl);
+      gap: var(--space-m) var(--space-xl);
     }
 
+    /* The credits stay beside the lede; the brief runs under both. */
+    .project-credits {
+      grid-area: 1 / 2;
+    }
+
+    .project-brief {
+      grid-area: 2 / 1 / auto / -1;
+    }
   }
 
   @media (prefers-reduced-motion: no-preference) {

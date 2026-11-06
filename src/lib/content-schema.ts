@@ -9,20 +9,26 @@ import { z } from 'astro/zod';
 // Schemas with images take Astro's `image()` helper (tests pass a string stub).
 // They are generic over its return type so ImageMetadata survives inference.
 
-export const DISCIPLINES = ['graphic-design', 'uiux'] as const;
+// The order is the site's: UI/UX leads wherever disciplines are listed.
+export const DISCIPLINES = ['uiux', 'graphic-design'] as const;
 export type Discipline = (typeof DISCIPLINES)[number];
 export const DISCIPLINE_LABELS: Record<Discipline, string> = {
   'graphic-design': 'Graphic design',
   uiux: 'UI/UX',
 };
 
-/** Disciplines as a reader would say them: "Graphic design & UI/UX". */
+/** A project's disciplines in the site's order, whatever order its file lists them in. */
+export const sortDisciplines = (disciplines: readonly Discipline[]): Discipline[] =>
+  DISCIPLINES.filter((d) => disciplines.includes(d));
+
+/** Disciplines as a reader would say them: "UI/UX & Graphic design". */
 export function disciplineList(disciplines: readonly Discipline[]): string {
-  const labels = disciplines.map((d) => DISCIPLINE_LABELS[d]);
+  const labels = sortDisciplines(disciplines).map((d) => DISCIPLINE_LABELS[d]);
   return labels.length > 1 ? `${labels.slice(0, -1).join(', ')} & ${labels.at(-1)}` : (labels[0] ?? '');
 }
 
-export const TOOLS = ['photoshop', 'illustrator', 'indesign', 'canva', 'xd', 'figma', 'miro', 'lightroom'] as const;
+// The order is the "Made with" filter's: interface tools first.
+export const TOOLS = ['figma', 'xd', 'miro', 'illustrator', 'photoshop', 'indesign', 'canva', 'lightroom'] as const;
 export type Tool = (typeof TOOLS)[number];
 export const TOOL_LABELS: Record<Tool, string> = {
   photoshop: 'Photoshop',
@@ -34,6 +40,9 @@ export const TOOL_LABELS: Record<Tool, string> = {
   miro: 'Miro',
   lightroom: 'Lightroom',
 };
+
+/** A project's tools in the site's order, whatever order its file lists them in. */
+export const sortTools = (tools: readonly Tool[]): Tool[] => TOOLS.filter((t) => tools.includes(t));
 
 /** Token-named backgrounds for logos and other transparent artwork. `accent` is
  *  the project's own colour, softened (src/lib/project-theme.ts). */
@@ -55,12 +64,16 @@ export const RESERVED_PROJECT_IDS = [
   'all',
   'page',
   'projects',
+  'tools',
 ] as const;
 
 export const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const HEX_RE = /^#[0-9A-Fa-f]{6}$/;
 export const FIGMA_RE = /^https:\/\/(www\.)?figma\.com\/(proto|design|file|make|board)\//;
 export const LINK_RE = /^(\/|https:\/\/|mailto:)/;
+// Only the extension: on upload the CMS tests this against the file's own name,
+// so a pattern on the stored path would refuse every upload.
+export const PDF_RE = /\.[Pp][Dd][Ff]$/;
 
 const req = (max: number) => z.string().trim().min(1).max(max);
 const opt = (max: number) => z.string().trim().max(max).optional();
@@ -133,6 +146,8 @@ export const projectSchema = <T extends z.ZodType>(image: () => T) =>
     year: z.number().int().min(2000).max(2100).optional(),
     client: opt(80),
     role: opt(80),
+    challenge: opt(160),
+    outcome: opt(160),
     tools: z.array(z.enum(TOOLS)).default([]),
     cover: z.object({
       image: image(),
@@ -142,6 +157,7 @@ export const projectSchema = <T extends z.ZodType>(image: () => T) =>
     }),
     accent: z.string().regex(HEX_RE).optional(),
     featured: z.boolean().default(false),
+    compact: z.boolean().default(false),
     hidden: z.boolean().default(false),
     order: z.number().int().min(0).default(0),
     seo: z.object({ title: opt(60), description: opt(160), image: image().optional() }).optional(),
@@ -190,6 +206,7 @@ export const workSchema = z.object({
     uiux: disciplineCopy,
     photography: disciplineCopy,
   }),
+  logos: section,
   seo,
 });
 
@@ -201,6 +218,8 @@ export const aboutSchema = <T extends z.ZodType>(image: () => T) =>
     portrait: image(),
     portraitAlt: req(200),
     closing: opt(200),
+    process: z.array(z.object({ title: req(60), body: req(200) })).max(6).default([]),
+    experience: z.array(z.object({ period: req(40), role: req(80), place: opt(80) })).default([]),
     seo,
   });
 
@@ -233,6 +252,7 @@ export const siteSchema = <T extends z.ZodType>(image: () => T) =>
   z.object({
     siteName: req(40),
     ownerName: opt(40),
+    jobTitle: opt(60),
     tagline: req(120),
     nav: z
       .array(z.object({ label: req(30), href: z.string().regex(LINK_RE), cta: z.boolean().default(false) }))
@@ -240,6 +260,7 @@ export const siteSchema = <T extends z.ZodType>(image: () => T) =>
       .max(6),
     emails: z.array(z.object({ label: req(30), address: z.email() })).min(1),
     socials: z.array(z.object({ label: req(30), url: z.url() })).default([]),
+    resume: z.string().regex(PDF_RE).optional(),
     cta: z.object({
       eyebrow: opt(60),
       heading: req(80),

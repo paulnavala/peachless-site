@@ -5,17 +5,19 @@ disciplines:
   - uiux
 year: 2025
 client: Concept project
+challenge: Give people a place to write down the moments when music moved them, and to read other people’s.
+outcome: A working app prototype built in Figma Make, with fifteen genres and every story in eight languages.
 tools:
   - figma
 cover:
-  image: logo.png
-  alt: "The Melody Memoirs logo: an open book with a musical note rising from its pages"
-  panel: accent
-  fit: contain
+  image: cover.webp
+  alt: Melody Memoirs in a browser window, its welcome page in light mode, beside a phone showing the same page in dark mode
+  panel: none
+  fit: cover
 accent: "#58433B"
 featured: true
 hidden: false
-order: 3
+order: 2
 blocks:
   - type: text
     heading: The idea
@@ -39,7 +41,21 @@ blocks:
       - **Fifteen genres**, from Baroque to the 21st century, give a way in when you don’t know what you’re looking for.
       - **Every story in eight languages**, translated on demand.
       - **Light and dark mode**, and a profile for your own stories and favourites.
+  - type: gallery
+    heading: The app
+    frame: browser
+    images:
+      - image: screen-languages.webp
+        alt: The welcome page with its language menu open, listing eight languages from English to Română
+        caption: Eight languages
+      - image: screen-genres.webp
+        alt: The form for sharing a story, with its list of fifteen genres open, from Baroque to 21st Century
+        caption: Fifteen genres
+      - image: screen-dark.webp
+        alt: The welcome page in dark mode
+        caption: Dark mode
   - type: prototype
     url: https://www.figma.com/make/BQtydWnM0aJYReMTqpOiaB/Melody-Memoirs--Community-?node-id=0-1&p=f&t=18eWXd6TlkRVcn16-0&fullscreen=1
     label: Try the Melody Memoirs prototype
-    frame: none
+    poster: screen-welcome.webp
+    frame: browser

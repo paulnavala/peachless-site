@@ -63,7 +63,7 @@ collections:
       editable: [create]
       hint: The project’s web address, e.g. peachless.design/projects/fish-seafood. It can’t be changed later.
       pattern:
-        - '^(?!(graphic-design|uiux|ui-ux|logo-design|guidelines|index|all|page|projects)$)[a-z0-9]+(?:-[a-z0-9]+)*$'
+        - '^(?!(graphic-design|uiux|ui-ux|logo-design|guidelines|index|all|page|projects|tools)$)[a-z0-9]+(?:-[a-z0-9]+)*$'
         - Use lowercase letters, numbers and dashes — and not the name of a site page.
     summary: "{{title}}{{hidden | ternary(' · hidden', '')}}{{featured | ternary(' · on the home page', '')}}"
     thumbnail: cover.image
@@ -76,8 +76,8 @@ collections:
       filters:
         - { name: featured, label: On the home page, field: featured, eq: true }
         - { name: hidden, label: Hidden from the site, field: hidden, eq: true }
-        - { name: graphic-design, label: Graphic design, field: disciplines, pattern: graphic-design }
         - { name: uiux, label: UI/UX, field: disciplines, pattern: uiux }
+        - { name: graphic-design, label: Graphic design, field: disciplines, pattern: graphic-design }
     fields:
       - name: title
         label: Project name
@@ -95,8 +95,8 @@ collections:
         multiple: true
         min: 1
         options:
-          - { label: Graphic design, value: graphic-design }
           - { label: UI/UX, value: uiux }
+          - { label: Graphic design, value: graphic-design }
         hint: Decides which Work filters show the project. Choose both for a logo with an app.
       - name: year
         label: Year
@@ -117,19 +117,32 @@ collections:
         maxlength: 80
         required: false
         hint: e.g. “Brand identity and UI design”.
+      - name: challenge
+        label: The challenge
+        widget: text
+        maxlength: 160
+        required: false
+        hint: One sentence near the top of the page, for readers who skim. What needed solving?
+      - name: outcome
+        label: The outcome
+        widget: text
+        maxlength: 160
+        required: false
+        hint: One sentence on what came of it, such as a test result or what was delivered.
       - name: tools
         label: Tools used
         widget: select
         multiple: true
         required: false
+        hint: Shown on the project page. Each one also adds the project to that tool’s “Made with” filter on the Work page.
         options:
-          - { label: Photoshop, value: photoshop }
+          - { label: Figma, value: figma }
+          - { label: Adobe XD, value: xd }
+          - { label: Miro, value: miro }
           - { label: Illustrator, value: illustrator }
+          - { label: Photoshop, value: photoshop }
           - { label: InDesign, value: indesign }
           - { label: Canva, value: canva }
-          - { label: Adobe XD, value: xd }
-          - { label: Figma, value: figma }
-          - { label: Miro, value: miro }
           - { label: Lightroom, value: lightroom }
       - name: cover
         label: Cover image
@@ -181,6 +194,12 @@ collections:
         default: false
         required: false
         hint: Featured projects appear under “Selected work” on the home page.
+      - name: compact
+        label: Show as a small tile
+        widget: boolean
+        default: false
+        required: false
+        hint: For a single logo. It moves to the small tiles below the case studies on the Work page, and keeps its own page.
       - name: hidden
         label: Hide from site
         widget: boolean
@@ -560,6 +579,13 @@ singletons:
             fields:
               - { name: title, label: Name, widget: string, maxlength: 40 }
               - { name: description, label: Description, widget: text, maxlength: 200 }
+      - name: logos
+        label: Small tiles section
+        widget: object
+        hint: The section below the case studies, for projects switched to “Show as a small tile”.
+        fields:
+          - { name: heading, label: Heading, widget: string, maxlength: 120 }
+          - { name: intro, label: Introduction, widget: text, maxlength: 400, required: false }
       - name: seo
         label: Search & sharing
         widget: object
@@ -588,6 +614,30 @@ singletons:
         hint: A tall photo, shown at 4:5 on the About page and the home page. At least 1200 px wide.
       - { name: portraitAlt, label: Describe the portrait, widget: string, maxlength: 200 }
       - { name: closing, label: Closing line, widget: string, maxlength: 200, required: false }
+      - name: process
+        label: How I work
+        label_singular: step
+        widget: list
+        required: false
+        collapsed: auto
+        max: 6
+        summary: '{{title}}'
+        hint: The steps of your process, in order. The section appears once you add a step.
+        fields:
+          - { name: title, label: Step, widget: string, maxlength: 60, hint: 'e.g. Research.' }
+          - { name: body, label: What happens, widget: text, maxlength: 200 }
+      - name: experience
+        label: Experience
+        label_singular: entry
+        widget: list
+        required: false
+        collapsed: auto
+        summary: '{{role}}'
+        hint: Jobs, studies or courses, newest first. The section appears once you add an entry.
+        fields:
+          - { name: period, label: When, widget: string, maxlength: 40, hint: 'e.g. 2023–2025.' }
+          - { name: role, label: Role or course, widget: string, maxlength: 80 }
+          - { name: place, label: Where, widget: string, maxlength: 80, required: false }
       - name: seo
         label: Search & sharing
         widget: object
@@ -676,6 +726,7 @@ singletons:
         maxlength: 40
         hint: 'The header, menu and footer draw the logo for "peachless."; any other name appears there as plain text.'
       - { name: ownerName, label: Your name, widget: string, maxlength: 40, required: false, hint: Used to introduce you. Leave empty to stay “peachless.” only. }
+      - { name: jobTitle, label: Your job title, widget: string, maxlength: 60, required: false, hint: "e.g. “UI/UX designer”. Shown after your name in the browser tab on the home page and in Google." }
       - { name: tagline, label: Tagline, widget: string, maxlength: 120, hint: Shown in the footer and the mobile menu. }
       - name: nav
         label: Menu
@@ -714,6 +765,16 @@ singletons:
         fields:
           - { name: label, label: Name, widget: string, maxlength: 30, hint: 'e.g. Instagram, Behance, LinkedIn.' }
           - { name: url, label: Link, widget: string, type: url, pattern: ['^https:\/\/', 'Start with https://'] }
+      - name: resume
+        label: Résumé (PDF)
+        widget: file
+        required: false
+        choose_url: false
+        accept: application/pdf
+        media_folder: /public/files
+        public_folder: /files
+        pattern: ['\.[Pp][Dd][Ff]$', 'Upload a PDF']
+        hint: Linked from the About and Contact pages. Anyone can download it, and old versions stay in the site’s history for good, so leave out your phone number, home address and date of birth.
       - name: cta
         label: Footer invitation
         widget: object

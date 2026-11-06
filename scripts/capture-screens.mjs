@@ -20,6 +20,7 @@ const pages = [
   ['work', '/projects/'],
   ['work-graphic-design', '/projects/graphic-design/'],
   ['work-uiux', '/projects/uiux/'],
+  ['work-tool-figma', '/projects/tools/figma/'],
   ['project-peachless', '/projects/peachless/'], // logo, palette and brand-book blocks
   ['project-ton', '/projects/ton/'], // prototype block
   ['photography', '/photography/'],

@@ -34,7 +34,7 @@ const KB = 1024;
 //   contents line, after removing ~0.1 KB of dead CSS.
 const BUDGETS = [
   { name: 'Home', match: /^\/$/, js: 4, islands: 0, css: 14 },
-  { name: 'Work', match: /^\/projects\/(graphic-design\/|uiux\/|logo-design\/)?$/, js: 4, islands: 0, css: 14 },
+  { name: 'Work', match: /^\/projects\/(graphic-design\/|uiux\/|logo-design\/|tools\/[^/]+\/)?$/, js: 4, islands: 0, css: 14 },
   { name: 'Project', match: /^\/projects\/[^/]+\/$/, js: 6, islands: 40, css: 16 },
   { name: 'Photography', match: /^\/photography\/$/, js: 5, islands: 40, css: 14 },
   { name: 'Contact', match: /^\/contact\/$/, js: 6, islands: 40, css: 14 },

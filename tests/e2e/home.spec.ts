@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 import { publishedPhotos, publishedProjects, readYaml } from './content';
-import { featured, reelPicks } from '../../src/lib/project-order';
+import { featured, hasPrototype, reelPicks } from '../../src/lib/project-order';
 
 const home = readYaml('pages', 'home.yaml');
 const work = readYaml('pages', 'work.yaml');
@@ -27,15 +27,18 @@ test.describe('home page', () => {
     expect(visual.replace(/\s+/g, ' ').trim()).toBe(`${home.tagline.line1} ${home.tagline.line2}`);
   });
 
-  test('tells the story in order: manifesto, disciplines, selected work, photography, about', async ({ page }) => {
+  test('tells the story in order: manifesto, selected work, disciplines, photography', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#manifesto-title')).toHaveText(home.manifesto.heading);
 
+    const order = await page.locator('main section[aria-labelledby]').evaluateAll((sections) => sections.map((s) => s.getAttribute('aria-labelledby')));
+    expect(order.slice(0, 3)).toEqual(['manifesto-title', 'featured-title', 'services-title']);
+
     const disciplines = page.locator('.disciplines .card__link');
     await expect(disciplines).toHaveCount(3);
-    await expect(disciplines.nth(0)).toHaveAttribute('href', '/projects/graphic-design/');
-    await expect(disciplines.nth(0)).toHaveText(work.disciplines.graphicDesign.title);
-    await expect(disciplines.nth(1)).toHaveAttribute('href', '/projects/uiux/');
+    await expect(disciplines.nth(0)).toHaveAttribute('href', '/projects/uiux/');
+    await expect(disciplines.nth(0)).toHaveText(work.disciplines.uiux.title);
+    await expect(disciplines.nth(1)).toHaveAttribute('href', '/projects/graphic-design/');
     await expect(disciplines.nth(2)).toHaveAttribute('href', '/photography/');
 
     const expected = featured(publishedProjects());
@@ -43,6 +46,7 @@ test.describe('home page', () => {
     await expect(cards).toHaveCount(expected.length);
     for (const [i, p] of expected.entries()) {
       await expect(cards.nth(i).locator('a.card__link')).toHaveAttribute('href', `/projects/${p.id}/`);
+      await expect(cards.nth(i).locator('.deck-card__meta').getByText('Live prototype'), p.id).toHaveCount(hasPrototype(p) ? 1 : 0);
     }
 
     const strip = page.locator('.photo-strip__link');

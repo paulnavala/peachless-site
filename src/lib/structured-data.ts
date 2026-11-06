@@ -1,5 +1,5 @@
 import type { CollectionEntry } from 'astro:content';
-import { DISCIPLINE_LABELS } from './content-schema';
+import { DISCIPLINE_LABELS, sortDisciplines } from './content-schema';
 
 /**
  * schema.org JSON-LD, built from content so it never drifts from what the page
@@ -34,6 +34,7 @@ export function personLd(site: Site, origin: URL, image?: string): JsonLdNode {
     name: site.ownerName,
     url: abs('/about/', origin),
   };
+  if (site.jobTitle) person.jobTitle = site.jobTitle;
   if (image) person.image = abs(image, origin);
   if (site.socials?.length) person.sameAs = site.socials.map((social) => social.url);
   return person;
@@ -49,7 +50,7 @@ export function projectLd(project: CollectionEntry<'projects'>, site: Site, orig
     name: title,
     description: summary,
     url,
-    genre: disciplines.map((discipline) => DISCIPLINE_LABELS[discipline]),
+    genre: sortDisciplines(disciplines).map((discipline) => DISCIPLINE_LABELS[discipline]),
     creator: { '@type': 'Person', '@id': personId(origin), name: site.ownerName },
   };
   if (year) work.dateCreated = String(year);

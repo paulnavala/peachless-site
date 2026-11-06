@@ -7,7 +7,7 @@ describe('disciplineList', () => {
   });
 
   it('joins two with an ampersand, the way they are said', () => {
-    expect(disciplineList(['graphic-design', 'uiux'])).toBe('Graphic design & UI/UX');
+    expect(disciplineList(['graphic-design', 'uiux'])).toBe('UI/UX & Graphic design');
   });
 
   it('is empty for none', () => {

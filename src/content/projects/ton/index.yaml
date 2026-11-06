@@ -6,18 +6,20 @@ disciplines:
 year: 2025
 client: Concept project
 role: "Sole designer: research, UX/UI, prototype and testing"
+challenge: Music students only learn that a practice room is taken by walking to it.
+outcome: In a small first-contact test with no walkthrough, people booked a room in about two minutes.
 tools:
   - figma
   - miro
 cover:
-  image: logo.png
-  alt: "The TON logo: a wordmark with a musical note rising from the O"
-  panel: accent
-  fit: contain
+  image: cover.webp
+  alt: "Three phones showing the TON app: booking a piano room, rooms recommended with their live availability, and upcoming practice sessions"
+  panel: none
+  fit: cover
 accent: "#909CA8"
 featured: true
 hidden: false
-order: 2
+order: 1
 blocks:
   - type: text
     heading: The problem

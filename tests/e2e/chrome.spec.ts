@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { publishedProjects, site } from './content';
+import { publishedProjects, site, toolRoutes } from './content';
 
 const settings = site();
 
@@ -100,6 +100,7 @@ test.describe('site chrome', () => {
       '/projects/uiux/',
       '/projects/graphic-design/',
       '/projects/logo-design/',
+      ...toolRoutes(),
       ...publishedProjects().map((p) => `/projects/${p.id}/`),
     ]) {
       await page.goto(path);

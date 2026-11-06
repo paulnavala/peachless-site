@@ -14,6 +14,11 @@ import {
   workSchema,
 } from './lib/content-schema';
 
+// Astro's content cache only clears when this file changes, so an entry whose
+// own file didn't change would keep the old schema's data, here and in the
+// Cloudflare build cache. This line changes with the schema (content-files.spec).
+// content-schema: 2764b6b2b751
+
 /**
  * Folder-per-entry collections: `projects/<id>/index.yaml` with its images
  * beside it. The folder name is the id and the page URL, so it is validated

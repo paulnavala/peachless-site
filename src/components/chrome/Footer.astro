@@ -31,7 +31,7 @@ const year = new Date().getFullYear();
     </section>
   )}
 
-  <div class="site-footer__main container">
+  <div class="site-footer__main container" data-columns={socials.length > 0 ? 3 : 2}>
     <div class="site-footer__brand">
       <a class="site-footer__wordmark" href="/">
         <PeachMark class="site-footer__mark" />
@@ -169,6 +169,14 @@ const year = new Date().getFullYear();
 
     .site-footer__brand {
       grid-column: 1 / -1;
+    }
+  }
+
+  /* Three link columns share the row under the brand, as wide as they need. */
+  @container (40rem <= width < 64rem) {
+    .site-footer__main[data-columns='3'] {
+      grid-template-columns: repeat(3, auto);
+      justify-content: space-between;
     }
   }
 

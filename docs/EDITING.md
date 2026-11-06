@@ -25,8 +25,8 @@ The menu on the left:
 | **Projects** | Your portfolio. Each project has its own page and a card on the Work page. |
 | **Photos** | Your photography, with optional before/after comparisons. |
 | **Home page** | The headline, introduction and section titles on the home page. |
-| **Work page** | The Work page's title and introduction, and the text for each filter (Graphic design, UI/UX, Photography). |
-| **About page** | Your portrait, statement and story. |
+| **Work page** | The Work page's title and introduction, and the text for each kind of work (UI/UX, Graphic design, Photography). |
+| **About page** | Your portrait, statement and story, plus **How I work** and **Experience**. Each of those two sections appears once you add something to it. The list of tools builds itself from your projects. |
 | **Contact page** | The heading, introduction, contact-form texts and the fortunes in the fortune peach. |
 | **Photography page** | The heading and introduction of the photography page. |
 | **Site settings** | Site name, your name, tagline, menu, email addresses, social links and the "Let's create together" invitation in the footer. |
@@ -66,10 +66,12 @@ You can always check your change before anyone sees it.
 2. Fill in the basics:
    - **Project name**: shown on the card, at the top of the page and in Google.
    - **One-line summary**: one sentence: what it is and who it's for.
-   - **Type of work**: Graphic design, UI/UX, or both. This decides which Work filters show it.
-   - **Year**, **Client or context** (a client's name, or "Concept project", "University coursework"…), **My role**, **Tools used**: all optional, but they help tell the story.
+   - **Type of work**: UI/UX, Graphic design, or both. This decides which Work filters show it.
+   - **Year**, **Client or context** (a client's name, or "Concept project", "University coursework"…), **My role**: all optional, but they help tell the story. Employers look for your role.
+   - **The challenge** and **The outcome**: one sentence each, shown near the top of the project page for readers who skim. Say what needed solving and what came of it, such as a test result or what you delivered. Leave them empty for a simple logo.
+   - **Tools used**: tick everything you used. Each tool appears on the project page and adds the project to that tool's **Made with** filter on the Work page. A tool shows up in the filter as soon as one published project uses it, and disappears again when none do.
 3. **The address.** When you create a project you also choose its web address, e.g. `peachless.design/projects/fish-seafood`. Use lowercase letters, numbers and dashes. **It can't be changed later**, because people may link to it, so pick something short and lasting.
-4. **Cover image**: the picture on the Work page and at the top of the project page (see [Images](#6-images)).
+4. **Cover image**: the picture on the Work page and at the top of the project page (see [Images](#6-images)). For a UI/UX project, show the screens rather than the logo: it's the first thing an employer sees. Use an image about 2400 × 1800 px, and keep what matters in the middle, because the top and bottom are cropped in some places.
    - **Background colour** and **Fit**: for a logo with a transparent background, choose a background and **Show the whole image**. **Project colour** (a soft tint of the colour below) usually looks best; Linen, Paper, Blush, Clay and Espresso are there too. For a photo or screenshot, choose **None** and **Fill the card**.
 5. **Project colour**: pick the main colour of the logo (CERN's navy, Fish & Seafood's blue…) or type its code, like `#0071BC`. The site makes soft tints from it for the top of the project page, its card and the "Next project" band, so each project has its own atmosphere. Any colour is safe: the site always keeps the text readable. Leave it empty for the site's peach tones.
 6. **Story**: add the sections that tell the project (next chapter).
@@ -130,12 +132,13 @@ One sentence is plenty.
 
 ---
 
-## 7. Hide or feature
+## 7. Hide, feature or shrink
 
 | Switch | What it does |
 |---|---|
 | **Hide from site** | The project (or photo) disappears everywhere: no page, no card, not in Google. Use it for work in progress, or to retire something without deleting it. Switch it off to bring it back. |
 | **Feature on the home page** | Projects appear under "Selected work" on the home page; photos appear in the photography strip. With nothing featured, the first three projects and the first five photos are shown. Three projects and five photos look best. The row of work at the top of the home page shows the rest: projects and photos that aren't featured. |
+| **Show as a small tile** | For a single logo. On the Work page the project moves to the small tiles under the case studies, and it keeps its own page. Switch it off once it has grown into a full story. A lone tile joins the large cards, so tiles always come in twos or more. |
 
 **Prefer hiding to deleting.** A deleted project's address stops working, and anyone who saved or shared the link lands on the "page not found" page.
 
@@ -156,8 +159,8 @@ Change the order with **Reorder Entries** on the Photos list.
 ## 9. Pages and settings
 
 - **Home page**: the headline (two lines; the second is set in the accent colour), the introduction, and the titles and introductions of each home section.
-- **Work page**: the page title and introduction, and the title and description of each filter.
-- **About page**: portrait (a tall photo, shown at 4:5, at least 1200 px wide), statement, your story, and the closing line. The portrait also appears on the home page.
+- **Work page**: the page title and introduction, the title and description of each filter, and the heading of the small tiles section.
+- **About page**: portrait (a tall photo, shown at 4:5, at least 1200 px wide), statement, your story, **How I work**, **Experience** and the closing line. The portrait also appears on the home page. The list of tools builds itself from your projects.
 - **Contact page**: heading, introduction, the contact form's texts and the fortunes (at least three).
 - **Photography page**: heading and introduction.
 - **Site settings**:
@@ -165,6 +168,8 @@ Change the order with **Reorder Entries** on the Photos list.
   - **Menu**: links start with `/` for a page on this site (e.g. `/projects/`) or `https://` for another site. **Show as a button** makes an item a pill, like Contact.
   - **Email addresses**: the first one is also offered when the contact form can't send.
   - **Social links**: Instagram, Behance, LinkedIn… They appear on the Contact page and in the footer.
+  - **Your job title**: shown after your name in the browser tab on the home page and in Google.
+  - **Résumé (PDF)**: one PDF, offered as a download on the About and Contact pages. To update it, upload the new file in the same place. **Before you upload:** anyone can download this file, and because the site's history is public, an old version can't be fully erased later. Leave out your phone number, home address and date of birth.
   - **Footer invitation**: the "Let's create together." block at the bottom of every page.
   - **Search & sharing**: the default description for Google and the default image when the site is shared.
 
@@ -173,7 +178,7 @@ Change the order with **Reorder Entries** on the Photos list.
 ## 10. Please don't
 
 - **Don't use "Save and Publish" for big changes.** Preview them first.
-- **Don't delete projects.** Hide them instead (see [Hide or feature](#7-hide-or-feature)).
+- **Don't delete projects.** Hide them instead (see [Hide, feature or shrink](#7-hide-feature-or-shrink)).
 - **Don't skip image descriptions.** They're required for a reason: they make the site usable for everyone.
 - **Don't upload text as pictures** where people need to read it. Write it in a Text section.
 - **Don't link to pages that don't exist.** If a menu or button link is wrong, visitors hit "page not found".

@@ -1,5 +1,6 @@
 siteName: peachless.
 ownerName: Patricia
+jobTitle: UI/UX designer
 tagline: Every pixel tells a story. Let the world know yours.
 nav:
   - label: Work
@@ -21,7 +22,7 @@ emails:
     address: i.am.peachless@gmail.com
 socials: []
 cta:
-  eyebrow: Have a project in mind?
+  eyebrow: Hiring, or have a project in mind?
   heading: Let’s create together.
   buttonLabel: Start a conversation
   buttonLink: /contact/

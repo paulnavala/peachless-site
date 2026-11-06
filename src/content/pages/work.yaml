@@ -1,6 +1,6 @@
 eyebrow: Work
 heading: Selected work
-intro: Brand identities, interfaces and the stories behind them.
+intro: Interfaces, identities and the stories behind them.
 disciplines:
   graphicDesign:
     title: Graphic design
@@ -11,5 +11,7 @@ disciplines:
   photography:
     title: Photography
     description: Light, texture and careful retouching — before and after.
+logos:
+  heading: Logos
 seo:
-  description: Selected brand identity, UI/UX and photography work by Patricia at peachless.
+  description: Selected UI/UX, brand identity and photography work by Patricia at peachless.

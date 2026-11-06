@@ -1,9 +1,9 @@
 eyebrow: Contact
 heading: Let’s create together.
-lede: Have a project in mind? Let’s bring your vision to life — write to me directly or send a message below.
+lede: Hiring a UI/UX designer, or have a project in mind? Write to me directly or send a message below.
 form:
   title: Send a message
-  subtitle: Tell me a little about your project and I’ll get back to you.
+  subtitle: Tell me a little about your team or project and I’ll get back to you.
   submitLabel: Send message
   successMessage: Message sent — thank you!
 fortune:
@@ -23,4 +23,4 @@ fortune:
     - Opportunities don't happen. You create them.
     - Everything you've ever wanted is on the other side of fear.
 seo:
-  description: Get in touch with Patricia at peachless. — new projects, collaborations or just to say hello.
+  description: Get in touch with Patricia at peachless. — roles, new projects, collaborations or just to say hello.
