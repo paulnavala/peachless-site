@@ -13,16 +13,25 @@ import type { SectionType } from './content-schema';
 export const PAGE_IDS = ['home', 'about', 'contact', 'photography', 'work'] as const;
 export type BuiltInPage = (typeof PAGE_IDS)[number];
 
-export type FieldKind = 'text' | 'area' | 'markdown' | 'inline-markdown' | 'lit' | 'tagline' | 'toggle';
+export type FieldKind = 'text' | 'area' | 'markdown' | 'inline-markdown' | 'lit' | 'link' | 'toggle' | 'list';
 
 export interface FieldDef {
-  /** Dotted path into the section (`primary.label`, `process.0.title`). */
+  /** Dotted path into the section (`primary.label`). */
   key: string;
   label: string;
   kind: FieldKind;
   hint?: string;
-  /** Only shown in the inspector, because the canvas can't show it live. */
+  /** Edited in the inspector only: nothing on the canvas shows it as text. */
   inspectorOnly?: boolean;
+  /** Only on the page when something else is: a heading needs its list, a résumé
+   *  button needs a résumé. So finding no markup for it isn't a problem. */
+  soft?: boolean;
+  /** A list's own fields. A list of plain strings has none. */
+  item?: FieldDef[];
+  /** The most a list can hold. */
+  max?: number;
+  /** The fewest a list can hold. */
+  min?: number;
 }
 
 export interface SectionDef {
@@ -47,6 +56,20 @@ export interface SectionDef {
 
 const text = (key: string, label: string, hint?: string): FieldDef => ({ key, label, kind: 'text', hint });
 const area = (key: string, label: string, hint?: string): FieldDef => ({ key, label, kind: 'area', hint });
+const link = (key: string, label = 'Goes to'): FieldDef => ({
+  key,
+  label,
+  kind: 'link',
+  inspectorOnly: true,
+  hint: 'A page on this site, such as /about/, or a full web address.',
+});
+const linkList: FieldDef = {
+  key: 'links',
+  label: 'Links',
+  kind: 'list',
+  max: 3,
+  item: [text('label', 'Text'), link('link')],
+};
 
 export const SECTIONS: Record<SectionType, SectionDef> = {
   hero: {
@@ -59,10 +82,13 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     required: true,
     fields: [
       text('eyebrow', 'Small line'),
-      { key: 'tagline', label: 'Tagline', kind: 'tagline', hint: 'Two lines; the second takes the accent colour.' },
+      { key: 'line1', label: 'Tagline, first line', kind: 'text', inspectorOnly: true },
+      { key: 'line2', label: 'Tagline, second line', kind: 'text', inspectorOnly: true, hint: 'This line takes the accent colour.' },
       area('lede', 'Introduction'),
       text('primary.label', 'First button'),
+      link('primary.link'),
       text('secondary.label', 'Second button'),
+      link('secondary.link'),
       { key: 'reel', label: 'Show a row of work under the hero', kind: 'toggle' },
     ],
   },
@@ -89,6 +115,7 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
       { key: 'heading', label: 'Statement', kind: 'lit' },
       { key: 'lead', label: 'Note beside it', kind: 'inline-markdown' },
       text('action.label', 'Link text'),
+      link('action.link'),
     ],
   },
   deck: {
@@ -97,7 +124,7 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     note: 'The projects marked “On home page”, as a stack of cards.',
     once: true,
     notOn: ['work'],
-    fields: [text('heading', 'Heading'), area('intro', 'Introduction'), text('action.label', 'Link text')],
+    fields: [text('heading', 'Heading'), area('intro', 'Introduction'), text('action.label', 'Link text'), link('action.link')],
   },
   disciplines: {
     name: 'What I do',
@@ -111,7 +138,7 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     group: 'Showing work',
     note: 'A small collage that leads to the gallery.',
     once: true,
-    fields: [text('heading', 'Heading'), area('intro', 'Introduction'), text('action.label', 'Link text')],
+    fields: [text('heading', 'Heading'), area('intro', 'Introduction'), text('action.label', 'Link text'), link('action.link')],
   },
   'about-teaser': {
     name: 'About teaser',
@@ -127,7 +154,7 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     group: 'Next steps',
     note: 'A band that sends people on to other pages.',
     nextStep: true,
-    fields: [text('eyebrow', 'Small line'), text('heading', 'Heading'), area('body', 'Text')],
+    fields: [text('eyebrow', 'Small line'), text('heading', 'Heading'), area('body', 'Text'), linkList],
   },
   profile: {
     name: 'About profile',
@@ -142,11 +169,18 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
       text('title', 'Page title'),
       area('statement', 'Statement'),
       { key: 'body', label: 'Your story', kind: 'markdown' },
-      text('resumeLabel', 'Résumé button'),
-      text('processHeading', 'Process heading'),
-      text('toolsHeading', 'Tools heading'),
-      text('toolsNote', 'Note under the tools'),
-      text('experienceHeading', 'Experience heading'),
+      { ...text('resumeLabel', 'Résumé button'), soft: true },
+      { ...text('processHeading', 'Process heading'), soft: true },
+      { key: 'process', label: 'Process steps', kind: 'list', max: 6, item: [text('title', 'Step'), area('body', 'What happens')] },
+      { ...text('toolsHeading', 'Tools heading'), soft: true },
+      { ...text('toolsNote', 'Note under the tools'), soft: true },
+      { ...text('experienceHeading', 'Experience heading'), soft: true },
+      {
+        key: 'experience',
+        label: 'Experience',
+        kind: 'list',
+        item: [text('period', 'When'), text('role', 'Role'), text('place', 'Where')],
+      },
       { key: 'closing', label: 'Closing line', kind: 'lit' },
     ],
   },
@@ -174,7 +208,11 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     note: 'The little game on the Contact page.',
     page: 'contact',
     once: true,
-    fields: [text('heading', 'Heading'), text('intro', 'Introduction')],
+    fields: [
+      text('heading', 'Heading'),
+      text('intro', 'Introduction'),
+      { key: 'fortunes', label: 'Fortunes', kind: 'list', min: 3, inspectorOnly: true },
+    ],
   },
   gallery: {
     name: 'Photo gallery',

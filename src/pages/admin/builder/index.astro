@@ -1,0 +1,31 @@
+---
+// The builder. Not a page of the site: it has no Base layout, because Base's
+// inline scripts wouldn't pass this page's Content-Security-Policy, and nothing
+// here is for visitors. The sign-in token lives on this origin, so this page
+// loads our own bundle and nothing else (see public/_headers).
+import { Font } from 'astro:assets';
+import '../../../styles/tokens.css';
+import '../../../styles/global.css';
+import '../../../builder/builder.css';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta name="color-scheme" content="dark" />
+    <title>Builder — peachless.</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <Font cssVariable="--font-inter" />
+    <Font cssVariable="--font-inter-ro" />
+    <Font cssVariable="--font-cormorant" />
+    <Font cssVariable="--font-cormorant-ro" />
+  </head>
+  <body>
+    <div id="builder" class="builder" data-surface="inverse"></div>
+    <script>
+      import '../../../builder/main';
+    </script>
+  </body>
+</html>
