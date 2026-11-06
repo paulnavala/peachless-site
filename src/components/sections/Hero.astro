@@ -1,18 +1,12 @@
 ---
-import Tagline from './Tagline.astro';
-import WorkReel, { type ReelTile } from './WorkReel.astro';
+import Tagline from '../home/Tagline.astro';
+import WorkReel from '../home/WorkReel.astro';
+import type { SectionProps } from '../../lib/pages';
 
-interface Props {
-  eyebrow?: string;
-  line1: string;
-  line2: string;
-  lede?: string;
-  primary: { label: string; link: string };
-  secondary?: { label: string; link: string };
-  /** Work the rest of the page doesn't show yet (see reelPicks). */
-  reel: ReelTile[];
-}
-const { eyebrow, line1, line2, lede, primary, secondary, reel } = Astro.props;
+type Props = SectionProps<'hero'>;
+const { section, data, last: _last, aboveFold: _aboveFold, class: className, ...rest } = Astro.props;
+const { eyebrow, line1, line2, lede, primary, secondary } = section;
+const { reel } = data;
 ---
 {/* The hero plays once per session: the headline types, the introduction and
     the reel arrive. Set before any of it is parsed, so a returning visitor
@@ -23,15 +17,15 @@ const { eyebrow, line1, line2, lede, primary, secondary, reel } = Astro.props;
     else sessionStorage.setItem('peachless:tagline', '1');
   } catch {}
 </script>
-<section class="home-hero" aria-label="Introduction">
+<section class:list={['home-hero', className]} aria-label="Introduction" {...rest}>
   <div class="container home-hero__inner">
-    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    {eyebrow && <p class="eyebrow" data-field="eyebrow">{eyebrow}</p>}
     <Tagline line1={line1} line2={line2} />
     <div class="home-hero__foot">
-      {lede && <p class="lede home-hero__lede">{lede}</p>}
+      {lede && <p class="lede home-hero__lede" data-field="lede">{lede}</p>}
       <div class="cluster home-hero__actions">
-        <a class="btn btn--lg" href={primary.link}>{primary.label}</a>
-        {secondary && <a class="btn btn--secondary btn--lg" href={secondary.link}>{secondary.label}</a>}
+        <a class="btn btn--lg" href={primary.link} data-field="primary.label">{primary.label}</a>
+        {secondary && <a class="btn btn--secondary btn--lg" href={secondary.link} data-field="secondary.label">{secondary.label}</a>}
       </div>
     </div>
   </div>

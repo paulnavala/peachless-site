@@ -12,8 +12,8 @@ const { heading, intro, fortunes } = Astro.props;
 ---
 <section class="fortune" aria-labelledby="fortune-title" data-fortunes={JSON.stringify(fortunes)}>
   <div class="fortune__head">
-    <h2 id="fortune-title" class="fortune__title">{heading}</h2>
-    {intro && <p class="fortune__intro">{intro}</p>}
+    <h2 id="fortune-title" class="fortune__title" data-field="heading">{heading}</h2>
+    {intro && <p class="fortune__intro" data-field="intro">{intro}</p>}
   </div>
 
   <div class="flw-stage flw-stage--unopened" id="flwStage">

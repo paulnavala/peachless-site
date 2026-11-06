@@ -12,8 +12,10 @@ import Icon from '../ui/Icon.astro';
 interface Props {
   projects: Project[];
   headingLevel?: 2 | 3;
+  /** On the first screen: the first card is the LCP, so it never animates in. */
+  aboveFold?: boolean;
 }
-const { projects, headingLevel = 3 } = Astro.props;
+const { projects, headingLevel = 3, aboveFold = false } = Astro.props;
 const Heading = `h${headingLevel}` as 'h2' | 'h3';
 const pad = (n: number) => String(n).padStart(2, '0');
 ---
@@ -29,11 +31,10 @@ const pad = (n: number) => String(n).padStart(2, '0');
                 class="deck-card__media card__media work-media"
                 data-panel={cover.panel}
                 data-cursor="View"
-                data-reveal
-                data-scroll="unveil"
+                {...(aboveFold && i === 0 ? {} : { 'data-reveal': '', 'data-scroll': 'unveil' })}
                 style={{ '--vt': `work-${project.id}` }}
               >
-                <Media image={cover.image} alt="" sizes="(min-width: 64em) 44rem, 100vw" fit={cover.fit} />
+                <Media image={cover.image} alt="" sizes="(min-width: 64em) 44rem, 100vw" fit={cover.fit} priority={aboveFold && i === 0} />
               </div>
               <div class="deck-card__body">
                 <p class="deck-card__count" aria-hidden="true">

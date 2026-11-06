@@ -1,26 +1,31 @@
 ---
-import type { ImageMetadata } from 'astro';
 import Media from '../ui/Media.astro';
 import ArrowLink from '../ui/ArrowLink.astro';
+import type { SectionProps } from '../../lib/pages';
 
-interface Props {
-  heading: string;
-  body: string;
-  linkLabel: string;
-  portrait: ImageMetadata;
-  portraitAlt: string;
-}
-const { heading, body, linkLabel, portrait, portraitAlt } = Astro.props;
+type Props = SectionProps<'about-teaser'>;
+const { section, data, last = false, aboveFold = false, class: className, ...rest } = Astro.props;
+const { id, heading, body, linkLabel } = section;
+const { portrait, portraitAlt } = data;
+const titleId = `${id}-title`;
 ---
-<section class="section about-teaser" aria-labelledby="about-teaser-title" data-next-step>
+<section
+  class:list={['section about-teaser', className]}
+  aria-labelledby={titleId}
+  data-next-step={last ? '' : undefined}
+  {...rest}
+>
   <div class="container about-teaser__inner">
-    <div class="about-teaser__portrait about-portrait" data-reveal data-scroll="unveil" style="--unveil-inset: 30% 0 0">
-      <Media image={portrait} alt={portraitAlt} sizes="(min-width: 64em) 28rem, 80vw" />
+    <div
+      class="about-teaser__portrait about-portrait"
+      {...(aboveFold ? {} : { 'data-reveal': '', 'data-scroll': 'unveil', style: '--unveil-inset: 30% 0 0' })}
+    >
+      <Media image={portrait} alt={portraitAlt} sizes="(min-width: 64em) 28rem, 80vw" priority={aboveFold} />
     </div>
-    <div class="about-teaser__text" data-reveal style="--reveal-index: 1">
-      <h2 id="about-teaser-title" class="about-teaser__title">{heading}</h2>
-      <p class="t-quote about-teaser__body">{body}</p>
-      <ArrowLink href="/about/">{linkLabel}</ArrowLink>
+    <div class="about-teaser__text" {...(aboveFold ? {} : { 'data-reveal': '', style: '--reveal-index: 1' })}>
+      <h2 id={titleId} class="about-teaser__title" data-field="heading">{heading}</h2>
+      <p class="t-quote about-teaser__body" data-field="body">{body}</p>
+      <ArrowLink href="/about/" data-field="linkLabel">{linkLabel}</ArrowLink>
     </div>
   </div>
 </section>

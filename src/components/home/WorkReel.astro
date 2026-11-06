@@ -5,22 +5,8 @@
 // pointer visitors can still open any tile. Tiles of projects shown nowhere
 // else on the page carry their view-transition name, so they morph into the
 // project's hero.
-import type { ImageMetadata } from 'astro';
+import type { ReelTile } from '../../lib/pages';
 import Media from '../ui/Media.astro';
-
-export interface ReelTile {
-  href: string;
-  label: string;
-  image: ImageMetadata;
-  fit: 'cover' | 'contain';
-  panel: string;
-  /** Tile shape, e.g. "4 / 3". */
-  ratio: string;
-  /** view-transition name (work-<id>) when the project appears nowhere else on the page. */
-  vt?: string;
-  /** Project colour atmosphere (src/lib/project-theme.ts). */
-  theme?: Record<string, string>;
-}
 
 interface Props {
   tiles: ReelTile[];

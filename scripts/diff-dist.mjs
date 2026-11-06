@@ -2,17 +2,20 @@
 // nothing a visitor receives. scripts/diff-layout.mjs covers what HTML can't see:
 // cascade order and computed styles.
 //
-//   node scripts/diff-dist.mjs <baseline-dist> [<dist>]
+//   node scripts/diff-dist.mjs <baseline-dist> [<dist>] [--rename old=new ...]
 //
 // Stripped: Astro's scope ids, the builder's data attributes, asset hashes,
 // stylesheets (a chunk's name and contents follow the module graph) and the
-// order of attributes on a tag (spreading ...rest can reorder them).
+// order of attributes on a tag (spreading ...rest can reorder them). --rename
+// reads a deliberately renamed class as the same class.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
-const [baselineDir, distDir = 'dist'] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const renames = args.flatMap((arg, i) => (args[i - 1] === '--rename' ? [arg.split('=')] : []));
+const [baselineDir, distDir = 'dist'] = args.filter((arg, i) => arg !== '--rename' && args[i - 1] !== '--rename');
 if (!baselineDir) {
-  console.error('usage: node scripts/diff-dist.mjs <baseline-dist> [<dist>]');
+  console.error('usage: node scripts/diff-dist.mjs <baseline-dist> [<dist>] [--rename old=new ...]');
   process.exit(2);
 }
 
@@ -46,8 +49,14 @@ const tidyTag = (tag) => {
   return `<${name}${kept.length ? ' ' + kept.join(' ') : ''}${selfClose}>`;
 };
 
+const applyRenames = (html) => renames.reduce((text, [from, to]) => text.replaceAll(from, to), html);
+
 export const normalise = (html) =>
-  unhash(html)
+  unhash(applyRenames(html))
+    .replace(/\r\n?/g, '\n')
+    // An island's props hold its scope id, and its uid is a hash of its props.
+    .replace(/,?&quot;data-astro-cid-[\w-]+&quot;:\[0,true\]/g, '')
+    .replace(/(<astro-island\b[^>]*?) uid="[^"]*"/g, '$1')
     .replace(/<style[^>]*>[\s\S]*?<\/style>/g, '')
     .replace(/<link[^>]*rel="?stylesheet"?[^>]*>/g, '')
     // A tag, quoted attribute values included, so a ">" in a value doesn't end it.
@@ -60,7 +69,13 @@ const firstDifference = (a, b) => {
   const right = b.split('\n');
   const at = left.findIndex((line, i) => line !== right[i]);
   const line = at === -1 ? left.length : at;
-  return { line, before: left[line] ?? '(end of file)', after: right[line] ?? '(end of file)', lines: Math.abs(left.length - right.length) };
+  const before = left[line] ?? '(end of file)';
+  const after = right[line] ?? '(end of file)';
+  // Lines can be very long (an island's props), so show where they part.
+  let column = 0;
+  while (column < before.length && before[column] === after[column]) column++;
+  const from = Math.max(0, column - 70);
+  return { line, before: before.slice(from, column + 150), after: after.slice(from, column + 150), lines: Math.abs(left.length - right.length) };
 };
 
 if (!existsSync(baselineDir) || !existsSync(distDir)) {
@@ -84,8 +99,8 @@ for (const file of added) console.log(`added    ${file}`);
 for (const file of removed) console.log(`removed  ${file}`);
 for (const { file, line, before, after, lines } of changed) {
   console.log(`changed  ${file} (first at line ${line}${lines ? `, ${lines} lines longer or shorter` : ''})`);
-  console.log(`  - ${before.slice(0, 220)}`);
-  console.log(`  + ${after.slice(0, 220)}`);
+  console.log(`  - ${before}`);
+  console.log(`  + ${after}`);
 }
 
 const total = baseline.length;

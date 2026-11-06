@@ -1,0 +1,18 @@
+---
+import PhotographyGallery from '../islands/PhotographyGallery.vue';
+import type { SectionProps } from '../../lib/pages';
+
+type Props = SectionProps<'gallery'>;
+const { section, data, last: _last, aboveFold: _aboveFold, class: className, ...rest } = Astro.props;
+---
+<section id={section.id} class:list={['section photo-gallery', className]} aria-label={section.label} {...rest}>
+  <div class="container">
+    <PhotographyGallery client:visible items={data.items} />
+  </div>
+</section>
+
+<style>
+  .photo-gallery {
+    padding-block-start: var(--space-l-2xl);
+  }
+</style>

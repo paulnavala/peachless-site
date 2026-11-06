@@ -1,15 +1,12 @@
 ---
 // The Work index and its pre-filtered views (a discipline, a tool) share this template.
 import Base from '../../layouts/Base.astro';
-import CtaBand from '../CtaBand.astro';
-import ArrowLink from '../ui/ArrowLink.astro';
-import SectionHeader from '../ui/SectionHeader.astro';
-import FilterChips, { type WorkFilter } from './FilterChips.astro';
-import WorkGrid from './WorkGrid.astro';
-import WorkTiles from './WorkTiles.astro';
-import { getPublishedProjects, getSingleton } from '../../lib/content';
-import { DISCIPLINES, TOOLS, TOOL_LABELS, type Discipline, type Tool } from '../../lib/content-schema';
-import { toolCounts, workView } from '../../lib/project-order';
+import PageBody from '../sections/PageBody.astro';
+import WorkHeader from '../sections/WorkHeader.astro';
+import WorkList from '../sections/WorkList.astro';
+import WorkLogos from '../sections/WorkLogos.astro';
+import type { Discipline, Tool } from '../../lib/content-schema';
+import { loadPage } from '../../lib/pages';
 
 interface Props {
   discipline?: Discipline;
@@ -18,126 +15,8 @@ interface Props {
   /** For alias URLs (/projects/logo-design/): point search engines at the real page. */
   canonical?: string;
 }
-const { discipline, tool, canonical } = Astro.props;
-
-const work = (await getSingleton('work')).data;
-const site = (await getSingleton('site')).data;
-const all = await getPublishedProjects();
-const inView = all.filter((p) => (!discipline || p.data.disciplines.includes(discipline)) && (!tool || p.data.tools.includes(tool)));
-// Shared projects open on their screens, so Graphic design leads with its own.
-const projects =
-  discipline === 'graphic-design'
-    ? [...inView.filter((p) => p.data.disciplines.length === 1), ...inView.filter((p) => p.data.disciplines.length > 1)]
-    : inView;
-const { large, compact } = workView(projects);
-
-const copy = {
-  'graphic-design': work.disciplines.graphicDesign,
-  uiux: work.disciplines.uiux,
-} as const;
-const current: WorkFilter = tool ?? discipline ?? 'all';
-const counts = {
-  all: all.length,
-  ...Object.fromEntries(DISCIPLINES.map((d) => [d, all.filter((p) => p.data.disciplines.includes(d)).length])),
-};
-
-/** A tool's page describes itself from its projects, so it needs no copy of its own. */
-const madeWith = (t: Tool) => {
-  const names = projects.slice(0, 3).map((p) => p.data.title);
-  const list = new Intl.ListFormat('en-GB').format(projects.length > 3 ? [...names, 'more'] : names);
-  return {
-    heading: `Made with ${TOOL_LABELS[t]}`,
-    lede: `Every project where I used ${TOOL_LABELS[t]}.`,
-    description: `Work made with ${TOOL_LABELS[t]} by ${site.ownerName ?? site.siteName}: ${list}.`,
-  };
-};
-const view = tool
-  ? madeWith(tool)
-  : discipline
-    ? { heading: copy[discipline].title, lede: copy[discipline].description, description: copy[discipline].description }
-    : { heading: work.heading, lede: work.intro, description: work.seo.description ?? work.intro ?? work.heading };
-const { heading, lede, description } = view;
-const title = tool || discipline ? heading : 'Work';
-
-// "Keep exploring": the other views, so the page never dead-ends. Three links
-// at most, so they sit on one line or stack.
-const others = [
-  ...(discipline || tool ? [{ href: '/projects/', label: 'All work' }] : []),
-  ...DISCIPLINES.filter((d) => d !== discipline).map((d) => ({ href: `/projects/${d}/`, label: copy[d].title })),
-  ...(tool ? [] : [{ href: '/photography/', label: work.disciplines.photography.title }]),
-];
+const { head, plan } = await loadPage('work', Astro.props);
 ---
-<Base title={title} description={description} canonical={canonical}>
-  <section class="section section--tight work-header">
-    <div class="container">
-      {work.eyebrow && <p class="eyebrow">{work.eyebrow}</p>}
-      <h1 class="work-header__title">{heading}</h1>
-      {lede && <p class="lede">{lede}</p>}
-      <div class="work-header__filters">
-        <FilterChips
-          current={current}
-          counts={counts}
-          labels={{
-            graphicDesign: work.disciplines.graphicDesign.title,
-            uiux: work.disciplines.uiux.title,
-          }}
-          tools={toolCounts(all, TOOLS)}
-        />
-      </div>
-    </div>
-  </section>
-
-  <section class="section work-list" aria-label={heading}>
-    <div class="container">
-      {
-        large.length ? (
-          <WorkGrid projects={large} priorityFirst />
-        ) : (
-          <p class="lede">New work is on its way.</p>
-        )
-      }
-    </div>
-  </section>
-
-  {
-    compact.length > 0 && (
-      <section class="section work-logos" aria-labelledby="work-logos-title">
-        <div class="container">
-          <SectionHeader id="work-logos-title" title={work.logos.heading} lede={work.logos.intro} />
-          <WorkTiles projects={compact} />
-        </div>
-      </section>
-    )
-  }
-
-  <CtaBand heading="There’s more to see." tone="paper">
-    {others.map((o) => <ArrowLink href={o.href}>{o.label}</ArrowLink>)}
-  </CtaBand>
+<Base {...head}>
+  <PageBody plan={plan} bound={{ 'work-header': WorkHeader, 'work-list': WorkList, 'work-logos': WorkLogos }} />
 </Base>
-
-<style>
-  .work-header {
-    padding-block-end: 0;
-  }
-
-  .work-header .container {
-    display: grid;
-    gap: var(--space-s);
-  }
-
-  .work-header__title {
-    font-size: var(--text-h1);
-  }
-
-  .work-header__filters {
-    margin-block-start: var(--space-s);
-  }
-
-  .work-list {
-    padding-block-start: var(--space-l-2xl);
-  }
-
-  .work-logos {
-    padding-block-start: 0;
-  }
-</style>

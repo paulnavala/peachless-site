@@ -3,7 +3,7 @@
 // cascade order without changing a single tag.
 //
 //   node scripts/diff-layout.mjs capture <base-url> <out-dir>
-//   node scripts/diff-layout.mjs compare <base-url> <baseline-dir>
+//   node scripts/diff-layout.mjs compare <base-url> <baseline-dir> [--rename old=new ...]
 //
 // The route list comes from dist/, so run it against a fresh `npm run preview`.
 // Each route is read at three widths under reduced motion (base styles are the
@@ -12,8 +12,10 @@ import { chromium } from '@playwright/test';
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
-const [mode, rawBase, dir] = process.argv.slice(2);
+const [mode, rawBase, dir, ...options] = process.argv.slice(2);
 const base = rawBase?.replace(/\/$/, '');
+const renames = options.flatMap((arg, i) => (options[i - 1] === '--rename' ? [arg.split('=')] : []));
+const renamed = (el) => renames.reduce((text, [from, to]) => text.replaceAll(from, to), el);
 if (!['capture', 'compare'].includes(mode) || !base || !dir) {
   console.error('usage: node scripts/diff-layout.mjs capture|compare <base-url> <dir>');
   process.exit(2);
@@ -144,7 +146,7 @@ for (const [name, rows] of shots) {
   for (let i = 0; i < Math.min(baseline.length, rows.length) && diffs.length < MAX_REPORTED; i++) {
     const a = baseline[i];
     const b = rows[i];
-    if (a.el !== b.el) {
+    if (renamed(a.el) !== renamed(b.el)) {
       diffs.push(`#${i} is ${b.el}, was ${a.el}`);
       break; // Everything after a structural change is noise.
     }

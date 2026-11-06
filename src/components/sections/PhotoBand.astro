@@ -1,0 +1,20 @@
+---
+import SectionHeader from '../ui/SectionHeader.astro';
+import PhotoStrip from '../home/PhotoStrip.astro';
+import type { SectionProps } from '../../lib/pages';
+
+type Props = SectionProps<'photo-strip'>;
+const { section, data, last: _last, aboveFold: _aboveFold, class: className, ...rest } = Astro.props;
+const { id, heading, intro, action } = section;
+const titleId = `${id}-title`;
+---
+{
+  data.photos.length > 0 && (
+    <section class:list={['section', className]} aria-labelledby={titleId} {...rest}>
+      <div class="container">
+        <SectionHeader id={titleId} title={heading} lede={intro} action={action && { href: action.link, label: action.label }} />
+        <PhotoStrip photos={data.photos} />
+      </div>
+    </section>
+  )
+}

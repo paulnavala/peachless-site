@@ -282,3 +282,124 @@ export const formSchema = z
     message: 'access_key is required when the endpoint is Web3Forms',
     path: ['hidden'],
   });
+
+// Pages as data. A section's design choices are token names, never raw values,
+// so the style guard's rules hold for anything an editor can build.
+
+/** A section's background: the site's surfaces. `default` is the page itself. */
+export const SURFACES = ['default', 'paper', 'blush', 'inverse'] as const;
+export type Surface = (typeof SURFACES)[number];
+
+/** Space above or below a section. `default` is whatever the section does by itself. */
+export const SPACES = ['default', 'tight', 'none'] as const;
+export type Space = (typeof SPACES)[number];
+
+export const SECTION_TYPES = [
+  'hero',
+  'page-header',
+  'manifesto',
+  'deck',
+  'disciplines',
+  'photo-strip',
+  'about-teaser',
+  'cta-band',
+  'profile',
+  'contact',
+  'fortune',
+  'gallery',
+  'work-header',
+  'work-list',
+  'work-logos',
+] as const;
+export type SectionType = (typeof SECTION_TYPES)[number];
+
+const sectionBase = {
+  id: z.string().regex(ID_RE),
+  hidden: z.boolean().default(false),
+  surface: z.enum(SURFACES).default('default'),
+  sheet: z.boolean().default(false),
+  spaceTop: z.enum(SPACES).default('default'),
+  spaceBottom: z.enum(SPACES).default('default'),
+};
+
+export const sectionSchema = z.discriminatedUnion('type', [
+  z.object({
+    ...sectionBase,
+    type: z.literal('hero'),
+    eyebrow: opt(80),
+    line1: req(80),
+    line2: req(80),
+    lede: opt(300),
+    primary: link,
+    secondary: link.optional(),
+    reel: z.boolean().default(true),
+  }),
+  z.object({ ...sectionBase, type: z.literal('page-header'), eyebrow: opt(40), heading: req(80), intro: opt(300) }),
+  z.object({
+    ...sectionBase,
+    type: z.literal('manifesto'),
+    heading: req(160),
+    lead: z.string().trim().min(1), // markdown
+    action: link,
+  }),
+  z.object({ ...sectionBase, type: z.literal('deck'), heading: req(120), intro: opt(400), action: link.optional() }),
+  z.object({ ...sectionBase, type: z.literal('disciplines'), heading: req(120), intro: opt(400) }),
+  z.object({ ...sectionBase, type: z.literal('photo-strip'), heading: req(120), intro: opt(400), action: link.optional() }),
+  z.object({ ...sectionBase, type: z.literal('about-teaser'), heading: req(80), body: req(400), linkLabel: req(40) }),
+  z.object({
+    ...sectionBase,
+    type: z.literal('cta-band'),
+    eyebrow: opt(60),
+    heading: req(80),
+    body: opt(200),
+    links: z.array(link).max(3).default([]),
+    // Work's views each link to the others, which no fixed list can do.
+    auto: z.boolean().default(false),
+  }),
+  z.object({
+    ...sectionBase,
+    type: z.literal('profile'),
+    eyebrow: opt(40),
+    title: req(80),
+    statement: req(300),
+    body: z.string().trim().min(1), // markdown
+    resumeLabel: req(40),
+    processHeading: req(60),
+    process: z.array(z.object({ title: req(60), body: req(200) })).max(6).default([]),
+    toolsHeading: req(60),
+    toolsNote: opt(120),
+    experienceHeading: req(60),
+    experience: z.array(z.object({ period: req(40), role: req(80), place: opt(80) })).default([]),
+    closing: opt(200),
+  }),
+  z.object({
+    ...sectionBase,
+    type: z.literal('contact'),
+    eyebrow: opt(40),
+    heading: req(80),
+    lede: opt(300),
+    resumeLabel: req(40),
+    form: z.object({ title: req(60), subtitle: opt(200), submitLabel: req(30), successMessage: req(120) }),
+  }),
+  z.object({
+    ...sectionBase,
+    type: z.literal('fortune'),
+    heading: req(80),
+    intro: opt(200),
+    fortunes: z.array(req(200)).min(3),
+  }),
+  z.object({ ...sectionBase, type: z.literal('gallery'), label: req(60) }),
+  z.object({ ...sectionBase, type: z.literal('work-header'), eyebrow: opt(40), heading: req(80), intro: opt(300) }),
+  z.object({ ...sectionBase, type: z.literal('work-list'), emptyText: req(120) }),
+  z.object({ ...sectionBase, type: z.literal('work-logos'), heading: req(120), intro: opt(400) }),
+]);
+export type Section = z.infer<typeof sectionSchema>;
+export type SectionOf<T extends SectionType> = Extract<Section, { type: T }>;
+
+export const pageSchema = z.object({
+  title: req(60),
+  hidden: z.boolean().default(false),
+  seo,
+  sections: z.array(sectionSchema).min(1),
+});
+export type PageDoc = z.infer<typeof pageSchema>;

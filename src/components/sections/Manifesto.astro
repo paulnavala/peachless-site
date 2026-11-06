@@ -1,0 +1,55 @@
+---
+import LitStatement from '../ui/LitStatement.astro';
+import ArrowLink from '../ui/ArrowLink.astro';
+import { renderInline } from '../../lib/markdown';
+import type { SectionProps } from '../../lib/pages';
+
+type Props = SectionProps<'manifesto'>;
+const { section, data: _data, last: _last, aboveFold: _aboveFold, class: className, ...rest } = Astro.props;
+const { id, heading, lead, action } = section;
+const titleId = `${id}-title`;
+---
+<section class:list={['section manifesto', className]} aria-labelledby={titleId} {...rest}>
+  <div class="container manifesto__inner">
+    <LitStatement id={titleId} class="manifesto__title" text={heading} data-field="heading" />
+    <div class="manifesto__aside" data-reveal style="--reveal-index: 1">
+      <p class="manifesto__lead" data-field="lead" set:html={renderInline(lead)} />
+      <ArrowLink href={action.link} data-field="action.label">{action.label}</ArrowLink>
+    </div>
+  </div>
+</section>
+
+<style>
+  .manifesto__inner {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .manifesto__title {
+    max-width: 15ch;
+    font-size: var(--text-statement);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+  }
+
+  .manifesto__aside {
+    display: grid;
+    gap: var(--space-s);
+    justify-items: start;
+    align-content: end;
+  }
+
+  .manifesto__lead {
+    font-size: var(--step-1);
+    color: var(--color-text-secondary);
+    max-width: 38ch;
+  }
+
+  @media (min-width: 64em) {
+    .manifesto__inner {
+      grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+      gap: var(--space-2xl);
+      align-items: end;
+    }
+  }
+</style>

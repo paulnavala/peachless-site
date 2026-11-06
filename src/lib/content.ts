@@ -5,8 +5,10 @@
  * (tests/unit/no-raw-collections.spec.ts enforces it).
  */
 import { getCollection, type CollectionEntry } from 'astro:content';
-import type { Discipline } from './content-schema';
+import { pageSchema, type Discipline, type PageDoc } from './content-schema';
+import { pagesFromSingletons } from './page-adapter';
 import { featured, nextProject, published } from './project-order';
+import type { BuiltInPage } from './section-catalogue';
 
 export type Project = CollectionEntry<'projects'>;
 export type Photo = CollectionEntry<'photos'>;
@@ -44,3 +46,33 @@ export async function getSingleton<C extends Singleton>(collection: C): Promise<
   return entries[0] as CollectionEntry<C>;
 }
 
+/** A page's document. Parsed like a collection entry, so defaults apply the same. */
+export async function getPageDoc(id: BuiltInPage): Promise<PageDoc> {
+  const [home, work, about, contact, photography] = await Promise.all([
+    getSingleton('home'),
+    getSingleton('work'),
+    getSingleton('about'),
+    getSingleton('contact'),
+    getSingleton('photographyPage'),
+  ]);
+  const pages = pagesFromSingletons({
+    home: home.data,
+    work: work.data,
+    about: about.data,
+    aboutBody: about.body ?? '',
+    contact: contact.data,
+    photography: photography.data,
+  });
+  return pageSchema.parse(pages[id]);
+}
+
+/** The owner's portrait: Home's teaser, About and the structured data all use it. */
+export async function getPortrait() {
+  const { portrait, portraitAlt } = (await getSingleton('about')).data;
+  return { image: portrait, alt: portraitAlt };
+}
+
+/** The name and line for each kind of work, shared by Home and the Work views. */
+export async function getDisciplineCopy() {
+  return (await getSingleton('work')).data.disciplines;
+}

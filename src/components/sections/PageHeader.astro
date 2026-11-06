@@ -1,0 +1,29 @@
+---
+import type { SectionProps } from '../../lib/pages';
+
+type Props = SectionProps<'page-header'>;
+const { section, data: _data, last: _last, aboveFold: _aboveFold, class: className, ...rest } = Astro.props;
+const { eyebrow, heading, intro } = section;
+---
+<section class:list={['section section--tight page-header', className]} {...rest}>
+  <div class="container">
+    {eyebrow && <p class="eyebrow" data-field="eyebrow">{eyebrow}</p>}
+    <h1 class="page-header__title" data-field="heading">{heading}</h1>
+    {intro && <p class="lede" data-field="intro">{intro}</p>}
+  </div>
+</section>
+
+<style>
+  .page-header {
+    padding-block-end: 0;
+  }
+
+  .page-header .container {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .page-header__title {
+    font-size: var(--text-h1);
+  }
+</style>

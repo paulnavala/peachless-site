@@ -1,0 +1,26 @@
+---
+import SectionHeader from '../ui/SectionHeader.astro';
+import WorkTiles from '../work/WorkTiles.astro';
+import type { SectionProps } from '../../lib/pages';
+
+type Props = SectionProps<'work-logos'>;
+const { section, data, last: _last, aboveFold: _aboveFold, class: className, ...rest } = Astro.props;
+const { id, heading, intro } = section;
+const titleId = `${id}-title`;
+---
+{
+  data.projects.length > 0 && (
+    <section class:list={['section work-logos', className]} aria-labelledby={titleId} {...rest}>
+      <div class="container">
+        <SectionHeader id={titleId} title={heading} lede={intro} />
+        <WorkTiles projects={data.projects} />
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .work-logos {
+    padding-block-start: 0;
+  }
+</style>

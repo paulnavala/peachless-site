@@ -1,0 +1,24 @@
+---
+import WorkGrid from '../work/WorkGrid.astro';
+import type { SectionProps } from '../../lib/pages';
+
+type Props = SectionProps<'work-list'>;
+const { section, data, last: _last, aboveFold: _aboveFold, class: className, ...rest } = Astro.props;
+---
+<section class:list={['section work-list', className]} aria-label={data.heading} {...rest}>
+  <div class="container">
+    {
+      data.projects.length ? (
+        <WorkGrid projects={data.projects} priorityFirst />
+      ) : (
+        <p class="lede" data-field="emptyText">{section.emptyText}</p>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .work-list {
+    padding-block-start: var(--space-l-2xl);
+  }
+</style>

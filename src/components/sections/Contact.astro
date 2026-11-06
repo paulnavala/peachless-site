@@ -1,0 +1,145 @@
+---
+import ContactForm from '../islands/ContactForm.vue';
+import Icon from '../ui/Icon.astro';
+import type { SectionProps } from '../../lib/pages';
+
+type Props = SectionProps<'contact'>;
+const { section, data, last: _last, aboveFold: _aboveFold, class: className, ...rest } = Astro.props;
+const { eyebrow, heading, lede, resumeLabel, form } = section;
+const { emails, socials, resume, endpoint, hiddenFields } = data;
+// Long addresses may wrap; offer the break before the @ ("name / @domain").
+const splitAt = (address: string) => [address.slice(0, address.indexOf('@')), address.slice(address.indexOf('@'))];
+---
+<section class:list={['section contact', className]} {...rest}>
+  <div class="container contact__inner">
+    <div class="contact__intro">
+      {eyebrow && <p class="eyebrow" data-field="eyebrow">{eyebrow}</p>}
+      <h1 class="contact__title" data-field="heading">{heading}</h1>
+      {lede && <p class="lede" data-field="lede">{lede}</p>}
+      <ul class="contact-emails" role="list">
+        {
+          emails.map((e) => (
+            <li>
+              <span class="contact-emails__label">{e.label}</span>
+              <a class="contact-emails__link" href={`mailto:${e.address}`}>
+                <span>{splitAt(e.address)[0]}<wbr />{splitAt(e.address)[1]}</span>
+                <Icon name="arrow-up-right" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      {
+        (socials.length > 0 || resume) && (
+          <ul class="cluster contact__socials" role="list">
+            {socials.map((s) => (
+              <li>
+                <a class="chip" href={s.url} rel="me noopener" target="_blank">
+                  {s.label}
+                </a>
+              </li>
+            ))}
+            {resume && (
+              <li>
+                <a class="chip" href={resume} download data-field="resumeLabel">
+                  {resumeLabel}
+                </a>
+              </li>
+            )}
+          </ul>
+        )
+      }
+    </div>
+    <div class="contact__card">
+      <ContactForm
+        client:visible
+        title={form.title}
+        subtitle={form.subtitle}
+        submitText={form.submitLabel}
+        successMessage={form.successMessage}
+        formAction={endpoint}
+        hiddenFields={hiddenFields}
+        contactEmail={emails[0]?.address}
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  .contact__inner {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  .contact__intro {
+    display: grid;
+    gap: var(--space-m);
+    align-content: start;
+  }
+
+  .contact__title {
+    font-size: var(--text-h1);
+    max-width: 12ch;
+  }
+
+  .contact-emails {
+    container-type: inline-size;
+    display: grid;
+    gap: var(--space-s);
+    margin-top: var(--space-xs);
+  }
+
+  .contact-emails li {
+    display: grid;
+    gap: var(--space-3xs);
+  }
+
+  .contact-emails__label {
+    font-size: var(--text-small);
+    color: var(--color-text-muted);
+    text-transform: capitalize;
+  }
+
+  .contact-emails__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    width: fit-content;
+    font-family: var(--font-display);
+    /* A typical address plus the arrow is ~12.5em: shrink to fit narrow
+       columns, but never below the serif's floor (it wraps at the @ instead). */
+    font-size: clamp(var(--text-h3), 7.5cqi, var(--text-title));
+    font-weight: var(--weight-display-sm);
+    color: var(--color-heading);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .contact-emails__link:is(:hover, :focus-visible) {
+    color: var(--color-accent-text);
+  }
+
+  .contact-emails__link :global(svg) {
+    width: 0.7em;
+    height: 0.7em;
+    flex: none;
+  }
+
+  .contact__socials {
+    margin: 0;
+  }
+
+  .contact__card {
+    padding: var(--space-m-xl);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+  }
+
+  @media (min-width: 64em) {
+    .contact__inner {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: var(--space-2xl);
+    }
+  }
+</style>
