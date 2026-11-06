@@ -98,7 +98,7 @@ function explain(issue: z.core.$ZodIssue, raw: unknown, where: ReturnType<typeof
   const name = key === undefined ? '' : fieldName(where);
 
   if (issue.code === 'custom') return issue.message;
-  if (!issue.path.length) return 'This page’s file can’t be read. Ask Paul to take a look.';
+  if (!issue.path.length) return 'This page’s file can’t be read. Ask your developer to take a look.';
   if (issue.code === 'invalid_union') return `This ${thing} isn’t one the site knows. Remove it.`;
   if (key === undefined) return `This ${thing} can’t be read. Remove it and add it again.`;
   if (inElement && PLACEMENT.has(key)) return 'This element is off the grid. Drag it back into place.';

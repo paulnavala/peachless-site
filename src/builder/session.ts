@@ -52,7 +52,7 @@ export const session = reactive({
   notice: '',
   /** Work was found on this computer, and picked back up. */
   restored: false,
-  /** The site's been updated since this copy of the builder loaded. */
+  /** The live site is behind main, so this builder may be too. */
   outOfDate: false,
   /** The editor has read the note about demo mode. */
   demoNoted: false,
@@ -147,6 +147,15 @@ function watchDraft(): void {
   void tick();
 }
 
+/**
+ * After a publish, the live site lags main by a build. Until it catches up, this
+ * builder and the pages in its canvas are a step behind what it just read.
+ */
+function isBehind(current: RepoSnapshot): boolean {
+  const builtFrom = document.querySelector<HTMLMetaElement>('meta[name="built-from"]')?.content;
+  return backend?.kind === 'github' && !!builtFrom && builtFrom !== current.mainOid;
+}
+
 async function open(using: Backend): Promise<void> {
   backend = using;
   session.kind = using.kind;
@@ -154,6 +163,7 @@ async function open(using: Backend): Promise<void> {
   session.login = snapshot.login;
   session.canWrite = snapshot.canWrite;
   session.draft = snapshot.draft;
+  session.outOfDate = isBehind(snapshot);
   loadPages(pagesFrom(snapshot.files));
   const site = snapshot.files[SITE_FILE];
   if (site) loadSite(site.path, parse(site.text) as RawSite);
@@ -251,7 +261,7 @@ export async function saveDraft(): Promise<void> {
     clearLocal();
     await clearPendingImages();
     session.restored = false;
-    session.notice = 'Draft saved. Building a preview…';
+    session.notice = 'Draft saved.';
     watchDraft();
   } catch (error) {
     fail(error);

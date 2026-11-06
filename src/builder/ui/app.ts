@@ -111,19 +111,20 @@ const TopBar = defineComponent({
 const Canvas = defineComponent({
   name: 'Canvas',
   setup() {
-    const frame = ref<HTMLIFrameElement | null>(null);
+    const frames = ref<HTMLElement | null>(null);
     const specimens = ref<HTMLIFrameElement | null>(null);
     const scroller = ref<HTMLElement | null>(null);
 
     onMounted(() => {
-      if (frame.value && specimens.value && scroller.value) mountCanvas(frame.value, specimens.value, scroller.value);
+      if (frames.value && specimens.value && scroller.value) mountCanvas(frames.value, specimens.value, scroller.value);
     });
 
     return () =>
       h('main', { ref: scroller, class: 'canvas', 'aria-label': 'Page' }, [
         h('div', { class: 'canvas__spacer', style: { height: `${Math.max(view.contentHeight * view.scale, view.stageHeight)}px` } }, [
           h('div', { class: 'canvas__stage', style: { height: `${view.stageHeight}px` } }, [
-            h('iframe', { ref: frame, class: 'canvas__frame', sandbox: FRAME_SANDBOX, title: 'The page you’re editing', tabindex: -1 }),
+            // The canvas adds and swaps its frames in here itself.
+            h('div', { ref: frames }),
             h(Overlay),
             h(TextEditor),
             view.error ? h('p', { class: 'canvas__status', role: 'alert' }, view.error) : view.loading ? h('p', { class: 'canvas__status' }, 'Opening the page…') : null,

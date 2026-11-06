@@ -8,10 +8,11 @@
 import { reactive, watch } from 'vue';
 import { DEVICES, page, pageUrl, state, type RawSection, type Selection } from '../store';
 import { tracksFrom, type Track } from '../grid/layout';
-import { openPage, pageExists } from './frame';
+import { createFrame, openPage, pageExists } from './frame';
 import { reconcile, stampBlocks } from './reconcile';
 
 const MIN_FRAME_HEIGHT = 640;
+const FONT_WAIT_MS = 2500;
 const SHELL = '/admin/builder/shell/';
 const SPECIMENS = '/admin/builder/specimens/';
 const BLOCK_SPECIMENS: Record<string, string> = { text: '.text-block', quote: '.quote-block' };
@@ -50,6 +51,9 @@ export const view = reactive({
 });
 
 let frame: HTMLIFrameElement | null = null;
+/** The next page's frame, while it loads behind the one on show. */
+let incoming: HTMLIFrameElement | null = null;
+let frames: HTMLElement | null = null;
 let scroller: HTMLElement | null = null;
 let specimens: Document | null = null;
 let doc: Document | null = null;
@@ -79,8 +83,15 @@ const context = {
   imageUrl: (path: string) => images.get(path) ?? null,
 };
 
+function placeFrame(target: HTMLIFrameElement): void {
+  target.style.width = `${view.frameWidth}px`;
+  target.style.height = `${view.frameHeight}px`;
+  target.style.transform = `scale(${view.scale})`;
+  target.style.left = `${view.stageLeft}px`;
+}
+
 function layout(): void {
-  if (!frame || !scroller) return;
+  if (!scroller) return;
   const width = DEVICES[state.device];
   const gutter = 32;
   const available = Math.max(320, scroller.clientWidth - gutter * 2);
@@ -94,10 +105,8 @@ function layout(): void {
   view.stageHeight = stageHeight;
   view.stageLeft = Math.round((scroller.clientWidth - width * scale) / 2);
 
-  frame.style.width = `${width}px`;
-  frame.style.height = `${frameHeight}px`;
-  frame.style.transform = `scale(${scale})`;
-  frame.style.left = `${view.stageLeft}px`;
+  if (frame) placeFrame(frame);
+  if (incoming) placeFrame(incoming);
   measure();
 }
 
@@ -155,37 +164,63 @@ export function sync(): void {
 }
 
 function frameScroll(): void {
-  if (!frame?.contentWindow || !scroller) return;
+  if (!doc || !frame?.contentWindow || !scroller) return;
   frame.contentWindow.scrollTo(0, scroller.scrollTop / view.scale);
   measure();
 }
 
-async function showPage(id: string): Promise<void> {
-  if (!frame) return;
-  view.loading = true;
+/** A frame's fonts can stall, and no one promise should be able to freeze the canvas. */
+const fontsSettled = (target: Document) =>
+  Promise.race([target.fonts.ready, new Promise((resolve) => setTimeout(resolve, FONT_WAIT_MS))]);
+
+/**
+ * Loads a page into a new frame behind the one on show, then swaps them. The old
+ * page stays whole and on screen until the new one is ready.
+ */
+async function loadPage(id: string): Promise<void> {
+  if (!frames) return;
   view.error = '';
   const url = pageUrl(id);
+  const next = createFrame('The page you’re editing');
+  next.className = 'canvas__incoming';
+  placeFrame(next);
+  frames.append(next);
+  incoming = next;
   try {
-    shownPage = null;
-    doc = await openPage(frame, (await pageExists(url)) ? url : SHELL);
-    // The editor may have moved on while this one loaded.
-    if (id !== state.pageId) return;
-    shownPage = id;
-    if (page.value?.raw.story) stampBlocks(doc, page.value.raw);
+    const nextDoc = await openPage(next, (await pageExists(url)) ? url : SHELL);
+    if (page.value?.raw.story) stampBlocks(nextDoc, page.value.raw);
     // Fonts and images settle the page's height after it first loads.
-    await doc.fonts.ready;
+    await fontsSettled(nextDoc);
+
+    frame?.remove();
+    next.className = 'canvas__frame';
+    frame = next;
+    incoming = null;
+    doc = nextDoc;
+    shownPage = id;
     sync();
     if (scroller) scroller.scrollTop = 0;
     frameScroll();
   } catch (error) {
+    next.remove();
+    incoming = null;
     view.error = error instanceof Error ? error.message : 'This page didn’t load.';
   } finally {
-    view.loading = false;
+    if (id === state.pageId) view.loading = false;
   }
 }
 
-export async function mountCanvas(frameEl: HTMLIFrameElement, specimenFrame: HTMLIFrameElement, scrollerEl: HTMLElement): Promise<void> {
-  frame = frameEl;
+/** One load at a time, and the last one asked for wins, so nothing can land out of order. */
+let navigation: Promise<void> = Promise.resolve();
+
+function showPage(id: string): Promise<void> {
+  view.loading = true;
+  navigation = navigation.then(() => (id === state.pageId ? loadPage(id) : undefined));
+  return navigation;
+}
+
+export async function mountCanvas(framesEl: HTMLElement, specimenFrame: HTMLIFrameElement, scrollerEl: HTMLElement): Promise<void> {
+  frames = framesEl;
   scroller = scrollerEl;
   scroller.addEventListener('scroll', () => {
     cancelAnimationFrame(raf);
@@ -210,7 +245,16 @@ export async function mountCanvas(frameEl: HTMLIFrameElement, specimenFrame: HTM
   setInterval(measure, 700);
 }
 
-/** What's under a point on the stage. */
+/**
+ * The section under a point, from what's already been measured. Hover runs on
+ * every pointer move, so it stays out of the frame: that would force a layout each
+ * time, and WebKit doesn't take well to a hit test on a frame that then navigates.
+ */
+export function sectionAt(stageY: number): string | null {
+  return view.sections.find((box) => stageY >= box.top && stageY < box.top + box.height)?.id ?? null;
+}
+
+/** What's under a point on the stage, in detail. For clicks, not for hover. */
 export function hitTest(stageX: number, stageY: number): (Selection & { field?: string }) | null {
   if (!doc) return null;
   const hit = doc.elementFromPoint(stageX / view.scale, stageY / view.scale);

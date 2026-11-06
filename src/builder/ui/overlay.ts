@@ -7,7 +7,7 @@
  */
 import { computed, defineComponent, h, ref, type VNode } from 'vue';
 import { definitionOf } from '../../lib/section-catalogue';
-import { fieldElement, frameDocument, hitTest, scrollBy, view, type Box } from '../canvas/controller';
+import { fieldElement, frameDocument, hitTest, scrollBy, sectionAt, view, type Box } from '../canvas/controller';
 import { clampCell, nearestEnd, nearestTrack, resizeTo, type Cell, type Edge, type Track } from '../grid/layout';
 import {
   dragElement,
@@ -183,9 +183,8 @@ export const Overlay = defineComponent({
         gesture.move(event);
         return;
       }
-      const { x, y } = stagePoint(event);
-      const hit = hitTest(x, y);
-      state.hover = hit && { section: hit.section, element: hit.element };
+      const section = sectionAt(stagePoint(event).y);
+      if (section !== (state.hover?.section ?? null)) state.hover = section ? { section } : null;
     }
 
     function onPointerDown(event: PointerEvent): void {

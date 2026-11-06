@@ -116,7 +116,8 @@ function AddPanel(): VNode[] {
 /** What tells one section from another of its kind: its own words. */
 const layerDetail = (section: (typeof sections.value)[number]): string | null => {
   const words = section.heading ?? section.title ?? section.quote ?? section.caption;
-  return typeof words === 'string' && words ? words : null;
+  // A heading that only repeats the section's name tells nobody anything.
+  return typeof words === 'string' && words && words !== definitionOf(section.type).name ? words : null;
 };
 
 function LayersPanel(): VNode[] {

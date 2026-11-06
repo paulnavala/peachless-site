@@ -27,11 +27,11 @@ import {
 } from './types';
 
 const WORDS = {
-  forbidden: 'This account can look but can’t save. Ask Paul for access.',
+  forbidden: 'This account can look but can’t save. Ask your developer for access.',
   busy: 'GitHub asked us to slow down. Wait a few minutes and try again.',
   unknown: 'GitHub didn’t accept that. Your work is still here, so try again.',
   settling: 'GitHub needs a moment before this can go live. Try publishing again.',
-  held: 'GitHub is holding this back from going live. Ask Paul to take a look.',
+  held: 'GitHub is holding this back from going live. Ask your developer to take a look.',
   missingImage: 'That image couldn’t be found.',
   nothing: 'There’s nothing new to save.',
 };

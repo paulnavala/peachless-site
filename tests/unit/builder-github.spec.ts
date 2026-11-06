@@ -601,7 +601,7 @@ describe('saving', () => {
       await backend.load();
       const error = await caught(backend.saveDraft([edit(HOME, 'title: Mine\n')], 'Save', null));
       expect(error.kind).toBe('forbidden');
-      expect(error.message).toBe('This account can look but can’t save. Ask Paul for access.');
+      expect(error.message).toBe('This account can look but can’t save. Ask your developer for access.');
       expect(fake.head(DRAFT_BRANCH)).toBeUndefined();
     });
 
@@ -953,7 +953,7 @@ describe('publish', () => {
       fake.blockMerge('BLOCKED', 9);
       const error = await caught(backend.publish(draft, [HOME]));
       expect(error.kind).toBe('unknown');
-      expect(error.message).toBe('GitHub is holding this back from going live. Ask Paul to take a look.');
+      expect(error.message).toBe('GitHub is holding this back from going live. Ask your developer to take a look.');
     });
   });
 
@@ -1108,7 +1108,7 @@ describe('what goes wrong', () => {
     fake.failNext(anything, 403, { message: 'Must have push access' });
     const error = await caught(backend.load());
     expect(error.kind).toBe('forbidden');
-    expect(error.message).toBe('This account can look but can’t save. Ask Paul for access.');
+    expect(error.message).toBe('This account can look but can’t save. Ask your developer for access.');
     expect(error.details).toContain('Must have push access');
   });
 

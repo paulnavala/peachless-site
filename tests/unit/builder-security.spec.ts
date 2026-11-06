@@ -30,6 +30,13 @@ describe('the canvas sandbox', () => {
       expect(readFileSync(file, 'utf8'), file).not.toMatch(/allow-scripts['"`]/);
     }
   });
+
+  it('goes on once, as a frame is made, before it loads anything', () => {
+    const uses = walk(join(ROOT, 'src/builder')).flatMap((file) => readFileSync(file, 'utf8').match(/setAttribute\(\s*['"]sandbox.*/g) ?? []);
+    expect(uses).toEqual(["setAttribute('sandbox', FRAME_SANDBOX);"]);
+    const frame = readFileSync(join(ROOT, 'src/builder/canvas/frame.ts'), 'utf8');
+    expect(/function createFrame[\s\S]*?^}/m.exec(frame)?.[0]).not.toContain('.src');
+  });
 });
 
 describe('the builder’s Content-Security-Policy', () => {

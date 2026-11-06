@@ -502,12 +502,18 @@
   overflow: hidden;
 }
 
-.canvas__frame {
+.canvas__frame,
+.canvas__incoming {
   position: absolute;
   top: 0;
   border: 0;
   background: var(--linen);
   transform-origin: 0 0;
+}
+
+/* The next page loads behind the one on show. */
+.canvas__incoming {
+  visibility: hidden;
 }
 
 .canvas__specimens {

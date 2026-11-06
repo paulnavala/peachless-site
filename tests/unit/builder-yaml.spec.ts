@@ -321,7 +321,7 @@ describe('patchYaml', () => {
 
   describe('a file it can’t read', () => {
     it('says so plainly, and writes nothing', () => {
-      expect(() => patchYaml('title: "unclosed\n', { title: 'A' })).toThrow('This file is damaged, so the builder can’t change it. Ask Paul to take a look.');
+      expect(() => patchYaml('title: "unclosed\n', { title: 'A' })).toThrow('This file is damaged, so the builder can’t change it. Ask your developer to take a look.');
     });
 
     it('starts afresh from an empty file', () => {

@@ -80,7 +80,7 @@ export const Messages = defineComponent({
       const status = session.status;
 
       if (session.phase === 'ready' && !session.canWrite && session.kind === 'github') {
-        list.push(message('problem', 'This account can look but can’t save.', 'Ask Paul for access to the site, then sign in again.'));
+        list.push(message('problem', 'This account can look but can’t save.', 'Ask your developer for access to the site, then sign in again.'));
       }
       if (session.kind === 'demo' && !session.demoNoted) {
         list.push(
@@ -115,6 +115,13 @@ export const Messages = defineComponent({
         list.push(
           message('problem', 'Someone changed the same thing on the live site.', session.conflicts.map((c) => c.message).join(' '), [
             h('button', { type: 'button', class: 'link', onClick: () => (session.conflicts = []) }, 'Keep my version'),
+          ])
+        );
+      }
+      if (session.outOfDate) {
+        list.push(
+          message('note', 'The site was updated moments ago.', 'What you see here may be a step behind. Reload in a minute or two to catch up.', [
+            dismiss(() => (session.outOfDate = false)),
           ])
         );
       }

@@ -7,6 +7,10 @@
  * Never add allow-scripts: content is rendered as HTML in here, and this sandbox
  * is what keeps it away from the sign-in token. tests/e2e/builder-frame.spec.ts
  * pins this, and a unit test checks the attribute.
+ *
+ * A frame shows one page and is then thrown away. A frame that navigates leaves a
+ * dead document behind for anything still holding it, and doing this crashed WebKit
+ * in testing however carefully the old document was let go of. A new frame can't.
  */
 export const FRAME_SANDBOX = 'allow-same-origin';
 
@@ -26,15 +30,23 @@ const STILL = `
   }
   :is(#canvas-still, .site-header) { position: relative; }`;
 
+/** A new frame. Its sandbox goes on here, once, before it has loaded anything. */
+export function createFrame(title: string): HTMLIFrameElement {
+  const frame = document.createElement('iframe');
+  frame.setAttribute('sandbox', FRAME_SANDBOX);
+  frame.title = title;
+  frame.tabIndex = -1;
+  return frame;
+}
+
 /** Waits for a page by watching it: load events aren't reliable in WebKit here. */
 export async function openPage(frame: HTMLIFrameElement, url: string, timeout = 20_000): Promise<Document> {
-  frame.setAttribute('sandbox', FRAME_SANDBOX);
+  const previous = frame.contentDocument;
   frame.src = url;
-  const wanted = new URL(url, location.href).pathname;
   const deadline = performance.now() + timeout;
   while (performance.now() < deadline) {
     const doc = frame.contentDocument;
-    if (doc && doc.readyState === 'complete' && new URL(doc.URL, location.href).pathname === wanted) {
+    if (doc && doc !== previous && doc.readyState === 'complete') {
       still(doc);
       return doc;
     }

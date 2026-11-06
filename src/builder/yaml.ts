@@ -170,7 +170,7 @@ export function patchYaml(text: string, next: unknown, keyOrder?: string[]): str
   // Git keeps these files with LF, but a Windows working copy has CRLF.
   const crlf = text.includes('\r\n');
   const doc = parseDocument(crlf ? text.replaceAll('\r\n', '\n') : text);
-  if (doc.errors.length) throw new Error('This file is damaged, so the builder can’t change it. Ask Paul to take a look.', { cause: doc.errors[0] });
+  if (doc.errors.length) throw new Error('This file is damaged, so the builder can’t change it. Ask your developer to take a look.', { cause: doc.errors[0] });
   if (same(doc.toJS(), next)) return text;
   if (doc.contents === null) return newYaml(next);
 
