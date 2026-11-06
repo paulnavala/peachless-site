@@ -1,0 +1,22 @@
+---
+import CtaBand from '../CtaBand.astro';
+import ArrowLink from '../ui/ArrowLink.astro';
+import type { SectionProps } from '../../lib/pages';
+
+type Props = SectionProps<'cta-band'>;
+// The band sets its own surface from `tone`, so the root's copy stays out of rest.
+const { section, data, last = false, aboveFold: _aboveFold, class: className, 'data-surface': _surface, ...rest } = Astro.props;
+const { id, eyebrow, heading, body, surface } = section;
+---
+<CtaBand
+  id={`${id}-title`}
+  eyebrow={eyebrow}
+  heading={heading}
+  body={body}
+  tone={surface === 'default' ? undefined : surface}
+  nextStep={last}
+  class={className}
+  {...rest}
+>
+  {data.links.map((link) => <ArrowLink href={link.link}>{link.label}</ArrowLink>)}
+</CtaBand>

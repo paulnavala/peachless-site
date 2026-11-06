@@ -2,19 +2,9 @@
 // "What I do" as an editorial index: one large row per craft. On wide screens
 // with a fine pointer, a preview of the work appears beside the row on hover or
 // focus; elsewhere it is a small thumbnail that is always there.
-import type { ImageMetadata } from 'astro';
+import type { DisciplineEntry } from '../../lib/pages';
 import Media from '../ui/Media.astro';
 import Icon from '../ui/Icon.astro';
-
-export interface DisciplineEntry {
-  title: string;
-  description: string;
-  href: string;
-  count: string;
-  image?: { image: ImageMetadata; panel: string; fit: 'cover' | 'contain' };
-  /** Colour atmosphere of the project the preview comes from. */
-  theme?: Record<string, string>;
-}
 
 interface Props {
   entries: DisciplineEntry[];

@@ -1,23 +1,21 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import {
-  aboutSchema,
-  contactSchema,
+  disciplinesSchema,
   formSchema,
-  homeSchema,
   ID_RE,
-  photographyPageSchema,
+  pageSchema,
   photoSchema,
   projectSchema,
+  RESERVED_PAGE_IDS,
   RESERVED_PROJECT_IDS,
   siteSchema,
-  workSchema,
 } from './lib/content-schema';
 
 // Astro's content cache only clears when this file changes, so an entry whose
 // own file didn't change would keep the old schema's data, here and in the
 // Cloudflare build cache. This line changes with the schema (content-files.spec).
-// content-schema: 2764b6b2b751
+// content-schema: 5d6e76c77f0d
 
 /**
  * Folder-per-entry collections: `projects/<id>/index.yaml` with its images
@@ -45,21 +43,16 @@ const photos = defineCollection({
   schema: ({ image }) => photoSchema(image),
 });
 
-const home = defineCollection({ loader: single('./src/content/pages', 'home.yaml'), schema: homeSchema });
-const work = defineCollection({ loader: single('./src/content/pages', 'work.yaml'), schema: workSchema });
-const about = defineCollection({
-  loader: single('./src/content/pages', 'about.md'),
-  schema: ({ image }) => aboutSchema(image),
+const pages = defineCollection({
+  loader: glob({ base: './src/content/pages', pattern: '*/index.yaml', generateId: folderId(RESERVED_PAGE_IDS) }),
+  schema: ({ image }) => pageSchema(image),
 });
-const contact = defineCollection({ loader: single('./src/content/pages', 'contact.yaml'), schema: contactSchema });
-const photographyPage = defineCollection({
-  loader: single('./src/content/pages', 'photography.yaml'),
-  schema: photographyPageSchema,
-});
+
 const site = defineCollection({
   loader: single('./src/content/site', 'site.yaml'),
   schema: ({ image }) => siteSchema(image),
 });
+const disciplines = defineCollection({ loader: single('./src/content/site', 'disciplines.yaml'), schema: disciplinesSchema });
 const form = defineCollection({ loader: single('./src/content/site', 'form.yaml'), schema: formSchema });
 
-export const collections = { projects, photos, home, work, about, contact, photographyPage, site, form };
+export const collections = { projects, photos, pages, site, disciplines, form };

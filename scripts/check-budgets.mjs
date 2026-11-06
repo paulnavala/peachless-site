@@ -32,15 +32,23 @@ const KB = 1024;
 //   launch button under small stills, the brand-book viewer's page fit, dock
 //   and thumbnail columns, the palette's chip-sized names) and the balanced
 //   contents line, after removing ~0.1 KB of dead CSS.
+// - Work, Photography and Contact CSS 14 → 15 (v3): every route now carries the
+//   sections an editor can place on any page, custom sections included. It is one
+//   shared file, cached once for the whole site, and held to CORE_CSS_KB below so
+//   it can't creep. Home and About stay at 14.
 const BUDGETS = [
   { name: 'Home', match: /^\/$/, js: 4, islands: 0, css: 14 },
-  { name: 'Work', match: /^\/projects\/(graphic-design\/|uiux\/|logo-design\/|tools\/[^/]+\/)?$/, js: 4, islands: 0, css: 14 },
+  { name: 'Work', match: /^\/projects\/(graphic-design\/|uiux\/|logo-design\/|tools\/[^/]+\/)?$/, js: 4, islands: 0, css: 15 },
   { name: 'Project', match: /^\/projects\/[^/]+\/$/, js: 6, islands: 40, css: 16 },
-  { name: 'Photography', match: /^\/photography\/$/, js: 5, islands: 40, css: 14 },
-  { name: 'Contact', match: /^\/contact\/$/, js: 6, islands: 40, css: 14 },
+  { name: 'Photography', match: /^\/photography\/$/, js: 5, islands: 40, css: 15 },
+  { name: 'Contact', match: /^\/contact\/$/, js: 6, islands: 40, css: 15 },
   { name: 'Page', match: /./, js: 4, islands: 0, css: 14 },
 ];
 const MAX_FONT_PRELOADS = 2;
+// The core sections' stylesheet is on every route, so a section belongs in it
+// only if it really must go on any page; the rest stay bound to their route.
+const CORE_CSS_KB = 3.5;
+const CORE_ROUTES = ['/', '/about/', '/contact/', '/photography/', '/projects/'];
 
 const pages = [];
 const walk = (dir) => {
@@ -87,6 +95,7 @@ const attr = (tag, name) => tag.match(new RegExp(`\\s${name}="([^"]*)"`))?.[1];
 const fmt = (bytes) => (bytes / KB).toFixed(1);
 
 const rows = [];
+const stylesheets = new Map();
 let failed = false;
 
 for (const file of pages.sort()) {
@@ -125,7 +134,9 @@ for (const file of pages.sort()) {
 
   // CSS.
   let css = 0;
-  for (const [tag] of html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*>/g)) css += sizeOf(attr(tag, 'href'));
+  const linked = [...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*>/g)].map(([tag]) => attr(tag, 'href'));
+  stylesheets.set(url, new Set(linked));
+  for (const href of linked) css += sizeOf(href);
   for (const [, body] of html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/g)) css += gz(body);
 
   const fonts = [...html.matchAll(/<link\b[^>]*rel="preload"[^>]*>/g)].filter(([tag]) => attr(tag, 'as') === 'font').length;
@@ -153,6 +164,17 @@ if (!rows.length) {
   console.error(`No pages found in ${DIST} — run \`npm run build\` first.`);
   process.exit(1);
 }
+
+// What every route shares, apart from what even the 404 has: the core sections.
+const onEveryRoute = (href) => CORE_ROUTES.every((route) => stylesheets.get(route)?.has(href));
+const core = [...(stylesheets.get(CORE_ROUTES[0]) ?? [])].filter((href) => onEveryRoute(href) && !stylesheets.get('/404')?.has(href));
+const coreCss = core.reduce((n, href) => n + sizeOf(href), 0);
+console.log(`\nCore sections' CSS: ${fmt(coreCss)} of ${CORE_CSS_KB} KB`);
+if (coreCss > CORE_CSS_KB * KB) {
+  console.error('Core sections are on every route. Bind a section to its route instead (src/lib/section-catalogue.ts).');
+  failed = true;
+}
+
 if (failed) {
   console.error('\nPage weight budget exceeded. Trim the page, or raise its budget in scripts/check-budgets.mjs with a reason.');
   process.exit(1);

@@ -67,6 +67,23 @@ export const RESERVED_PROJECT_IDS = [
   'tools',
 ] as const;
 
+/** Folder names a custom page may not use: its address would clash with a route,
+ *  a redirect or a folder in public/. tests/unit/content-files.spec.ts checks the
+ *  last two against the real ones. */
+export const RESERVED_PAGE_IDS = [
+  'admin',
+  'projects',
+  'files',
+  'uploads',
+  'icons',
+  'og',
+  'index',
+  '404',
+  'uiux',
+  'sitemap',
+  'robots',
+] as const;
+
 export const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const HEX_RE = /^#[0-9A-Fa-f]{6}$/;
 export const FIGMA_RE = /^https:\/\/(www\.)?figma\.com\/(proto|design|file|make|board)\//;
@@ -179,80 +196,23 @@ export const photoSchema = <T extends z.ZodType>(image: () => T) =>
 
 const seo = z.object({ description: opt(160) }).default({});
 const link = z.object({ label: req(40), link: z.string().regex(LINK_RE) });
-const section = z.object({ heading: req(120), intro: opt(400) });
-
-export const homeSchema = z.object({
-  eyebrow: opt(80),
-  tagline: z.object({ line1: req(80), line2: req(80) }),
-  lede: opt(300),
-  primaryCta: link,
-  secondaryCta: link.optional(),
-  manifesto: z.object({ heading: req(160), lead: z.string().trim().min(1) }), // markdown
-  services: section,
-  featured: section,
-  photography: section,
-  about: z.object({ heading: req(80), body: req(400), linkLabel: req(40) }),
-  seo,
-});
-
 const disciplineCopy = z.object({ title: req(40), description: req(200) });
 
-export const workSchema = z.object({
-  eyebrow: opt(40),
-  heading: req(80),
-  intro: opt(300),
-  disciplines: z.object({
-    graphicDesign: disciplineCopy,
-    uiux: disciplineCopy,
-    photography: disciplineCopy,
-  }),
-  logos: section,
-  seo,
+/** What each kind of work is called, on Home and on the Work page's own views. */
+export const disciplinesSchema = z.object({
+  graphicDesign: disciplineCopy,
+  uiux: disciplineCopy,
+  photography: disciplineCopy,
 });
 
-export const aboutSchema = <T extends z.ZodType>(image: () => T) =>
-  z.object({
-    eyebrow: opt(40),
-    title: req(80),
-    statement: req(300),
-    portrait: image(),
-    portraitAlt: req(200),
-    closing: opt(200),
-    process: z.array(z.object({ title: req(60), body: req(200) })).max(6).default([]),
-    experience: z.array(z.object({ period: req(40), role: req(80), place: opt(80) })).default([]),
-    seo,
-  });
-
-export const contactSchema = z.object({
-  eyebrow: opt(40),
-  heading: req(80),
-  lede: opt(300),
-  form: z.object({
-    title: req(60),
-    subtitle: opt(200),
-    submitLabel: req(30),
-    successMessage: req(120),
-  }),
-  fortune: z.object({
-    heading: req(80),
-    intro: opt(200),
-    fortunes: z.array(req(200)).min(3),
-  }),
-  seo,
-});
-
-export const photographyPageSchema = z.object({
-  eyebrow: opt(40),
-  heading: req(80),
-  lede: opt(300),
-  seo,
-});
 
 export const siteSchema = <T extends z.ZodType>(image: () => T) =>
   z.object({
     siteName: req(40),
     ownerName: opt(40),
     jobTitle: opt(60),
+    portrait: image(),
+    portraitAlt: req(200),
     tagline: req(120),
     nav: z
       .array(z.object({ label: req(30), href: z.string().regex(LINK_RE), cta: z.boolean().default(false) }))
@@ -282,3 +242,206 @@ export const formSchema = z
     message: 'access_key is required when the endpoint is Web3Forms',
     path: ['hidden'],
   });
+
+// Pages as data. A section's design choices are token names, never raw values,
+// so the style guard's rules hold for anything an editor can build.
+
+/** A section's background: the site's surfaces. `default` is the page itself. */
+export const SURFACES = ['default', 'paper', 'blush', 'inverse'] as const;
+export type Surface = (typeof SURFACES)[number];
+
+/** Space above or below a section. `default` is whatever the section does by itself. */
+export const SPACES = ['default', 'tight', 'none'] as const;
+export type Space = (typeof SPACES)[number];
+
+export const SECTION_TYPES = [
+  'hero',
+  'page-header',
+  'grid',
+  'manifesto',
+  'deck',
+  'disciplines',
+  'photo-strip',
+  'about-teaser',
+  'cta-band',
+  'profile',
+  'contact',
+  'fortune',
+  'gallery',
+  'work-header',
+  'work-list',
+  'work-logos',
+] as const;
+export type SectionType = (typeof SECTION_TYPES)[number];
+
+const sectionBase = {
+  id: z.string().regex(ID_RE),
+  hidden: z.boolean().default(false),
+  surface: z.enum(SURFACES).default('default'),
+  sheet: z.boolean().default(false),
+  spaceTop: z.enum(SPACES).default('default'),
+  spaceBottom: z.enum(SPACES).default('default'),
+};
+
+// A custom section: elements on a 12-column grid. Rows only set a minimum height,
+// so text can't clip; elements can't overlap (page-rules.ts), so reading order
+// is simply top to bottom, left to right.
+export const GRID_COLUMNS = 12;
+export const GRID_MAX_ROW = 60;
+
+export const ELEMENT_TYPES = ['heading', 'text', 'image', 'button', 'quote', 'divider'] as const;
+export type ElementType = (typeof ELEMENT_TYPES)[number];
+
+/** The narrowest an element can go, in columns: below this its words won't fit a tablet. */
+export const ELEMENT_MIN_WIDTH: Record<ElementType, number> = { heading: 3, text: 3, image: 2, button: 2, quote: 4, divider: 1 };
+
+/** Heading looks, by the site's own type tokens. A heading's level is worked out
+ *  from its place on the page, so a look can never break the outline. */
+export const HEADING_STYLES = ['statement', 'h1', 'h2', 'h3', 'h4'] as const;
+export const TEXT_SIZES = ['lede', 'body', 'small'] as const;
+export const BUTTON_STYLES = ['primary', 'secondary'] as const;
+export const ALIGNMENTS = ['start', 'center', 'end'] as const;
+export const SECTION_WIDTHS = ['default', 'wide'] as const;
+
+const elementBase = {
+  id: z.string().regex(ID_RE),
+  col: z.number().int().min(1).max(GRID_COLUMNS),
+  row: z.number().int().min(1).max(GRID_MAX_ROW),
+  w: z.number().int().min(1).max(GRID_COLUMNS),
+  h: z.number().int().min(1).max(GRID_MAX_ROW),
+  align: z.enum(ALIGNMENTS).default('start'),
+  valign: z.enum(ALIGNMENTS).default('start'),
+  phone: z
+    .object({
+      hidden: z.boolean().default(false),
+      span: z.enum(['full', 'half']).default('full'),
+      // Only images and dividers can be moved: anything else would part its
+      // reading order from the order keyboard users tab through.
+      order: z.number().int().min(-20).max(20).optional(),
+    })
+    .default({ hidden: false, span: 'full' }),
+};
+
+export const elementSchema = <T extends z.ZodType>(image: () => T) =>
+  z.discriminatedUnion('type', [
+    z.object({ ...elementBase, type: z.literal('heading'), text: req(160), style: z.enum(HEADING_STYLES).default('h2') }),
+    z.object({
+      ...elementBase,
+      type: z.literal('text'),
+      body: z.string().trim().min(1), // markdown
+      size: z.enum(TEXT_SIZES).default('body'),
+    }),
+    z.object({
+      ...elementBase,
+      type: z.literal('image'),
+      image: image(),
+      alt: req(200),
+      caption: opt(200),
+      fit: z.enum(['cover', 'contain']).default('cover'),
+    }),
+    z.object({
+      ...elementBase,
+      type: z.literal('button'),
+      label: req(40),
+      link: z.string().regex(LINK_RE),
+      style: z.enum(BUTTON_STYLES).default('primary'),
+    }),
+    z.object({ ...elementBase, type: z.literal('quote'), quote: req(400), attribution: opt(80) }),
+    z.object({ ...elementBase, type: z.literal('divider') }),
+  ]);
+
+export const sectionSchema = <T extends z.ZodType>(image: () => T) => z.discriminatedUnion('type', [
+  z.object({
+    ...sectionBase,
+    type: z.literal('hero'),
+    eyebrow: opt(80),
+    line1: req(80),
+    line2: req(80),
+    lede: opt(300),
+    primary: link,
+    secondary: link.optional(),
+    reel: z.boolean().default(true),
+  }),
+  z.object({ ...sectionBase, type: z.literal('page-header'), eyebrow: opt(40), heading: req(80), intro: opt(300) }),
+  z.object({
+    ...sectionBase,
+    type: z.literal('grid'),
+    width: z.enum(SECTION_WIDTHS).default('default'),
+    elements: z.array(elementSchema(image)).max(40).default([]),
+  }),
+  z.object({
+    ...sectionBase,
+    type: z.literal('manifesto'),
+    heading: req(160),
+    lead: z.string().trim().min(1), // markdown
+    action: link,
+  }),
+  z.object({ ...sectionBase, type: z.literal('deck'), heading: req(120), intro: opt(400), action: link.optional() }),
+  z.object({ ...sectionBase, type: z.literal('disciplines'), heading: req(120), intro: opt(400) }),
+  z.object({ ...sectionBase, type: z.literal('photo-strip'), heading: req(120), intro: opt(400), action: link.optional() }),
+  z.object({ ...sectionBase, type: z.literal('about-teaser'), heading: req(80), body: req(400), linkLabel: req(40) }),
+  z.object({
+    ...sectionBase,
+    type: z.literal('cta-band'),
+    eyebrow: opt(60),
+    heading: req(80),
+    body: opt(200),
+    links: z.array(link).max(3).default([]),
+    // Work's views each link to the others, which no fixed list can do.
+    auto: z.boolean().default(false),
+  }),
+  z.object({
+    ...sectionBase,
+    type: z.literal('profile'),
+    eyebrow: opt(40),
+    title: req(80),
+    statement: req(300),
+    body: z.string().trim().min(1), // markdown
+    resumeLabel: req(40),
+    processHeading: req(60),
+    process: z.array(z.object({ title: req(60), body: req(200) })).max(6).default([]),
+    toolsHeading: req(60),
+    toolsNote: opt(120),
+    experienceHeading: req(60),
+    experience: z.array(z.object({ period: req(40), role: req(80), place: opt(80) })).default([]),
+    closing: opt(200),
+  }),
+  z.object({
+    ...sectionBase,
+    type: z.literal('contact'),
+    eyebrow: opt(40),
+    heading: req(80),
+    lede: opt(300),
+    resumeLabel: req(40),
+    form: z.object({ title: req(60), subtitle: opt(200), submitLabel: req(30), successMessage: req(120) }),
+  }),
+  z.object({
+    ...sectionBase,
+    type: z.literal('fortune'),
+    heading: req(80),
+    intro: opt(200),
+    fortunes: z.array(req(200)).min(3),
+  }),
+  z.object({ ...sectionBase, type: z.literal('gallery'), label: req(60) }),
+  z.object({ ...sectionBase, type: z.literal('work-header'), eyebrow: opt(40), heading: req(80), intro: opt(300) }),
+  z.object({ ...sectionBase, type: z.literal('work-list'), emptyText: req(120) }),
+  z.object({ ...sectionBase, type: z.literal('work-logos'), heading: req(120), intro: opt(400) }),
+]);
+
+export const pageSchema = <T extends z.ZodType>(image: () => T) =>
+  z.object({
+    title: req(60),
+    hidden: z.boolean().default(false),
+    seo,
+    sections: z.array(sectionSchema(image)).min(1),
+  });
+
+// Types use the file form of an image (a path). Parsed by a collection, image()
+// gives metadata instead, which GridSection.astro alone has to know.
+const pathImage = () => z.string();
+export const plainPageSchema = pageSchema(pathImage);
+export type PageDoc = z.infer<typeof plainPageSchema>;
+export type Section = PageDoc['sections'][number];
+export type SectionOf<T extends SectionType> = Extract<Section, { type: T }>;
+export type GridElement = SectionOf<'grid'>['elements'][number];
+export type ElementOf<T extends ElementType> = Extract<GridElement, { type: T }>;

@@ -3,7 +3,9 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, normalize } from 'node:path';
 import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
-import { ID_RE, RESERVED_PROJECT_IDS } from '../../src/lib/content-schema';
+import { REDIRECTS } from '../../redirects.config.mjs';
+import { ID_RE, RESERVED_PAGE_IDS, RESERVED_PROJECT_IDS } from '../../src/lib/content-schema';
+import { PAGE_IDS } from '../../src/lib/section-catalogue';
 
 /**
  * Folder-per-entry content: the folder name is the page URL and every image
@@ -27,6 +29,37 @@ describe('the content cache', () => {
     const hash = createHash('sha256').update(schema).digest('hex').slice(0, 12);
     const config = readFileSync(join(ROOT, 'src/content.config.ts'), 'utf8');
     expect(config, `The schema changed: set the line in src/content.config.ts to "// content-schema: ${hash}"`).toContain(`// content-schema: ${hash}`);
+  });
+});
+
+describe('a custom page’s address', () => {
+  const taken: readonly string[] = [...RESERVED_PAGE_IDS, ...PAGE_IDS];
+  const name = (file: string) => file.replace(/\.astro$/, '');
+
+  it.each(folders('public'))('can’t be public/%s, whose files would clash with it', (folder) => {
+    expect(taken).toContain(folder);
+  });
+
+  it.each(Object.keys(REDIRECTS).filter((from) => from.split('/').length === 2))('can’t be %s, which redirects elsewhere', (from) => {
+    expect(taken).toContain(from.slice(1));
+  });
+
+  it.each(readdirSync(join(ROOT, 'src/pages')).filter((f) => !f.startsWith('[')).map(name))('can’t be %s, which is a route', (route) => {
+    expect(taken).toContain(route);
+  });
+});
+
+describe('page files', () => {
+  it.each(folders('src/content/pages'))('%s only references images inside its own folder', (id) => {
+    const data = parse(readFileSync(join(ROOT, 'src/content/pages', id, 'index.yaml'), 'utf8'));
+    for (const ref of imageRefs(data)) {
+      expect(ref, `${id}: ${ref}`).not.toMatch(/^(\/|\.\.|https?:)/);
+      expect(existsSync(normalize(join(ROOT, 'src/content/pages', id, ref))), `${id}: missing ${ref}`).toBe(true);
+    }
+  });
+
+  it('are all there', () => {
+    for (const id of PAGE_IDS) expect(existsSync(join(ROOT, 'src/content/pages', id, 'index.yaml')), id).toBe(true);
   });
 });
 

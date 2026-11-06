@@ -1,0 +1,22 @@
+---
+import SectionHeader from '../ui/SectionHeader.astro';
+import DisciplineIndex from '../home/DisciplineIndex.astro';
+import type { SectionProps } from '../../lib/pages';
+
+type Props = SectionProps<'disciplines'>;
+const { section, data, last: _last, aboveFold: _aboveFold, class: className, ...rest } = Astro.props;
+const { id, heading, intro } = section;
+const titleId = `${id}-title`;
+---
+<section class:list={['section what-i-do', className]} aria-labelledby={titleId} {...rest}>
+  <div class="container">
+    <SectionHeader id={titleId} title={heading} lede={intro} />
+    <DisciplineIndex entries={data.entries} />
+  </div>
+</section>
+
+<style>
+  .what-i-do {
+    padding-block-start: 0;
+  }
+</style>

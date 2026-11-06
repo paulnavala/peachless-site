@@ -25,7 +25,7 @@ const lead = images.length % 2 === 1;
 {
   frame === 'phone' ? (
     <section class="gallery-block gallery-block--phone" id={id}>
-      {heading && <h2 class="block-heading">{heading}</h2>}
+      {heading && <h2 class="block-heading" data-field="heading">{heading}</h2>}
       <div class="gallery-block__rail" role="region" aria-label={`${heading ?? 'Screens'}: ${images.length} screens`} tabindex="0" data-rail>
         <ul class="gallery-block__grid" role="list" style={{ '--columns': columns }}>
           {images.map((item, i) => (
@@ -40,7 +40,7 @@ const lead = images.length % 2 === 1;
     </section>
   ) : frame === 'browser' ? (
     <section class="gallery-block gallery-block--browser is-wide" id={id}>
-      {heading && <h2 class="block-heading">{heading}</h2>}
+      {heading && <h2 class="block-heading" data-field="heading">{heading}</h2>}
       <ul class="gallery-block__grid" role="list">
         {images.map((item, i) => (
           <li
@@ -57,7 +57,7 @@ const lead = images.length % 2 === 1;
     </section>
   ) : (
     <section class="gallery-block is-wide" id={id}>
-      {heading && <h2 class="block-heading">{heading}</h2>}
+      {heading && <h2 class="block-heading" data-field="heading">{heading}</h2>}
       <ul class:list={['gallery-block__grid', { 'is-portrait': portrait }]} role="list" style={{ '--columns': columns }}>
         {images.map((item, i) => (
           <li class:list={{ 'is-lead': !portrait && lead && i === 0 }}>

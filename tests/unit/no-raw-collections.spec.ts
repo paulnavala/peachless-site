@@ -12,12 +12,12 @@ const walk = (dir: string): string[] =>
   readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? walk(join(dir, d.name)) : [join(dir, d.name)]));
 
 describe('collection access', () => {
-  it('only src/lib/content.ts calls getCollection/getEntry on projects or photos', () => {
+  it('only src/lib/content.ts calls getCollection/getEntry on projects, photos or pages', () => {
     const offenders = walk(join(ROOT, 'src'))
       .filter((f) => /\.(astro|ts|vue)$/.test(f))
       .map((f) => relative(ROOT, f).split(sep).join('/'))
       .filter((f) => f !== 'src/lib/content.ts')
-      .filter((f) => /get(Collection|Entry|Entries)\(\s*['"](projects|photos)['"]/.test(readFileSync(join(ROOT, f), 'utf8')));
+      .filter((f) => /get(Collection|Entry|Entries)\(\s*['"](projects|photos|pages)['"]/.test(readFileSync(join(ROOT, f), 'utf8')));
     expect(offenders).toEqual([]);
   });
 });

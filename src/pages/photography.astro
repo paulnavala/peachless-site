@@ -1,80 +1,11 @@
 ---
-import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import PhotographyGallery from '../components/islands/PhotographyGallery.vue';
-import CtaBand from '../components/CtaBand.astro';
-import ArrowLink from '../components/ui/ArrowLink.astro';
-import { getPublishedPhotos, getSingleton } from '../lib/content';
+import PageBody from '../components/sections/PageBody.astro';
+import Gallery from '../components/sections/Gallery.astro';
+import { loadPage } from '../lib/pages';
 
-const page = (await getSingleton('photographyPage')).data;
-const entries = await getPublishedPhotos();
-
-const items = await Promise.all(
-  entries.map(async (e) => {
-    // `width` pins the fallback <img src> to a sensible variant; without it
-    // Astro would point at the full-size original. AVIF first (photos are
-    // roughly half the bytes), WebP for older browsers.
-    const gridOptions = { src: e.data.image, width: 1200, widths: [480, 640, 800, 1200] };
-    const grid = await getImage({ ...gridOptions, format: 'webp' });
-    const gridAvif = await getImage({ ...gridOptions, format: 'avif' });
-    const after = await getImage({ src: e.data.image, width: Math.min(e.data.image.width, 2400), format: 'webp' });
-    const before = e.data.before
-      ? await getImage({ src: e.data.before, width: Math.min(e.data.before.width, 2400), format: 'webp' })
-      : null;
-    return {
-      id: e.id,
-      title: e.data.title,
-      alt: e.data.alt,
-      caption: e.data.caption,
-      location: e.data.location,
-      src: grid.src,
-      srcset: grid.srcSet.attribute,
-      avifSrcset: gridAvif.srcSet.attribute,
-      width: Number(grid.attributes.width),
-      height: Number(grid.attributes.height),
-      modalAfter: after.src,
-      ...(before ? { modalBefore: before.src } : {}),
-    };
-  })
-);
-
+const { head, plan } = await loadPage('photography');
 ---
-<Base title="Photography" description={page.seo.description ?? page.lede ?? page.heading}>
-  <section class="section section--tight photo-header">
-    <div class="container">
-      {page.eyebrow && <p class="eyebrow">{page.eyebrow}</p>}
-      <h1 class="photo-header__title">{page.heading}</h1>
-      {page.lede && <p class="lede">{page.lede}</p>}
-    </div>
-  </section>
-
-  <section id="portfolio-photo" class="section photo-gallery" aria-label="Photographs">
-    <div class="container">
-      <PhotographyGallery client:visible items={items} />
-    </div>
-  </section>
-
-  <CtaBand heading="See the interface and brand work." tone="paper">
-    <ArrowLink href="/projects/">All work</ArrowLink>
-    <ArrowLink href="/about/">About me</ArrowLink>
-  </CtaBand>
+<Base {...head}>
+  <PageBody plan={plan} bound={{ gallery: Gallery }} />
 </Base>
-
-<style>
-  .photo-header {
-    padding-block-end: 0;
-  }
-
-  .photo-header .container {
-    display: grid;
-    gap: var(--space-s);
-  }
-
-  .photo-header__title {
-    font-size: var(--text-h1);
-  }
-
-  .photo-gallery {
-    padding-block-start: var(--space-l-2xl);
-  }
-</style>

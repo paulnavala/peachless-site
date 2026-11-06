@@ -12,8 +12,8 @@ interface Props {
 const { heading, body, id, lead = false } = Astro.props;
 ---
 <section class:list={['text-block is-wide', { 'text-block--lead': lead }]} id={id}>
-  {heading && <h2 class="block-heading text-block__heading">{heading}</h2>}
-  <div class="text-block__body flow" set:html={renderMarkdown(body)} />
+  {heading && <h2 class="block-heading text-block__heading" data-field="heading">{heading}</h2>}
+  <div class="text-block__body flow" data-field="body" set:html={renderMarkdown(body)} />
 </section>
 
 <style>

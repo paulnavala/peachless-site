@@ -4,6 +4,9 @@
 /files/*
   X-Robots-Tag: noindex
 
+/admin/builder/
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' blob: data:; connect-src 'self' https://api.github.com; frame-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: SAMEORIGIN

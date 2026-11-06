@@ -7,15 +7,26 @@ interface Props {
   body?: string;
   tone?: 'paper' | 'blush' | 'inverse';
   id?: string;
+  /** The page ends here. A band further up the page is only a band. */
+  nextStep?: boolean;
+  class?: string;
+  /** Passed through, so the builder can find the section. */
+  [attr: string]: unknown;
 }
-const { eyebrow, heading, body, tone = 'blush', id = 'next-step-title' } = Astro.props;
+const { eyebrow, heading, body, tone = 'blush', id = 'next-step-title', nextStep = true, class: className, ...rest } = Astro.props;
 ---
-<section class="cta-band sheet" data-surface={tone} data-next-step aria-labelledby={id}>
+<section
+  class:list={['cta-band sheet', className]}
+  data-surface={tone}
+  data-next-step={nextStep ? '' : undefined}
+  aria-labelledby={id}
+  {...rest}
+>
   <div class="container cta-band__inner">
     <div class="cta-band__text">
-      {eyebrow && <p class="eyebrow">{eyebrow}</p>}
-      <h2 id={id} class="cta-band__title t-h2">{heading}</h2>
-      {body && <p class="cta-band__body">{body}</p>}
+      {eyebrow && <p class="eyebrow" data-field="eyebrow">{eyebrow}</p>}
+      <h2 id={id} class="cta-band__title t-h2" data-field="heading">{heading}</h2>
+      {body && <p class="cta-band__body" data-field="body">{body}</p>}
     </div>
     <div class="cluster cta-band__actions">
       <slot />

@@ -26,7 +26,23 @@ export interface SiteSettings {
   cta?: { eyebrow?: string; heading: string; buttonLabel: string; buttonLink: string };
 }
 
-export const site = () => readYaml<SiteSettings>('site', 'site.yaml');
+export const site = () => readYaml<SiteSettings & { portraitAlt: string }>('site', 'site.yaml');
+
+export const disciplines = () => readYaml('site', 'disciplines.yaml');
+
+export interface SectionData {
+  id: string;
+  type: string;
+  hidden?: boolean;
+  [key: string]: any;
+}
+
+/** A page's sections as visitors get them. An editor can reorder or hide any of them. */
+export const sectionsOf = (id: string) =>
+  readYaml<{ sections: SectionData[] }>('pages', id, 'index.yaml').sections.filter((s) => !s.hidden);
+
+/** The section of this type, if the page has one. */
+export const sectionOf = (id: string, type: string) => sectionsOf(id).find((s) => s.type === type);
 
 export interface ProjectData {
   title: string;
@@ -71,6 +87,14 @@ export const publishedPhotos = () => published(entries<PhotoData>('photos'));
 export const toolsInUse = () => toolCounts(publishedProjects(), TOOLS);
 export const toolRoutes = () => toolsInUse().map(({ tool }) => `/projects/tools/${tool}/`);
 
+const BUILT_IN_PAGES = ['home', 'about', 'contact', 'photography', 'work'];
+
+/** Pages an editor added in the builder. */
+export const customRoutes = () =>
+  entries<{ hidden?: boolean }>('pages')
+    .filter((p) => !BUILT_IN_PAGES.includes(p.id) && !p.data.hidden)
+    .map((p) => `/${p.id}/`);
+
 /** Every public page, for checks that sweep the whole site. */
 export const allRoutes = () => [
   '/',
@@ -82,4 +106,5 @@ export const allRoutes = () => [
   '/photography/',
   '/about/',
   '/contact/',
+  ...customRoutes(),
 ];

@@ -13,10 +13,10 @@ const { eyebrow, title, lede, id, action } = Astro.props;
 <header class="section-header">
   <div class="section-header__text">
     {eyebrow && <p class="eyebrow">{eyebrow}</p>}
-    <h2 id={id} class="section-header__title t-h2">{title}</h2>
-    {lede && <p class="lede">{lede}</p>}
+    <h2 id={id} class="section-header__title t-h2" data-field="heading">{title}</h2>
+    {lede && <p class="lede" data-field="intro">{lede}</p>}
   </div>
-  {action && <ArrowLink class="section-header__action" href={action.href}>{action.label}</ArrowLink>}
+  {action && <ArrowLink class="section-header__action" href={action.href} data-field="action.label">{action.label}</ArrowLink>}
 </header>
 
 <style>

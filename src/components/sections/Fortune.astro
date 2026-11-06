@@ -1,0 +1,12 @@
+---
+import FortunePeach from '../static/FortunePeach.astro';
+import type { SectionProps } from '../../lib/pages';
+
+type Props = SectionProps<'fortune'>;
+const { section, data: _data, last: _last, aboveFold: _aboveFold, class: className, ...rest } = Astro.props;
+---
+<section class:list={['section', className]} {...rest}>
+  <div class="container">
+    <FortunePeach heading={section.heading} intro={section.intro} fortunes={section.fortunes} />
+  </div>
+</section>

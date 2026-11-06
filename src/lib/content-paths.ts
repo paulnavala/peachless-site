@@ -5,11 +5,8 @@
 export const CONTENT_PATHS = {
   projects: { folder: 'src/content/projects', pattern: '*/index.yaml' },
   photos: { folder: 'src/content/photos', pattern: '*/index.yaml' },
-  home: { file: 'src/content/pages/home.yaml' },
-  work: { file: 'src/content/pages/work.yaml' },
-  about: { file: 'src/content/pages/about.md' },
-  contact: { file: 'src/content/pages/contact.yaml' },
-  photographyPage: { file: 'src/content/pages/photography.yaml' },
+  pages: { folder: 'src/content/pages', pattern: '*/index.yaml' },
   site: { file: 'src/content/site/site.yaml' },
+  disciplines: { file: 'src/content/site/disciplines.yaml' },
   form: { file: 'src/content/site/form.yaml' },
 } as const;

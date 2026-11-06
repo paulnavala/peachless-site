@@ -12,7 +12,7 @@ interface Props {
 const { heading, caption, variants, id } = Astro.props;
 ---
 <section class="logo-block is-wide" id={id}>
-  {heading && <h2 class="block-heading">{heading}</h2>}
+  {heading && <h2 class="block-heading" data-field="heading">{heading}</h2>}
   <ul class="logo-block__grid" role="list" style={`--count: ${Math.min(variants.length, 3)}`}>
     {
       variants.map((v) => (
@@ -27,7 +27,7 @@ const { heading, caption, variants, id } = Astro.props;
       ))
     }
   </ul>
-  {caption && <p class="logo-block__caption">{caption}</p>}
+  {caption && <p class="logo-block__caption" data-field="caption">{caption}</p>}
 </section>
 
 <style>

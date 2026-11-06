@@ -1,0 +1,37 @@
+---
+import FilterChips from '../work/FilterChips.astro';
+import type { SectionProps } from '../../lib/pages';
+
+type Props = SectionProps<'work-header'>;
+const { section, data, last: _last, aboveFold: _aboveFold, class: className, ...rest } = Astro.props;
+const { heading, lede, current, counts, labels, tools } = data;
+---
+<section class:list={['section section--tight work-header', className]} {...rest}>
+  <div class="container">
+    {section.eyebrow && <p class="eyebrow" data-field="eyebrow">{section.eyebrow}</p>}
+    <h1 class="work-header__title" data-field="heading">{heading}</h1>
+    {lede && <p class="lede" data-field="intro">{lede}</p>}
+    <div class="work-header__filters">
+      <FilterChips current={current} counts={counts} labels={labels} tools={tools} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .work-header {
+    padding-block-end: 0;
+  }
+
+  .work-header .container {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .work-header__title {
+    font-size: var(--text-h1);
+  }
+
+  .work-header__filters {
+    margin-block-start: var(--space-s);
+  }
+</style>

@@ -468,251 +468,6 @@ collections:
       - { name: hidden, label: Hide from site, widget: boolean, default: false, required: false }
 
 singletons:
-  - name: home
-    label: Home page
-    icon: home
-    file: src/content/pages/home.yaml
-    preview_path: /
-    editor:
-      preview: false
-    fields:
-      - { name: eyebrow, label: Small line above the headline, widget: string, maxlength: 80, required: false }
-      - name: tagline
-        label: Headline
-        widget: object
-        hint: Typed out on the home page, line by line.
-        fields:
-          - { name: line1, label: First line, widget: string, maxlength: 80 }
-          - { name: line2, label: Second line, widget: string, maxlength: 80 }
-      - { name: lede, label: Introduction, widget: text, maxlength: 300, required: false }
-      - name: primaryCta
-        label: Main button
-        widget: object
-        fields:
-          - { name: label, label: Button text, widget: string, maxlength: 40 }
-          - { name: link, label: Link, widget: string, pattern: ['^(\/|https:\/\/|mailto:)', 'Start with / for a page on this site, or https://'] }
-      - name: secondaryCta
-        label: Second button
-        widget: object
-        required: false
-        collapsed: true
-        fields:
-          - { name: label, label: Button text, widget: string, maxlength: 40 }
-          - { name: link, label: Link, widget: string, pattern: ['^(\/|https:\/\/|mailto:)', 'Start with / for a page on this site, or https://'] }
-      - name: manifesto
-        label: Manifesto
-        widget: object
-        fields:
-          - { name: heading, label: Statement, widget: text, maxlength: 160 }
-          - { name: lead, label: Paragraph, widget: richtext, buttons: [bold, italic, link], editor_components: [] }
-      - name: services
-        label: “What I do” section
-        widget: object
-        collapsed: true
-        hint: The three disciplines come from the Work page settings.
-        fields:
-          - { name: heading, label: Heading, widget: string, maxlength: 120 }
-          - { name: intro, label: Introduction, widget: text, maxlength: 400, required: false }
-      - name: featured
-        label: “Selected work” section
-        widget: object
-        collapsed: true
-        hint: Choose the projects with “Feature on the home page”.
-        fields:
-          - { name: heading, label: Heading, widget: string, maxlength: 120 }
-          - { name: intro, label: Introduction, widget: text, maxlength: 400, required: false }
-      - name: photography
-        label: Photography section
-        widget: object
-        collapsed: true
-        hint: Choose the photos with “Feature on the home page”.
-        fields:
-          - { name: heading, label: Heading, widget: string, maxlength: 120 }
-          - { name: intro, label: Introduction, widget: text, maxlength: 400, required: false }
-      - name: about
-        label: About teaser
-        widget: object
-        collapsed: true
-        fields:
-          - { name: heading, label: Heading, widget: string, maxlength: 80 }
-          - { name: body, label: Text, widget: text, maxlength: 400 }
-          - { name: linkLabel, label: Link text, widget: string, maxlength: 40 }
-      - name: seo
-        label: Search & sharing
-        widget: object
-        collapsed: true
-        required: false
-        fields:
-          - { name: description, label: Search description, widget: text, maxlength: 160, required: false }
-
-  - name: work
-    label: Work page
-    icon: grid_view
-    file: src/content/pages/work.yaml
-    preview_path: /projects/
-    editor:
-      preview: false
-    fields:
-      - { name: eyebrow, label: Small line above the heading, widget: string, maxlength: 40, required: false }
-      - { name: heading, label: Heading, widget: string, maxlength: 80 }
-      - { name: intro, label: Introduction, widget: text, maxlength: 300, required: false }
-      - name: disciplines
-        label: Disciplines
-        widget: object
-        hint: Used for the Work filters, the discipline pages and the “What I do” section on the home page.
-        fields:
-          - name: graphicDesign
-            label: Graphic design
-            widget: object
-            fields:
-              - { name: title, label: Name, widget: string, maxlength: 40 }
-              - { name: description, label: Description, widget: text, maxlength: 200 }
-          - name: uiux
-            label: UI/UX
-            widget: object
-            fields:
-              - { name: title, label: Name, widget: string, maxlength: 40 }
-              - { name: description, label: Description, widget: text, maxlength: 200 }
-          - name: photography
-            label: Photography
-            widget: object
-            fields:
-              - { name: title, label: Name, widget: string, maxlength: 40 }
-              - { name: description, label: Description, widget: text, maxlength: 200 }
-      - name: logos
-        label: Small tiles section
-        widget: object
-        hint: The section below the case studies, for projects switched to “Show as a small tile”.
-        fields:
-          - { name: heading, label: Heading, widget: string, maxlength: 120 }
-          - { name: intro, label: Introduction, widget: text, maxlength: 400, required: false }
-      - name: seo
-        label: Search & sharing
-        widget: object
-        collapsed: true
-        required: false
-        fields:
-          - { name: description, label: Search description, widget: text, maxlength: 160, required: false }
-
-  - name: about
-    label: About page
-    icon: person
-    file: src/content/pages/about.md
-    preview_path: /about/
-    editor:
-      preview: false
-    fields:
-      - { name: eyebrow, label: Small line above the heading, widget: string, maxlength: 40, required: false }
-      - { name: title, label: Heading, widget: string, maxlength: 80 }
-      - { name: statement, label: Statement, widget: text, maxlength: 300, hint: 'One or two sentences, shown large.' }
-      - name: portrait
-        label: Portrait
-        widget: image
-        choose_url: false
-        media_folder: images
-        public_folder: images
-        hint: A tall photo, shown at 4:5 on the About page and the home page. At least 1200 px wide.
-      - { name: portraitAlt, label: Describe the portrait, widget: string, maxlength: 200 }
-      - { name: closing, label: Closing line, widget: string, maxlength: 200, required: false }
-      - name: process
-        label: How I work
-        label_singular: step
-        widget: list
-        required: false
-        collapsed: auto
-        max: 6
-        summary: '{{title}}'
-        hint: The steps of your process, in order. The section appears once you add a step.
-        fields:
-          - { name: title, label: Step, widget: string, maxlength: 60, hint: 'e.g. Research.' }
-          - { name: body, label: What happens, widget: text, maxlength: 200 }
-      - name: experience
-        label: Experience
-        label_singular: entry
-        widget: list
-        required: false
-        collapsed: auto
-        summary: '{{role}}'
-        hint: Jobs, studies or courses, newest first. The section appears once you add an entry.
-        fields:
-          - { name: period, label: When, widget: string, maxlength: 40, hint: 'e.g. 2023–2025.' }
-          - { name: role, label: Role or course, widget: string, maxlength: 80 }
-          - { name: place, label: Where, widget: string, maxlength: 80, required: false }
-      - name: seo
-        label: Search & sharing
-        widget: object
-        collapsed: true
-        required: false
-        fields:
-          - { name: description, label: Search description, widget: text, maxlength: 160, required: false }
-      - name: body
-        label: Your story
-        widget: richtext
-        buttons: [bold, italic, link, bulleted-list, numbered-list, quote]
-        editor_components: []
-
-  - name: contact
-    label: Contact page
-    icon: mail
-    file: src/content/pages/contact.yaml
-    preview_path: /contact/
-    editor:
-      preview: false
-    fields:
-      - { name: eyebrow, label: Small line above the heading, widget: string, maxlength: 40, required: false }
-      - { name: heading, label: Heading, widget: string, maxlength: 80 }
-      - { name: lede, label: Introduction, widget: text, maxlength: 300, required: false, hint: The email addresses come from Site settings. }
-      - name: form
-        label: Contact form
-        widget: object
-        collapsed: true
-        fields:
-          - { name: title, label: Heading, widget: string, maxlength: 60 }
-          - { name: subtitle, label: Introduction, widget: text, maxlength: 200, required: false }
-          - { name: submitLabel, label: Button text, widget: string, maxlength: 30 }
-          - { name: successMessage, label: Thank-you message, widget: string, maxlength: 120 }
-      - name: fortune
-        label: Fortune peach
-        widget: object
-        collapsed: true
-        fields:
-          - { name: heading, label: Heading, widget: string, maxlength: 80 }
-          - { name: intro, label: Introduction, widget: text, maxlength: 200, required: false }
-          - name: fortunes
-            label: Fortunes
-            label_singular: fortune
-            widget: list
-            min: 3
-            field: { name: fortune, label: Fortune, widget: text, maxlength: 200 }
-      - name: seo
-        label: Search & sharing
-        widget: object
-        collapsed: true
-        required: false
-        fields:
-          - { name: description, label: Search description, widget: text, maxlength: 160, required: false }
-
-  - name: photographyPage
-    label: Photography page
-    icon: camera
-    file: src/content/pages/photography.yaml
-    preview_path: /photography/
-    editor:
-      preview: false
-    fields:
-      - { name: eyebrow, label: Small line above the heading, widget: string, maxlength: 40, required: false }
-      - { name: heading, label: Heading, widget: string, maxlength: 80 }
-      - { name: lede, label: Introduction, widget: text, maxlength: 300, required: false }
-      - name: seo
-        label: Search & sharing
-        widget: object
-        collapsed: true
-        required: false
-        fields:
-          - { name: description, label: Search description, widget: text, maxlength: 160, required: false }
-
-  - divider: true
-
   - name: site
     label: Site settings
     icon: settings
@@ -727,6 +482,14 @@ singletons:
         hint: 'The header, menu and footer draw the logo for "peachless."; any other name appears there as plain text.'
       - { name: ownerName, label: Your name, widget: string, maxlength: 40, required: false, hint: Used to introduce you. Leave empty to stay “peachless.” only. }
       - { name: jobTitle, label: Your job title, widget: string, maxlength: 60, required: false, hint: "e.g. “UI/UX designer”. Shown after your name in the browser tab on the home page and in Google." }
+      - name: portrait
+        label: Portrait
+        widget: image
+        choose_url: false
+        media_folder: images
+        public_folder: images
+        hint: A tall photo, shown at 4:5 on the About page and the home page. At least 1200 px wide.
+      - { name: portraitAlt, label: Describe the portrait, widget: string, maxlength: 200 }
       - { name: tagline, label: Tagline, widget: string, maxlength: 120, hint: Shown in the footer and the mobile menu. }
       - name: nav
         label: Menu
@@ -798,6 +561,32 @@ singletons:
             media_folder: images
             public_folder: images
             hint: 1200 × 630 px.
+
+  - name: disciplines
+    label: Kinds of work
+    icon: category
+    file: src/content/site/disciplines.yaml
+    editor:
+      preview: false
+    fields:
+      - name: uiux
+        label: UI/UX
+        widget: object
+        fields:
+          - { name: title, label: Name, widget: string, maxlength: 40 }
+          - { name: description, label: One line about it, widget: text, maxlength: 200 }
+      - name: graphicDesign
+        label: Graphic design
+        widget: object
+        fields:
+          - { name: title, label: Name, widget: string, maxlength: 40 }
+          - { name: description, label: One line about it, widget: text, maxlength: 200 }
+      - name: photography
+        label: Photography
+        widget: object
+        fields:
+          - { name: title, label: Name, widget: string, maxlength: 40 }
+          - { name: description, label: One line about it, widget: text, maxlength: 200 }
 
   - name: form
     label: Contact form — developer

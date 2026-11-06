@@ -6,18 +6,7 @@ import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 import { z } from 'astro/zod';
 import { CONTENT_PATHS } from '../../src/lib/content-paths';
-import {
-  aboutSchema,
-  contactSchema,
-  formSchema,
-  homeSchema,
-  photographyPageSchema,
-  photoSchema,
-  projectSchema,
-  RESERVED_PROJECT_IDS,
-  siteSchema,
-  workSchema,
-} from '../../src/lib/content-schema';
+import { disciplinesSchema, formSchema, photoSchema, projectSchema, RESERVED_PROJECT_IDS, siteSchema } from '../../src/lib/content-schema';
 
 /**
  * The admin (public/admin/config.yml) and the build (src/lib/content-schema.ts)
@@ -179,20 +168,15 @@ describe('admin config ↔ content schema', () => {
   });
 
   it.each([
-    ['home', homeSchema],
-    ['work', workSchema],
-    ['contact', contactSchema],
-    ['photographyPage', photographyPageSchema],
     ['site', siteSchema(image)],
+    ['disciplines', disciplinesSchema],
     ['form', formSchema],
   ] as const)('the %s singleton matches its schema', (name, schema) => {
     expect(compareFields(name, singleton(name).fields, schema, false)).toEqual([]);
   });
 
-  it('the about singleton matches aboutSchema plus its Markdown body', () => {
-    const fields = singleton('about').fields.filter((f: Field) => f.name !== 'body');
-    expect(compareFields('about', fields, aboutSchema(image), false)).toEqual([]);
-    expect(singleton('about').fields.find((f: Field) => f.name === 'body')?.widget).toBe('richtext');
+  it('leaves pages to the builder, so nothing has two owners', () => {
+    expect(JSON.stringify(config)).not.toContain('src/content/pages');
   });
 
   it('the résumé upload lands in public/ and tests only the file extension', () => {
@@ -215,7 +199,7 @@ describe('admin config ↔ content schema', () => {
       expect(c.slug?.editable).toEqual(['create']);
       expect(c.duplicate).toBe(false);
     }
-    for (const name of ['home', 'work', 'about', 'contact', 'photographyPage', 'site', 'form'] as const) {
+    for (const name of ['site', 'disciplines', 'form'] as const) {
       expect(singleton(name).file, name).toBe(CONTENT_PATHS[name].file);
     }
     expect(singleton('form').readonly).toBe(true);

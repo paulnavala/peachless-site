@@ -1,0 +1,40 @@
+---
+// The builder. Not a page of the site: it has no Base layout, because Base's
+// inline scripts wouldn't pass this page's Content-Security-Policy, and nothing
+// here is for visitors. The sign-in token lives on this origin, so this page
+// loads our own bundle and nothing else (see public/_headers).
+//
+// Its CSS comes in as text, on purpose. Imported the usual way, a stylesheet it
+// shares with the site would split the site's own chunk in two, and two files
+// compress worse than one: every visitor would pay for a page they never open.
+import { Font } from 'astro:assets';
+import tokens from '../../../styles/tokens.css?inline';
+import globals from '../../../styles/global.css?inline';
+import chrome from '../../../builder/builder.css?inline';
+
+// Which commit this copy of the builder came from, so it can tell when it's behind.
+const builtFrom = process.env.CF_PAGES_COMMIT_SHA ?? '';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="built-from" content={builtFrom} />
+    <title>Builder — peachless.</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <Font cssVariable="--font-inter" />
+    <Font cssVariable="--font-inter-ro" />
+    <Font cssVariable="--font-cormorant" />
+    <Font cssVariable="--font-cormorant-ro" />
+    <style is:inline set:html={tokens + globals + chrome}></style>
+  </head>
+  <body>
+    <div id="builder" class="builder" data-surface="inverse"></div>
+    <script>
+      import '../../../builder/main';
+    </script>
+  </body>
+</html>

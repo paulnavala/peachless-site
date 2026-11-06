@@ -5,8 +5,7 @@
 // Each chip and the current chip's pill carry view-transition names, so moving
 // between the filtered pages slides the pill from one chip to the next.
 import { TOOL_LABELS, type Discipline, type Tool } from '../../lib/content-schema';
-
-export type WorkFilter = 'all' | Discipline | Tool;
+import type { WorkFilter } from '../../lib/pages';
 
 interface Props {
   current: WorkFilter;

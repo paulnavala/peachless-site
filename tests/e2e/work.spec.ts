@@ -1,9 +1,11 @@
 import { test, expect } from './fixtures';
 import { sortTools, TOOLS, TOOL_LABELS, type Tool } from '../../src/lib/content-schema';
 import { hasPrototype, workView } from '../../src/lib/project-order';
-import { hiddenProjects, publishedProjects, readYaml, toolRoutes, toolsInUse } from './content';
+import { disciplines, hiddenProjects, publishedProjects, sectionOf, toolRoutes, toolsInUse } from './content';
 
-const work = readYaml('pages', 'work.yaml');
+const header = sectionOf('work', 'work-header')!;
+const logos = sectionOf('work', 'work-logos');
+const copy = disciplines();
 const projects = publishedProjects();
 const byDiscipline = (d: string) => projects.filter((p) => p.data.disciplines.includes(d));
 const { large, compact } = workView(projects);
@@ -11,7 +13,7 @@ const { large, compact } = workView(projects);
 test.describe('Work index', () => {
   test('lists every published project, in order, large cards before small tiles', async ({ page }) => {
     await page.goto('/projects/');
-    await expect(page.locator('h1')).toHaveText(work.heading);
+    await expect(page.locator('h1')).toHaveText(header.heading);
     const cards = page.getByTestId('work-card');
     await expect(cards).toHaveCount(projects.length);
     for (const [i, p] of [...large, ...compact].entries()) {
@@ -52,8 +54,8 @@ test.describe('Work index', () => {
   });
 
   for (const [path, discipline, title] of [
-    ['/projects/graphic-design/', 'graphic-design', work.disciplines.graphicDesign.title],
-    ['/projects/uiux/', 'uiux', work.disciplines.uiux.title],
+    ['/projects/graphic-design/', 'graphic-design', copy.graphicDesign.title],
+    ['/projects/uiux/', 'uiux', copy.uiux.title],
   ] as const) {
     test(`${path} shows only ${discipline} projects`, async ({ page }) => {
       await page.goto(path);
@@ -76,8 +78,8 @@ test.describe('Work index', () => {
 
   test('small tiles sit in their own section, and each still opens its project', async ({ page }) => {
     await page.goto('/projects/');
-    test.skip(compact.length === 0, 'no small tiles in the content');
-    await expect(page.locator('#work-logos-title')).toHaveText(work.logos.heading);
+    test.skip(compact.length === 0 || !logos, 'no small tiles in the content');
+    await expect(page.locator(`#${logos!.id}-title`)).toHaveText(logos!.heading);
     const tiles = page.locator('.work-tiles').getByTestId('work-card');
     await expect(tiles).toHaveCount(compact.length);
     for (const [i, p] of compact.entries()) {
