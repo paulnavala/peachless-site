@@ -69,7 +69,8 @@ export interface FileChange {
 export type DraftStatus =
   /** Cloudflare hasn't reported yet: it creates the check run when it finishes. */
   | { state: 'building'; since: number }
-  | { state: 'ready'; previewUrl: string; tests: 'passed' | 'running' | 'failed' }
+  /** `previewUrl` is null in the demo, which has nothing to preview. */
+  | { state: 'ready'; previewUrl: string | null; tests: 'passed' | 'running' | 'failed' }
   /** The preview build failed. */
   | { state: 'failed'; detailsUrl?: string; details: string }
   /** It has been far too long. */
@@ -87,6 +88,8 @@ export type LiveStatus = { state: 'waiting' } | { state: 'live' } | { state: 'fa
 export type BackendErrorKind =
   /** Not signed in, or the token is no longer good. */
   | 'auth'
+  /** There's no such file at that commit, which isn't the same as not being able to look. */
+  | 'missing'
   /** Signed in, but this account can't push. */
   | 'forbidden'
   /** The draft moved since it was read (another tab, another device). */
@@ -111,8 +114,10 @@ export interface Backend {
   readonly kind: 'github' | 'demo';
   /** Reads the draft if there is one, otherwise main. */
   load(): Promise<RepoSnapshot>;
-  /** An image's bytes, for one the site hasn't built yet. */
+  /** A file's bytes at a commit or branch: an image the site hasn't built, or an older version. */
   readImage(path: string, ref: string): Promise<Blob>;
+  /** Every file the draft changes, as GitHub has it, so nothing relies on one browser's memory. */
+  draftFiles(draft: DraftInfo): Promise<string[]>;
   /** Commits to the draft branch, making the branch and its pull request if needed. */
   saveDraft(changes: FileChange[], message: string, expectedHeadOid: string | null): Promise<DraftInfo>;
   draftStatus(draft: DraftInfo, since: number): Promise<DraftStatus>;

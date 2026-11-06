@@ -16,7 +16,7 @@ import {
   SURFACES,
   TEXT_SIZES,
 } from '../../lib/content-schema';
-import { SECTIONS, type FieldDef } from '../../lib/section-catalogue';
+import { definitionOf, type FieldDef } from '../../lib/section-catalogue';
 import { uploadImage } from '../images';
 import { getPath, page, placeElement, selectedElement, selectedSection, setElementField, setField, state, change, type RawElement, type RawSection } from '../store';
 import { choiceField, group, numberField, textField, toggleField } from './controls';
@@ -80,7 +80,7 @@ const swap = (items: unknown[], a: number, b: number) => {
 };
 
 function sectionFields(section: RawSection): (VNode | null)[] {
-  return SECTIONS[section.type].fields.map((field) => {
+  return definitionOf(section.type).fields.map((field) => {
     const value = getPath(section, field.key);
     const set = (next: unknown) => setField(section.id, field.key, next);
     switch (field.kind) {
@@ -248,6 +248,12 @@ function phoneFields(section: RawSection, element: RawElement): (VNode | null)[]
 
 function pageSettings(): VNode[] {
   const entry = page.value;
+  if (entry.raw.story) {
+    return [
+      h('h2', { class: 'panel-title' }, entry.raw.title),
+      h('p', { class: 'panel-note' }, 'Click a block to edit it. The title, cover and credits are in the admin.'),
+    ];
+  }
   const set = (fn: (raw: typeof entry.raw) => void, key: string) => change(fn, key);
   return [
     h('h2', { class: 'panel-title' }, entry.raw.title),
@@ -306,12 +312,12 @@ export const Inspector = defineComponent({
           state.device === 'phone' ? group('On phones', phoneFields(s, e)) : group('Position', placementFields(s, e)),
         ];
       } else {
-        const def = SECTIONS[s.type];
+        const def = definitionOf(s.type);
         content = [
           h('h2', { class: 'panel-title' }, def.name),
           h('p', { class: 'panel-note' }, def.note),
           ...sectionFields(s),
-          group('Design', designFields(s)),
+          page.value.raw.story ? null : group('Design', designFields(s)),
         ];
       }
       return h('aside', { ref: root, class: 'panel panel--right', 'aria-label': 'Inspector' }, content);

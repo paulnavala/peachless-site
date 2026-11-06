@@ -4,25 +4,32 @@
  */
 import { computed, defineComponent, h, ref, type VNode } from 'vue';
 import { ELEMENT_TYPES, ID_RE, RESERVED_PAGE_IDS, SECTION_TYPES, type ElementType, type SectionType } from '../../lib/content-schema';
-import { allowedOn, PAGE_IDS, SECTIONS } from '../../lib/section-catalogue';
+import { ADDABLE_BLOCKS, allowedOn, BLOCKS, definitionOf, PAGE_IDS, SECTIONS } from '../../lib/section-catalogue';
 import { scrollToSection } from '../canvas/controller';
 import {
+  addBlock,
   addElement,
   addPage,
   addSection,
+  inMenu,
+  isProject,
+  MENU_LIMIT,
   moveSection,
   openPage,
   page,
   pageIds,
   problems,
+  projectIds,
   sections,
   select,
   selectedSection,
+  setInMenu,
   state,
   toggleHidden,
   type Panel,
 } from '../store';
-import { textField } from './controls';
+import { textField, toggleField } from './controls';
+import { Blockers } from './publish';
 
 const TABS: [Panel, string][] = [
   ['add', 'Add'],
@@ -42,10 +49,31 @@ const ELEMENTS: Record<ElementType, [string, string]> = {
 
 const GROUPS = ['Your own', 'Page openers', 'Showing work', 'Telling the story', 'Next steps'] as const;
 
+function StoryAddPanel(): VNode[] {
+  const place = (type: string) => {
+    const after = sections.value.findIndex((s) => s.id === state.selection?.section);
+    addBlock(type, state.insertAt ?? (after === -1 ? sections.value.length : after + 1));
+    state.insertAt = null;
+  };
+  return [
+    h('section', { class: 'library' }, [
+      h('h3', { class: 'group__title' }, 'Add to this story'),
+      ...ADDABLE_BLOCKS.map((type) =>
+        h('button', { type: 'button', class: 'item', onClick: () => place(type) }, [
+          h('span', { class: 'item__name' }, BLOCKS[type].name),
+          h('span', { class: 'item__note' }, BLOCKS[type].note),
+        ])
+      ),
+      h('p', { class: 'hint' }, 'Blocks with pictures, such as galleries, are added in the admin.'),
+    ]),
+  ];
+}
+
 function AddPanel(): VNode[] {
+  if (page.value.raw.story) return StoryAddPanel();
   const inGrid = selectedSection.value?.type === 'grid';
   const onPage = new Set(sections.value.map((s) => s.type));
-  const usable = (type: SectionType) => allowedOn(type, page.value.id) && !(SECTIONS[type].once && onPage.has(type));
+  const usable = (type: SectionType) => allowedOn(type, page.value.id) && !(SECTIONS[type].once && onPage.has(type as never));
 
   const place = (type: SectionType) => {
     const after = sections.value.findIndex((s) => s.id === state.selection?.section);
@@ -85,6 +113,12 @@ function AddPanel(): VNode[] {
   ].filter((node): node is VNode => node !== null);
 }
 
+/** What tells one section from another of its kind: its own words. */
+const layerDetail = (section: (typeof sections.value)[number]): string | null => {
+  const words = section.heading ?? section.title ?? section.quote ?? section.caption;
+  return typeof words === 'string' && words ? words : null;
+};
+
 function LayersPanel(): VNode[] {
   const list = sections.value;
   return [
@@ -103,12 +137,14 @@ function LayersPanel(): VNode[] {
                 scrollToSection(section.id);
               },
             },
-            SECTIONS[section.type].name
+            [definitionOf(section.type).name, layerDetail(section) ? h('span', { class: 'layer__detail' }, layerDetail(section)!) : null]
           ),
           h('div', { class: 'layer__actions' }, [
-            h('button', { type: 'button', class: 'link', disabled: i === 0, 'aria-label': `Move ${SECTIONS[section.type].name} up`, onClick: () => moveSection(section.id, i - 1) }, 'Up'),
-            h('button', { type: 'button', class: 'link', disabled: i === list.length - 1, 'aria-label': `Move ${SECTIONS[section.type].name} down`, onClick: () => moveSection(section.id, i + 1) }, 'Down'),
-            h('button', { type: 'button', class: 'link', 'aria-label': `${section.hidden ? 'Show' : 'Hide'} ${SECTIONS[section.type].name}`, onClick: () => toggleHidden(section.id) }, section.hidden ? 'Show' : 'Hide'),
+            h('button', { type: 'button', class: 'link', disabled: i === 0, 'aria-label': `Move ${definitionOf(section.type).name} up`, onClick: () => moveSection(section.id, i - 1) }, 'Up'),
+            h('button', { type: 'button', class: 'link', disabled: i === list.length - 1, 'aria-label': `Move ${definitionOf(section.type).name} down`, onClick: () => moveSection(section.id, i + 1) }, 'Down'),
+            page.value.raw.story
+              ? null
+              : h('button', { type: 'button', class: 'link', 'aria-label': `${section.hidden ? 'Show' : 'Hide'} ${definitionOf(section.type).name}`, onClick: () => toggleHidden(section.id) }, section.hidden ? 'Show' : 'Hide'),
           ]),
         ])
       )
@@ -134,6 +170,8 @@ const PagesPanel = defineComponent({
     });
     const valid = computed(() => ID_RE.test(slug.value) && !taken.value);
 
+    const menuFull = computed(() => (state.site?.raw.nav.length ?? 0) >= MENU_LIMIT);
+
     return () => [
       h(
         'ul',
@@ -148,6 +186,32 @@ const PagesPanel = defineComponent({
           ])
         )
       ),
+      projectIds().length
+        ? h('section', { class: 'library' }, [
+            h('h3', { class: 'group__title' }, 'Case studies'),
+            h(
+              'ul',
+              { class: 'pages' },
+              projectIds().map((id) =>
+                h('li', [
+                  h(
+                    'button',
+                    { type: 'button', class: ['page-link', { 'is-selected': id === state.pageId }], 'aria-current': id === state.pageId ? 'page' : undefined, onClick: () => openPage(id) },
+                    state.pages[id].raw.title
+                  ),
+                ])
+              )
+            ),
+          ])
+        : null,
+      state.pageId === 'home' || !state.site || isProject(state.pageId)
+        ? null
+        : toggleField({
+            label: 'Show this page in the menu',
+            hint: menuFull.value && !inMenu(state.pageId) ? 'The menu is full. Take a page out first.' : undefined,
+            value: inMenu(state.pageId),
+            onChange: (on) => setInMenu(state.pageId, on),
+          }),
       h('section', { class: 'library' }, [
         h('h3', { class: 'group__title' }, 'New page'),
         textField({
@@ -179,9 +243,10 @@ const PagesPanel = defineComponent({
   },
 });
 
-function ChecksPanel(): VNode[] {
-  if (!problems.value.length) return [h('p', { class: 'all-clear' }, 'This page is ready to publish.')];
+function ChecksPanel(): (VNode | null)[] {
+  if (!problems.value.length) return [Blockers(), h('p', { class: 'all-clear' }, 'This page is ready to publish.')];
   return [
+    Blockers(),
     h(
       'ul',
       { class: 'checks' },

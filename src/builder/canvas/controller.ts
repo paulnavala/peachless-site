@@ -9,11 +9,12 @@ import { reactive, watch } from 'vue';
 import { DEVICES, page, pageUrl, state, type RawSection, type Selection } from '../store';
 import { tracksFrom, type Track } from '../grid/layout';
 import { openPage, pageExists } from './frame';
-import { reconcile } from './reconcile';
+import { reconcile, stampBlocks } from './reconcile';
 
 const MIN_FRAME_HEIGHT = 640;
 const SHELL = '/admin/builder/shell/';
 const SPECIMENS = '/admin/builder/specimens/';
+const BLOCK_SPECIMENS: Record<string, string> = { text: '.text-block', quote: '.quote-block' };
 
 export interface Box {
   id: string;
@@ -52,6 +53,8 @@ let frame: HTMLIFrameElement | null = null;
 let scroller: HTMLElement | null = null;
 let specimens: Document | null = null;
 let doc: Document | null = null;
+/** The page the frame really holds. */
+let shownPage: string | null = null;
 let raf = 0;
 const images = new Map<string, string>();
 
@@ -66,9 +69,10 @@ const context = {
   specimen(section: RawSection, target: Document): Element | null {
     if (!specimens) return null;
     const id = section.type === 'grid' ? 'specimen-grid-default' : `specimen-${section.type}`;
-    const source = specimens.querySelector(`[data-section="${id}"]`);
+    const source = specimens.querySelector(BLOCK_SPECIMENS[section.type] ?? `[data-section="${id}"]`);
     if (!source) return null;
     const copy = target.importNode(source, true) as Element;
+    copy.setAttribute('data-section-type', section.type);
     if (section.type === 'grid') copy.querySelector('.grid-section__grid')?.replaceChildren();
     return copy;
   },
@@ -128,7 +132,7 @@ export function measure(): void {
   const content = doc.documentElement.scrollHeight;
   if (content !== view.contentHeight) view.contentHeight = content;
 
-  view.sections = [...doc.querySelectorAll('main > [data-section]')].map((el) =>
+  view.sections = [...doc.querySelectorAll('main > [data-section], .story > [data-section]')].map((el) =>
     boxOf(el, el.getAttribute('data-section')!, el.getAttribute('data-section-type') ?? 'grid')
   );
   const selected = state.selection?.section;
@@ -144,7 +148,8 @@ export function measure(): void {
 /** Catches the frame up with the model. */
 export function sync(): void {
   const current = page.value;
-  if (!doc || !current) return;
+  // While a new page loads, the frame still holds the last one.
+  if (!doc || !current || shownPage !== current.id) return;
   reconcile(doc, current.raw, context);
   measure();
 }
@@ -161,7 +166,12 @@ async function showPage(id: string): Promise<void> {
   view.error = '';
   const url = pageUrl(id);
   try {
+    shownPage = null;
     doc = await openPage(frame, (await pageExists(url)) ? url : SHELL);
+    // The editor may have moved on while this one loaded.
+    if (id !== state.pageId) return;
+    shownPage = id;
+    if (page.value?.raw.story) stampBlocks(doc, page.value.raw);
     // Fonts and images settle the page's height after it first loads.
     await doc.fonts.ready;
     sync();
@@ -226,6 +236,9 @@ export function scrollToSection(id: string): void {
   const box = view.sections.find((s) => s.id === id);
   if (box && scroller) scroller.scrollTop += box.top - 24;
 }
+
+/** Shows the page afresh, after the site itself has changed. */
+export const reloadCanvas = (): Promise<void> => showPage(state.pageId);
 
 export function scrollBy(pixels: number): void {
   if (scroller) scroller.scrollTop += pixels;

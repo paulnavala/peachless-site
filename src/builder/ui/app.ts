@@ -2,7 +2,7 @@
  * The builder's frame: the top bar, the panels and the canvas. The real page sits
  * in the middle, in a sandboxed frame, with the overlay above it.
  */
-import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref, type VNode } from 'vue';
+import { defineComponent, h, onBeforeUnmount, onMounted, ref, type VNode } from 'vue';
 import { mountCanvas, view } from '../canvas/controller';
 import { FRAME_SANDBOX } from '../canvas/frame';
 import { session } from '../session';
@@ -10,7 +10,6 @@ import {
   canRedo,
   canUndo,
   DEVICES,
-  dirtyPages,
   duplicateElement,
   duplicateSection,
   page,
@@ -28,6 +27,7 @@ import {
 import { Inspector } from './inspector';
 import { Overlay } from './overlay';
 import { LeftPanel } from './panels';
+import { Messages, PublishControls, SignIn } from './publish';
 import { TextEditor } from './text-editor';
 
 const DEVICE_NAMES: Record<Device, string> = { desktop: 'Desktop', tablet: 'Tablet', phone: 'Phone' };
@@ -77,12 +77,6 @@ function onKeydown(event: KeyboardEvent): void {
 const TopBar = defineComponent({
   name: 'TopBar',
   setup() {
-    const status = computed(() => {
-      if (session.kind === 'demo') return 'Trying it out: nothing here is saved';
-      if (dirtyPages.value.length) return 'Unsaved changes, kept on this computer';
-      return 'Everything is saved';
-    });
-
     return () =>
       h('header', { class: 'bar' }, [
         h('img', { class: 'bar__mark', src: '/favicon.svg', alt: 'peachless.' }),
@@ -109,7 +103,7 @@ const TopBar = defineComponent({
           h('button', { type: 'button', class: 'device', disabled: !canRedo.value, onClick: redo }, 'Redo'),
         ]),
         h('span', { class: 'bar__fill' }),
-        h('p', { class: 'bar__status', role: 'status' }, status.value),
+        h(PublishControls),
       ]);
   },
 });
@@ -157,12 +151,15 @@ export const App = defineComponent({
 
     return () => {
       if (session.phase === 'starting') return gate('Opening the builder', 'Reading the site…');
+      if (session.phase === 'signed-out') return h(SignIn);
+      if (session.phase === 'other-tab') return gate('The builder is open in another tab', 'Use that one, so two tabs can’t overwrite each other. Close it, then reload this one to carry on here.');
       if (session.phase === 'failed') return gate('The builder didn’t open', session.error);
       return [
         h(TopBar),
         h(LeftPanel),
         h(Canvas),
         h(Inspector),
+        h(Messages),
         h('p', { class: 'too-small' }, 'The builder needs a wider window: a laptop or desktop, or a tablet turned sideways.'),
       ];
     };

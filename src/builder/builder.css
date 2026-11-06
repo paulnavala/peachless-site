@@ -335,6 +335,16 @@
   font-weight: var(--weight-medium);
 }
 
+.layer__detail {
+  display: block;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  font-weight: var(--weight-regular);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .layer__actions,
 .list__actions {
   display: flex;
@@ -798,4 +808,54 @@
 html:has(.builder) {
   overflow: hidden;
   scrollbar-gutter: auto;
+}
+
+/* Messages: what an editor needs to read or decide. */
+
+.messages {
+  position: fixed;
+  inset-block-end: var(--space-s);
+  inset-inline-start: calc(50% + (var(--left-w) - var(--right-w)) / 2);
+  z-index: var(--z-overlay);
+  translate: -50% 0;
+  display: grid;
+  gap: var(--space-3xs);
+  width: min(40rem, 90vw);
+}
+
+.message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s);
+  padding: var(--space-2xs) var(--space-s);
+  border-radius: var(--radius-sm);
+  border-inline-start: 3px solid var(--color-border-strong);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.message--problem {
+  border-inline-start-color: var(--clay);
+}
+
+.message--good {
+  border-inline-start-color: var(--sand);
+}
+
+.message__title {
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-snug);
+}
+
+.message__body {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-snug);
+}
+
+.message__actions {
+  display: flex;
+  flex: none;
+  gap: var(--space-xs);
 }

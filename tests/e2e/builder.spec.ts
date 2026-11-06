@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
+import { publishedProjects } from './content';
 import { expect, test } from './fixtures';
 
 /**
@@ -334,6 +335,85 @@ test.describe('pages', () => {
     await page.getByLabel('Page name').fill('Admin');
     await expect(page.getByText('already in use')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Add page' })).toBeDisabled();
+  });
+});
+
+test.describe('case studies', () => {
+  const projects = publishedProjects();
+  const withText = projects.find((p) => p.data.blocks.filter((b) => b.type === 'text').length >= 2)!;
+
+  const blockTypes = () => withText.data.blocks.map((b) => b.type);
+
+  for (const project of projects) {
+    test(`matches the build exactly on ${project.data.title}`, async ({ page }) => {
+      await openBuilder(page);
+      await openPage(page, project.data.title);
+      const { canvas, built } = await page.evaluate(async (url) => {
+        const frame = document.querySelector<HTMLIFrameElement>('.canvas__frame')!;
+        const html = await (await fetch(url)).text();
+        const parsed = new DOMParser().parseFromString(html, 'text/html');
+        const serialise = (main: Element) => {
+          const copy = main.cloneNode(true) as Element;
+          copy.querySelectorAll('script, style').forEach((node) => node.remove());
+          copy.querySelectorAll('[data-section]').forEach((node) => {
+            node.removeAttribute('data-section');
+            node.removeAttribute('data-section-type');
+          });
+          return copy.innerHTML.replace(/\s+/g, ' ').replace(/> </g, '><').trim();
+        };
+        return { canvas: serialise(frame.contentDocument!.querySelector('main')!), built: serialise(parsed.querySelector('main')!) };
+      }, `/projects/${project.id}/`);
+      expect(canvas).toBe(built);
+    });
+  }
+
+  test('lists every block in the Layers panel, with no Hide', async ({ page }) => {
+    await openBuilder(page);
+    await openPage(page, withText.data.title);
+    await page.getByRole('tab', { name: 'Layers' }).click();
+    await expect(page.locator('.layer')).toHaveCount(blockTypes().length);
+    await expect(page.getByRole('button', { name: /^Hide / })).toHaveCount(0);
+  });
+
+  test('editing a block’s words updates the page', async ({ page }) => {
+    await openBuilder(page);
+    await openPage(page, withText.data.title);
+    await page.getByRole('tab', { name: 'Layers' }).click();
+    const index = blockTypes().indexOf('text');
+    await page.locator('.layer__name').nth(index).click();
+    await page.getByLabel('Text', { exact: true }).fill('Rewritten on the page.');
+    await expect.poll(() => inFrame(page, (doc, i) => doc.querySelector(`[data-section="block-${i}"]`)?.textContent, index)).toContain('Rewritten on the page.');
+  });
+
+  test('moving a block moves it on the page, and keeps the serif on the first text', async ({ page }) => {
+    await openBuilder(page);
+    await openPage(page, withText.data.title);
+    await page.getByRole('tab', { name: 'Layers' }).click();
+    const types = blockTypes();
+    const second = types.indexOf('text', types.indexOf('text') + 1);
+    // Bring the second text block to the very top.
+    for (let i = second; i > 0; i--) await page.locator('.layer').nth(i).getByRole('button', { name: /up$/ }).click();
+    const first = () => inFrame(page, (doc) => doc.querySelector('.story > [data-section]')?.getAttribute('data-section'));
+    await expect.poll(first).toBe(`block-${second}`);
+    const lead = () => inFrame(page, (doc) => doc.querySelector('.text-block--lead')?.getAttribute('data-section'));
+    await expect.poll(lead).toBe(`block-${second}`);
+  });
+
+  test('adds a text block from nothing', async ({ page }) => {
+    await openBuilder(page);
+    await openPage(page, withText.data.title);
+    await page.getByRole('tab', { name: 'Add' }).click();
+    await page.locator('.item', { hasText: 'Text' }).click();
+    await expect.poll(() => inFrame(page, (doc) => doc.querySelectorAll('.story > .text-block').length)).toBe(blockTypes().filter((t) => t === 'text').length + 1);
+    await expect(page.locator('.panel-title')).toHaveText('Text');
+  });
+
+  test('offers only the blocks it can start from nothing', async ({ page }) => {
+    await openBuilder(page);
+    await openPage(page, withText.data.title);
+    await page.getByRole('tab', { name: 'Add' }).click();
+    expect(await page.locator('.item__name').allTextContents()).toEqual(['Text', 'Quote']);
+    await expect(page.getByText('are added in the admin')).toBeVisible();
   });
 });
 

@@ -5,7 +5,7 @@
  * follows it.
  */
 import { computed, defineComponent, h, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { SECTIONS } from '../../lib/section-catalogue';
+import { definitionOf } from '../../lib/section-catalogue';
 import { fieldElement, frameDocument, view } from '../canvas/controller';
 import { endGesture, getPath, sections, setElementField, setField, state } from '../store';
 
@@ -26,7 +26,7 @@ export const TextEditor = defineComponent({
 
     /** A single line finishes on Enter; longer text takes new lines. */
     const multiline = computed(() => {
-      const field = section.value && SECTIONS[section.value.type].fields.find((f) => f.key === editing.value?.key);
+      const field = section.value && definitionOf(section.value.type).fields.find((f) => f.key === editing.value?.key);
       return field?.kind === 'area' || ['quote', 'body'].includes(editing.value?.key ?? '');
     });
 

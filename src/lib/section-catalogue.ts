@@ -32,6 +32,8 @@ export interface FieldDef {
   max?: number;
   /** The fewest a list can hold. */
   min?: number;
+  /** Words the site puts before the value, such as the dash before a name. */
+  prefix?: string;
 }
 
 export interface SectionDef {
@@ -251,6 +253,37 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     fields: [text('heading', 'Heading'), area('intro', 'Introduction')],
   },
 };
+
+/**
+ * A case study's story blocks. They have no surfaces or spacing of their own, and
+ * their images stay in the admin, so the builder edits their words and their order.
+ */
+export const BLOCK_TYPES = ['text', 'image', 'gallery', 'quote', 'logo', 'palette', 'guidelines', 'prototype', 'before-after'] as const;
+export type BlockType = (typeof BLOCK_TYPES)[number];
+
+/** Blocks the builder can start from nothing. The rest need images, so they begin in the admin. */
+export const ADDABLE_BLOCKS: readonly BlockType[] = ['text', 'quote'];
+
+const story = (name: string, note: string, fields: FieldDef[]): SectionDef => ({ name, group: 'Telling the story', note, fields });
+const IN_ADMIN = 'Its pictures are edited in the admin.';
+
+export const BLOCKS: Record<BlockType, SectionDef> = {
+  text: story('Text', 'A chapter of the story.', [text('heading', 'Chapter heading'), { key: 'body', label: 'Text', kind: 'markdown' }]),
+  image: story('Image', IN_ADMIN, [text('caption', 'Caption')]),
+  gallery: story('Gallery', IN_ADMIN, [text('heading', 'Chapter heading')]),
+  quote: story('Quote', 'Kind words, lit word by word.', [
+    { key: 'quote', label: 'Quote', kind: 'lit' },
+    { ...text('attribution', 'Who said it'), prefix: '— ' },
+  ]),
+  logo: story('Logo', IN_ADMIN, [text('heading', 'Chapter heading'), text('caption', 'Caption')]),
+  palette: story('Colour palette', 'The colours, with their names.', [text('heading', 'Chapter heading')]),
+  guidelines: story('Brand guidelines', IN_ADMIN, [{ ...text('heading', 'Chapter heading'), inspectorOnly: true }]),
+  prototype: story('Prototype', 'A Figma prototype people can try.', [{ ...text('label', 'Button text'), inspectorOnly: true }]),
+  'before-after': story('Before and after', IN_ADMIN, [text('caption', 'Caption')]),
+};
+
+/** A section or a story block, whichever this type is. */
+export const definitionOf = (type: string): SectionDef => SECTIONS[type as SectionType] ?? BLOCKS[type as BlockType];
 
 /** Sections that can go on any page, so they're in PageBody and on every route. */
 export const coreSections = (Object.keys(SECTIONS) as SectionType[]).filter((type) => !SECTIONS[type].page);

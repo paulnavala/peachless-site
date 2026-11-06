@@ -118,3 +118,8 @@ export const SAMPLES: Record<SectionType, Sample> = {
   'work-list': { type: 'work-list', emptyText: 'New work is on its way.' },
   'work-logos': { type: 'work-logos', heading: 'Logos', intro: 'A line about the logos.' },
 };
+
+export const BLOCK_SAMPLES: Record<string, Record<string, unknown>> = {
+  text: { type: 'text', heading: 'A new chapter', body: 'Write the next part of the story.' },
+  quote: { type: 'quote', quote: 'Kind words from someone you worked with.', attribution: 'Someone kind' },
+};

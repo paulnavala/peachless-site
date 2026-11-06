@@ -6,7 +6,7 @@
  * Selection is shown as crop marks, as on a printer's proof.
  */
 import { computed, defineComponent, h, ref, type VNode } from 'vue';
-import { SECTIONS } from '../../lib/section-catalogue';
+import { definitionOf } from '../../lib/section-catalogue';
 import { fieldElement, frameDocument, hitTest, scrollBy, view, type Box } from '../canvas/controller';
 import { clampCell, nearestEnd, nearestTrack, resizeTo, type Cell, type Edge, type Track } from '../grid/layout';
 import {
@@ -15,6 +15,7 @@ import {
   duplicateSection,
   endGesture,
   moveSection,
+  page,
   removeElement,
   removeSection,
   sections,
@@ -220,7 +221,7 @@ export const Overlay = defineComponent({
       select({ section: hit.section, element: hit.element });
       if (!hit.field) return;
       const section = sections.value.find((s) => s.id === hit.section);
-      const field = section && SECTIONS[section.type].fields.find((f) => f.key === hit.field);
+      const field = section && definitionOf(section.type).fields.find((f) => f.key === hit.field);
       const inPlace = hit.element || field?.kind === 'text' || field?.kind === 'area' || field?.kind === 'lit';
       if (inPlace && fieldElement(hit.section, hit.element, hit.field)) {
         state.editing = { section: hit.section, element: hit.element, key: hit.field };
@@ -231,12 +232,12 @@ export const Overlay = defineComponent({
 
     const sectionLabel = (id: string) => {
       const section = sections.value.find((s) => s.id === id);
-      return section ? SECTIONS[section.type].name : '';
+      return section ? definitionOf(section.type).name : '';
     };
 
     function toolbar(box: Box): VNode {
       const section = selectedSection.value!;
-      const def = SECTIONS[section.type];
+      const def = definitionOf(section.type);
       const index = sections.value.indexOf(section);
       const button = (label: string, action: () => void, disabled = false) =>
         h('button', { type: 'button', class: 'tool', disabled, onClick: action, onPointerdown: (e: Event) => e.stopPropagation() }, label);
@@ -262,7 +263,8 @@ export const Overlay = defineComponent({
           button('Up', () => moveSection(section.id, index - 1), index === 0),
           button('Down', () => moveSection(section.id, index + 1), index === sections.value.length - 1),
           def.once ? null : button('Duplicate', () => duplicateSection(section.id)),
-          button('Hide', () => toggleHidden(section.id)),
+          // A story block has no hidden state in its file.
+          page.value.raw.story ? null : button('Hide', () => toggleHidden(section.id)),
           def.required ? null : button('Delete', () => removeSection(section.id)),
         ]
       );

@@ -13,7 +13,7 @@ interface Props {
 const { heading, swatches, id } = Astro.props;
 ---
 <section class="palette-block is-wide" data-palette id={id}>
-  {heading && <h2 class="block-heading">{heading}</h2>}
+  {heading && <h2 class="block-heading" data-field="heading">{heading}</h2>}
   <ul class="palette-block__chips" role="list" data-few={swatches.length <= 6 ? '' : undefined}>
     {
       swatches.map((s) => (

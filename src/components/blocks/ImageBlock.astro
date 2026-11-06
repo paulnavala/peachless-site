@@ -15,7 +15,7 @@ const sizes = size === 'full' ? '100vw' : size === 'wide' ? '(min-width: 75rem) 
   <div class="image-block__frame" data-scroll={size === 'inline' ? undefined : 'unveil'}>
     <Media image={image} alt={alt} sizes={sizes} />
   </div>
-  {caption && <figcaption class="block-caption">{caption}</figcaption>}
+  {caption && <figcaption class="block-caption" data-field="caption">{caption}</figcaption>}
 </figure>
 
 <style>

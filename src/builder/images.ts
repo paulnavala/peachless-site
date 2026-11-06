@@ -3,6 +3,7 @@
  * browser until saved, and the canvas shows them from there.
  */
 import { setImageUrl } from './canvas/controller';
+import { forgetImages, keepImage, keptImages } from './local';
 
 export interface PendingImage {
   /** Repo-relative path the image will be saved to. */
@@ -21,19 +22,48 @@ const slug = (name: string) =>
 
 const extension = (name: string) => /\.[a-z0-9]+$/i.exec(name)?.[0].toLowerCase() ?? '.jpg';
 
+const fileName = (path: string) => path.split('/').pop()!;
+
+function hold(image: PendingImage): void {
+  pending.set(image.path, image);
+  setImageUrl(fileName(image.path), URL.createObjectURL(image.file));
+}
+
 /** Holds an image for a page, and returns the file name its YAML should use. */
 export async function uploadImage(pageId: string, file: File): Promise<string> {
   const name = `${slug(file.name)}${extension(file.name)}`;
-  const path = `src/content/pages/${pageId}/${name}`;
-  pending.set(path, { path, file });
-  setImageUrl(name, URL.createObjectURL(file));
+  const image = { path: `src/content/pages/${pageId}/${name}`, file };
+  hold(image);
+  // Kept so a closed tab doesn't lose it. If this fails, it's still held here.
+  await keepImage(image.path, file).catch(() => undefined);
   return name;
+}
+
+/** Picks images back up after a reload. */
+export async function restoreImages(): Promise<void> {
+  try {
+    for (const image of await keptImages()) hold(image);
+  } catch {
+    // Without IndexedDB there's nothing to pick up.
+  }
+}
+
+/** Takes back an image a draft held, so the next save carries it. */
+export function reclaimImage(image: PendingImage): void {
+  hold(image);
+  void keepImage(image.path, image.file).catch(() => undefined);
+}
+
+/** Shows an image that's in the repo but not built yet. */
+export function showImage(path: string, file: Blob): void {
+  setImageUrl(fileName(path), URL.createObjectURL(file));
 }
 
 export const pendingImages = (): PendingImage[] => [...pending.values()];
 
-export function clearPendingImages(): void {
+export async function clearPendingImages(): Promise<void> {
   pending.clear();
+  await forgetImages().catch(() => undefined);
 }
 
 export async function toBase64(file: Blob): Promise<string> {

@@ -11,7 +11,7 @@ import { elementSchema, type GridElement } from '../../lib/content-schema';
 import { escapeHtml, litHtml, litWords, taglineHtml } from '../../lib/formatters';
 import { itemHtml, planGrid } from '../../lib/grid-plan';
 import { renderInline, renderMarkdown } from '../../lib/markdown';
-import { SECTIONS, type FieldDef } from '../../lib/section-catalogue';
+import { definitionOf, type FieldDef } from '../../lib/section-catalogue';
 import { glueDashes } from '../../lib/typography';
 import type { RawPage, RawSection } from '../store';
 import { getPath } from '../store';
@@ -62,7 +62,7 @@ function writeField(el: Element, field: FieldDef, value: string): void {
     default: {
       // A link's text sits inside a span next to its arrow.
       const target = el.querySelector(':scope > span:not(.sr-only)') ?? el;
-      target.textContent = glueDashes(value);
+      target.textContent = glueDashes(`${field.prefix ?? ''}${value}`);
     }
   }
 }
@@ -99,7 +99,7 @@ function applyTagline(root: Element, section: RawSection): boolean {
 
 function applyFields(root: Element, section: RawSection): boolean {
   let complete = section.type !== 'hero' || applyTagline(root, section);
-  for (const field of SECTIONS[section.type].fields) {
+  for (const field of definitionOf(section.type).fields) {
     if (!applyField(root, field, section)) complete = false;
   }
   return complete;
@@ -229,8 +229,9 @@ function applyGrid(root: Element, section: RawSection, ctx: ReconcileContext, op
 
 /** Points a section copied from the specimens page at its own id. */
 function adopt(el: Element, section: RawSection): void {
-  const from = el.getAttribute('data-section') ?? '';
+  const from = el.getAttribute('data-section');
   el.setAttribute('data-section', section.id);
+  if (!from) return;
   for (const node of [el, ...el.querySelectorAll('[id], [aria-labelledby]')]) {
     for (const name of ['id', 'aria-labelledby']) {
       const value = node.getAttribute(name);
@@ -239,8 +240,31 @@ function adopt(el: Element, section: RawSection): void {
   }
 }
 
+/**
+ * Names a case study's blocks. Their files give them no ids, so each is known by
+ * its place in the file, which is also its place in the built page.
+ */
+export function stampBlocks(doc: Document, page: RawPage): void {
+  const files = page.sections.filter((s) => /^block-\d+$/.test(s.id));
+  const story = doc.querySelector('.story');
+  if (!story) return;
+  // A block can leave its script or dialog beside it, so count only the blocks.
+  const blocks = [...story.children].filter((el) => !['SCRIPT', 'STYLE', 'DIALOG', 'TEMPLATE'].includes(el.tagName));
+  blocks.forEach((el, i) => {
+    el.setAttribute('data-section', `block-${i}`);
+    const section = files.find((s) => s.id === `block-${i}`);
+    if (section) el.setAttribute('data-section-type', section.type);
+  });
+}
+
+/** The story's first text block opens in the serif, wherever it has moved to. */
+function markLead(story: Element): void {
+  const lead = story.querySelector(':scope > .text-block');
+  for (const block of story.querySelectorAll(':scope > .text-block')) block.classList.toggle('text-block--lead', block === lead);
+}
+
 export function reconcile(doc: Document, page: RawPage, ctx: ReconcileContext): void {
-  const main = doc.querySelector('main');
+  const main = doc.querySelector(page.story ? '.story' : 'main');
   if (!main) return;
   const store = parkedIn(doc);
   const visible = page.sections.filter((s) => !s.hidden);
@@ -269,7 +293,7 @@ export function reconcile(doc: Document, page: RawPage, ctx: ReconcileContext): 
         applyLists(el, section);
       }
     }
-    applyRoot(el, section);
+    if (!page.story) applyRoot(el, section);
     if (section.type === 'grid') applyGrid(el, section, ctx, i === 0, i === 0);
     order.push(el);
   });
@@ -283,4 +307,5 @@ export function reconcile(doc: Document, page: RawPage, ctx: ReconcileContext): 
 
   const inPlace = order.every((el, i) => [...main.children].filter((c) => c.hasAttribute('data-section'))[i] === el);
   if (!inPlace) for (const el of order) main.append(el);
+  if (page.story) markLead(main);
 }

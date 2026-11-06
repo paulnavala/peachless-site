@@ -11,6 +11,14 @@ import { PAGE_IDS } from '../../../lib/section-catalogue';
 
 const CONTENT = 'src/content';
 
+const IMAGE = /\.(png|jpe?g|webp|avif|gif|svg)$/i;
+
+/** Images beside each entry, so the builder can tell a real picture from a missing one. */
+const imagesIn = (folder: string) =>
+  readdirSync(join(CONTENT, folder), { recursive: true, encoding: 'utf8' })
+    .filter((file) => IMAGE.test(file))
+    .map((file) => `${CONTENT}/${folder}/${file.replaceAll('\\', '/')}`);
+
 const yamlIn = (folder: string) =>
   readdirSync(join(CONTENT, folder), { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && existsSync(join(CONTENT, folder, entry.name, 'index.yaml')))
@@ -26,5 +34,6 @@ export async function GET() {
     const path = `${CONTENT}/pages/${id}/index.yaml`;
     files[path] ??= stringify(await getPageDoc(id));
   }
-  return new Response(JSON.stringify({ files }), { headers: { 'Content-Type': 'application/json' } });
+  const images = Object.fromEntries([...imagesIn('pages'), ...imagesIn('projects')].map((path) => [path, 'built']));
+  return new Response(JSON.stringify({ files, images }), { headers: { 'Content-Type': 'application/json' } });
 }

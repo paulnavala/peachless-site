@@ -10,9 +10,9 @@ const { quote, attribution } = Astro.props;
 ---
 <figure class="quote-block">
   <blockquote class="quote-block__quote t-quote">
-    <LitStatement tag="p" text={quote} />
+    <LitStatement tag="p" text={quote} data-field="quote" />
   </blockquote>
-  {attribution && <figcaption class="quote-block__by">— {attribution}</figcaption>}
+  {attribution && <figcaption class="quote-block__by" data-field="attribution">— {attribution}</figcaption>}
 </figure>
 
 <style>

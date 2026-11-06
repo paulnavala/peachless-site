@@ -8,17 +8,25 @@
 import { computed, reactive } from 'vue';
 import { GRID_COLUMNS, type ElementType, type SectionType } from '../lib/content-schema';
 import { checkPage, type PageProblem } from '../lib/page-rules';
-import { PAGE_IDS, SECTIONS } from '../lib/section-catalogue';
-import { SAMPLES } from '../lib/section-samples';
+import { definitionOf, PAGE_IDS, type BlockType } from '../lib/section-catalogue';
+import { BLOCK_SAMPLES, SAMPLES } from '../lib/section-samples';
 import { clampCell, firstFit, makeRoom, type Cell, type Placed } from './grid/layout';
 
 export type RawElement = Placed & Record<string, unknown>;
-export type RawSection = { id: string; type: SectionType; hidden?: boolean; elements?: RawElement[] } & Record<string, unknown>;
+export type RawSection = { id: string; type: SectionType | BlockType; hidden?: boolean; elements?: RawElement[] } & Record<string, unknown>;
 export interface RawPage {
   title: string;
   hidden?: boolean;
   seo?: { description?: string };
   sections: RawSection[];
+  /** A case study: its sections are story blocks, and they sit in .story. */
+  story?: boolean;
+}
+
+/** site.yaml, as far as the builder cares. */
+export interface RawSite {
+  nav: { label: string; href: string; cta?: boolean }[];
+  [key: string]: unknown;
 }
 
 export interface PageEntry {
@@ -28,6 +36,8 @@ export interface PageEntry {
   raw: RawPage;
   /** The document as last saved, to tell what changed. */
   saved: string;
+  /** A case study's whole file. The builder only touches its blocks. */
+  project?: Record<string, unknown>;
 }
 
 export const DEVICES = { desktop: 1440, tablet: 768, phone: 390 } as const;
@@ -40,14 +50,19 @@ export interface Selection {
   element?: string;
 }
 
+/** Case studies sit beside pages, under ids no page can have. */
+export const PROJECT = 'project/';
+export const isProject = (id: string): boolean => id.startsWith(PROJECT);
+
 /** Where a page's built version lives. */
 export const pageUrl = (id: string): string =>
-  id === 'home' ? '/' : id === 'work' ? '/projects/' : `/${id}/`;
+  id === 'home' ? '/' : id === 'work' ? '/projects/' : id.startsWith(PROJECT) ? `/projects/${id.slice(PROJECT.length)}/` : `/${id}/`;
 
 export const pagePath = (id: string): string => `src/content/pages/${id}/index.yaml`;
 
 export const state = reactive({
   pages: {} as Record<string, PageEntry>,
+  site: null as { path: string; raw: RawSite; saved: string } | null,
   pageId: 'home',
   selection: null as Selection | null,
   hover: null as Selection | null,
@@ -82,10 +97,13 @@ export const page = computed(() => state.pages[state.pageId]);
 export const sections = computed(() => page.value?.raw.sections ?? []);
 export const problems = computed<PageProblem[]>(() => {
   void state.revision;
+  if (!page.value) return [];
+  if (page.value.raw.story) return sections.value.length ? [] : [{ rule: 'required', message: 'A case study needs at least one block.' }];
   // Raw elements carry everything these rules read, without the schema's defaults.
-  return page.value ? checkPage(page.value.id, sections.value as unknown as Parameters<typeof checkPage>[1]) : [];
+  return checkPage(page.value.id, sections.value as unknown as Parameters<typeof checkPage>[1]);
 });
 export const dirtyPages = computed(() => Object.values(state.pages).filter((entry) => JSON.stringify(entry.raw) !== entry.saved));
+export const dirtySite = computed(() => !!state.site && JSON.stringify(state.site.raw) !== state.site.saved);
 
 export const selectedSection = computed(() => sections.value.find((s) => s.id === state.selection?.section) ?? null);
 export const selectedElement = computed(
@@ -93,22 +111,29 @@ export const selectedElement = computed(
 );
 
 /** Replaces the working copy, as after a load. */
-export function loadPages(entries: { id: string; path: string; raw: RawPage }[]): void {
+export function loadPages(entries: { id: string; path: string; raw: RawPage; project?: Record<string, unknown> }[]): void {
   state.pages = Object.fromEntries(entries.map((e) => [e.id, { ...e, saved: JSON.stringify(e.raw) }]));
   histories.clear();
   lastKey = null;
   state.revision++;
 }
 
+export function loadSite(path: string, raw: RawSite): void {
+  state.site = { path, raw, saved: JSON.stringify(raw) };
+}
+
 export function markSaved(): void {
   for (const entry of Object.values(state.pages)) entry.saved = JSON.stringify(entry.raw);
+  if (state.site) state.site.saved = JSON.stringify(state.site.raw);
 }
 
 export function pageIds(): string[] {
   const builtIn = PAGE_IDS.filter((id) => state.pages[id]);
-  const custom = Object.keys(state.pages).filter((id) => !(PAGE_IDS as readonly string[]).includes(id));
+  const custom = Object.keys(state.pages).filter((id) => !(PAGE_IDS as readonly string[]).includes(id) && !isProject(id));
   return [...builtIn, ...custom.sort()];
 }
+
+export const projectIds = (): string[] => Object.keys(state.pages).filter(isProject).sort();
 
 /**
  * Every change goes through here, so undo sees it. A `key` folds a run of the
@@ -217,6 +242,16 @@ export function addSection(type: SectionType, index: number): void {
   select({ section: id });
 }
 
+/** Adds a story block to a case study. */
+export function addBlock(type: string, index: number): void {
+  const id = freshId(`new-${type}`, sections.value.map((s) => s.id));
+  change((raw) => raw.sections.splice(index, 0, { id, ...copy(BLOCK_SAMPLES[type]) } as RawSection));
+  select({ section: id });
+}
+
+/** A case study's blocks as its file holds them, without the ids the builder gave them. */
+export const blocksOf = (raw: RawPage): Record<string, unknown>[] => raw.sections.map(({ id: _id, ...block }) => block);
+
 export function moveSection(id: string, to: number): void {
   change((raw) => {
     const from = raw.sections.findIndex((s) => s.id === id);
@@ -229,7 +264,7 @@ export function moveSection(id: string, to: number): void {
 export function duplicateSection(id: string): void {
   const index = sections.value.findIndex((s) => s.id === id);
   const source = sections.value[index];
-  if (!source || SECTIONS[source.type].once) return;
+  if (!source || definitionOf(source.type).once) return;
   const newId = freshId(source.type, sections.value.map((s) => s.id));
   change((raw) => raw.sections.splice(index + 1, 0, { ...copy(source), id: newId }));
   select({ section: newId });
@@ -353,6 +388,26 @@ export function removeElement(sectionId: string, elementId: string): void {
     if (section) section.elements = section.elements?.filter((e) => e.id !== elementId);
   });
   select({ section: sectionId });
+}
+
+/** The menu has room for this many: site.yaml's schema stops there. */
+export const MENU_LIMIT = 6;
+
+export const inMenu = (id: string): boolean => !!state.site?.raw.nav.some((item) => item.href === pageUrl(id));
+
+/** Adds a page to the menu, or takes it out. The header, mobile menu and footer all follow it. */
+export function setInMenu(id: string, on: boolean): void {
+  const site = state.site;
+  if (!site) return;
+  const href = pageUrl(id);
+  if (!on) site.raw.nav = site.raw.nav.filter((item) => item.href !== href);
+  else if (!inMenu(id) && site.raw.nav.length < MENU_LIMIT) {
+    // The last item is the button, so a new page goes in before it.
+    const button = site.raw.nav.findIndex((item) => item.cta);
+    const at = button === -1 ? site.raw.nav.length : button;
+    site.raw.nav.splice(at, 0, { label: state.pages[id].raw.title, href, cta: false });
+  }
+  state.revision++;
 }
 
 /** A new page: a title and somewhere to go next, which the page rules ask for. */

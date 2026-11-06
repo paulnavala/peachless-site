@@ -21,7 +21,7 @@ const [afterImg, beforeImg] = await Promise.all([
   <div class="before-after-block__frame" style={{ 'aspect-ratio': `${after.width} / ${after.height}` }}>
     <BeforeAfterSlider client:visible afterSrc={afterImg.src} beforeSrc={beforeImg.src} alt={alt} />
   </div>
-  {caption && <figcaption class="block-caption">{caption}</figcaption>}
+  {caption && <figcaption class="block-caption" data-field="caption">{caption}</figcaption>}
 </figure>
 
 <style>
