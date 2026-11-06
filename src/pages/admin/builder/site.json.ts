@@ -5,9 +5,6 @@
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { stringify } from 'yaml';
-import { getPageDoc } from '../../../lib/content';
-import { PAGE_IDS } from '../../../lib/section-catalogue';
 
 const CONTENT = 'src/content';
 
@@ -28,11 +25,6 @@ export async function GET() {
   const files: Record<string, string> = {};
   for (const path of [...yamlIn('pages'), ...yamlIn('projects'), `${CONTENT}/site/site.yaml`]) {
     files[path] = readFileSync(path, 'utf8');
-  }
-  // Built-in pages are still singletons until the cutover.
-  for (const id of PAGE_IDS) {
-    const path = `${CONTENT}/pages/${id}/index.yaml`;
-    files[path] ??= stringify(await getPageDoc(id));
   }
   const images = Object.fromEntries([...imagesIn('pages'), ...imagesIn('projects')].map((path) => [path, 'built']));
   return new Response(JSON.stringify({ files, images }), { headers: { 'Content-Type': 'application/json' } });

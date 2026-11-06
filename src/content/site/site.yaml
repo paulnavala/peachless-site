@@ -1,6 +1,8 @@
 siteName: peachless.
 ownerName: Patricia
 jobTitle: UI/UX designer
+portrait: images/portrait.jpg
+portraitAlt: Portrait of Patricia, the designer behind peachless.
 tagline: Every pixel tells a story. Let the world know yours.
 nav:
   - label: Work

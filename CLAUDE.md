@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Production site for **https://peachless.design**, the portfolio of Patricia (brand identity, UI/UX, photography). It is an Astro 6 static site with a few Vue 3 islands, hosted on Cloudflare Pages and edited through Sveltia CMS at `/admin`.
+Production site for **https://peachless.design**, the portfolio of Patricia (brand identity, UI/UX, photography). It is an Astro 6 static site with a few Vue 3 islands, hosted on Cloudflare Pages. Pages are edited in a visual builder at `/admin/builder/`; projects, photos and settings in Sveltia CMS at `/admin`.
 
 History:
 - **June 2026:** this repo replaced a Squarespace site and component CDN. The old repo (`D:\Projects\peachless\sqs-design`) is **frozen, read-only reference**.
@@ -35,8 +35,13 @@ History:
   - a challenge and outcome near the top of a case study, and a "Live prototype" note on cards (`hasPrototype`)
   - About gains How I work, Tools and Experience, and a résumé PDF linked from About and Contact
   - UI/UX covers show the interface, not the logo: opaque 2400×1800 art, `fit: cover`, key content between about 28% and 72% of the height (the deck crops hard at 48–64em, the hero keeps the top 75%). A `contain` cover shows an interface too small, because the panel padding is tuned for logos.
+- **v3 (November 2026), "the builder":** a Squarespace-style builder for a designer who doesn't code:
+  - every page is a data document of ordered sections, rendered by `PageBody`
+  - custom sections: elements on a snapping 12-column grid
+  - the canvas is the real built page, in a sandboxed frame
+  - saving and publishing go through GitHub from the browser, with no server
 
-Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep it in step with the admin).
+Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep it in step with the builder and the admin).
 
 ## Commands
 
@@ -44,24 +49,33 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 - `npm run build` — static build to `dist/`. Zod validates all content, and the build fails on schema violations, reserved or colliding slugs, or a missing image.
 - `npm run preview` — serve `dist/` at `http://localhost:4321`
 - `npm run check` — `astro check` (expect 0 errors, 0 warnings)
-- `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, ~800 tests, most of them project-tint accents)
+- `npm run test` / `npm run test:watch` — Vitest unit tests (`tests/unit/`, ~2,000 tests, most of them project-tint accents and the YAML writer against every real content file)
 - `npm run budgets` — per-page gzipped JS / island / CSS / font-preload budgets on `dist/` (`scripts/check-budgets.mjs`). CI runs it between build and e2e. Raise a budget only with a reason, written next to the number.
-  - Project pages are closest to the limit (about 15.2 of 16 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
+  - Project pages are closest to the limit (about 15.4 of 16 KB CSS): `BlockRenderer` imports every block, so their CSS is the union of all story blocks plus the shared Base CSS. Keep global CSS lean.
   - JS on load includes inline scripts (Astro inlines small ones, and its ~2 KB island bootstrap on island pages). Keep comments out of `is:inline` scripts: they ship as written.
-- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~205 tests, `retries: 1`). **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
+- `npm run e2e` / `npx playwright test` — e2e suite (`tests/e2e/`, ~310 tests, `retries: 1`). Add `--browser=webkit` or `--browser=firefox` for the `builder*` specs after any canvas change: the frame behaves differently in each engine. **Run `npm run build` first:** the Playwright webServer serves whatever is in `dist/`, so a stale build silently tests old code.
 - `node scripts/capture-screens.mjs <base-url> docs/reference/screens/v2` — full-page reference screenshots (11 pages × 1440/768/390).
+- `node scripts/diff-dist.mjs <baseline-dist> [--rename old=new]` and `node scripts/diff-layout.mjs capture|compare <base-url> <dir>` — prove a refactor changed nothing: normalised HTML of two builds, then every element's box and computed styles at 3 widths. Use both. HTML can't see cascade order, and layout can't see a lost attribute.
 
 ## Architecture
 
-- **Pages** (`src/pages/`):
-  - `index.astro`: the home story, in `components/home/`:
+- **Pages** (`src/pages/`). A route is a thin file: it calls `loadPage(id)` and hands the result to `PageBody`. What's on the page and in what order comes from `src/content/pages/<id>/index.yaml`.
+  - **Sections** live in `components/sections/`. `lib/section-catalogue.ts` says what each one is called, where it can go and which fields it has; the page rules, the builder's panels and the specimens all read it.
+    - **Core** sections are imported by `PageBody`, so their CSS is on every route, and they can go on any page: `page-header`, `grid`, `manifesto`, `deck`, `disciplines`, `photo-strip`, `about-teaser`, `cta-band`. Budgets hold that shared file to 3.5 KB.
+    - **Bound** sections are imported by their own route and passed in (`bound={{ hero: Hero }}`), so they stay there: Home `hero`; About `profile`; Contact `contact`, `fortune`; Photography `gallery`; Work `work-header`, `work-list`, `work-logos`. This is why: Astro keys CSS per route module and walks dynamic importers (`core/build/graph.js`), so one renderer importing everything would put about 16.4 KB on every page, and neither lazy imports nor a virtual module per page can split `[page].astro`. **A new section is bound unless it must go anywhere.**
+    - Nothing wraps a section: `.sheet + .sheet` and `main > .sheet:last-child` need them to be siblings, so each spreads `...rest` onto its root, which also carries `data-section`, `data-section-type`, `data-surface` and `data-space-*`.
+  - `lib/pages.ts`: `loadPage()` turns a document into what a route renders. Sections can't load their own data, because some depend on the page: the hero's reel skips what the deck and strip already show. It also works out the head: `preloadSerif` from the opener, `footerCta` off with `contact`, `jsonLd` by page id.
+  - `lib/page-rules.ts`: one pure `checkPage()`, run live in the builder and in `loadPage()`, where a broken page fails the build (zod never sees the folder id). One opener, first, holding the h1; last is a next step; `once` sections stay single; `deck` not on Work and `about-teaser` not on About, whose view-transition names would collide.
+  - `[page].astro`: pages an editor added. Their ids can't be `RESERVED_PAGE_IDS`, a redirect source or a `public/` folder (`content-files.spec`).
+  - Home's sections sit in `components/home/`:
     1. the hero: the typed tagline plus `WorkReel`, a drifting row of work the rest of the page doesn't show yet (`reelPicks`)
     2. a `LitStatement` manifesto
     3. `StoryDeck` (selected work)
     4. `DisciplineIndex` (what I do)
     5. the `PhotoStrip` collage
     6. the about teaser
-  - `projects/index.astro`, `graphic-design.astro`, `uiux.astro` and `logo-design.astro` are thin wrappers around `components/work/WorkIndex.astro`. Every Work view shows `WorkGrid` (large cards), then `WorkTiles` for `compact` projects; `workView()` in `project-order.ts` makes the split and folds everything into large cards when tiles wouldn't read as a group. `logo-design` is an **alias page** with `rel=canonical` to graphic-design. It is deliberately not a redirect, because browsers cache 301s and a reverse redirect would loop.
+  - **Custom sections** (`grid`, `GridSection.astro`): elements on 12 columns, in `lib/grid-plan.ts`, which is pure and shared with the canvas. Rows are `minmax(token, auto)`, so words push a row taller and never clip. An image is absolutely placed in its cell, because it must never size an auto row. No overlaps. DOM order is reading order (row, then column), and `order` on a phone applies only to images and dividers, so reading and focus order can't part. A heading's level comes from its place, not its look. The CSS is `is:global`, because the canvas writes this markup with no Astro scope on it.
+  - `projects/index.astro`, `graphic-design.astro`, `uiux.astro` and `logo-design.astro` are thin wrappers around `components/work/WorkIndex.astro`, which passes the view to `loadPage('work', …)`. They share one document, so anything added to Work shows on every view. Every Work view shows `WorkGrid` (large cards), then `WorkTiles` for `compact` projects; `workView()` in `project-order.ts` makes the split and folds everything into large cards when tiles wouldn't read as a group. `logo-design` is an **alias page** with `rel=canonical` to graphic-design. It is deliberately not a redirect, because browsers cache 301s and a reverse redirect would loop.
   - `projects/tools/[tool].astro`: a "Made with" page for each tool at least one published project uses (`toolCounts`), so a filter never leads to an empty page. They reuse `WorkIndex` with a `tool` prop and describe themselves from their projects, so they need no copy. `/projects/tools/` itself redirects to Work.
   - `projects/[slug].astro`: one page per **published** project:
     - an `article.project` carrying the project theme
@@ -70,9 +84,9 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
     - story blocks
     - the next-story band
   - `photography.astro`, `about.astro`, `contact.astro`, `404.astro`.
-- **Data access:** `src/lib/content.ts` is the **only** place that reads the `projects` and `photos` collections (a unit test enforces this), so hidden entries can't leak. Ordering and visibility rules (`hidden`, `featured`, `order`, next-project wrap) live in `src/lib/project-order.ts` and are reused by e2e specs.
+- **Data access:** `src/lib/content.ts` is the **only** place that reads the `projects`, `photos` and `pages` collections (a unit test enforces this), so hidden entries can't leak. Ordering and visibility rules (`hidden`, `featured`, `order`, next-project wrap) live in `src/lib/project-order.ts` and are reused by e2e specs.
 - **Content model:** `src/lib/content-schema.ts` holds the zod schemas and constants (disciplines, tools, panels, reserved ids, regexes). It is imported by `src/content.config.ts`, Vitest and Playwright.
-  - Collections: `projects`, `photos` (one folder per entry: `<id>/index.yaml` plus its images), and singletons `home`, `work`, `about` (markdown), `contact`, `photographyPage`, `site`, `form`.
+  - Collections: `projects`, `photos`, `pages` (one folder per entry: `<id>/index.yaml` plus its images), and singletons `site`, `disciplines`, `form`.
   - Folder name = id. `folderId()` throws on invalid or reserved ids (`graphic-design`, `uiux`, `logo-design`, …).
   - Project pages are built from `blocks`, a discriminated union: text, image, gallery, quote, logo, palette, guidelines, prototype, before-after. `components/blocks/BlockRenderer.astro` maps each type to a component. Markdown in blocks is rendered at build time with `marked` (`src/lib/markdown.ts`).
   - **Chapters** (`src/lib/chapters.ts`): every headed block is a numbered chapter (CSS counter) anchored on its block `<section>`. Its heading isn't the anchor because it is sticky. Ids are slugs, deduped against reserved page ids. 3+ chapters (`TOC_MIN_CHAPTERS`) get an "In this story" list.
@@ -85,6 +99,15 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
   - All four (PhotographyGallery, ContactForm, GuidelineViewer, BeforeAfterSlider) are `client:visible` and import their own CSS from `src/styles/components/`.
   - Data arrives as build-time props, with no runtime fetching.
   - Home, Work and About hydrate **no** Vue. The home Tagline is a static Astro component animated with CSS.
+- **The builder** (`src/builder/`, `src/pages/admin/builder/`). Not an island: a plain module script mounts a Vue app, because `client:only` needs inline bootstrap scripts, which the page's CSP refuses. Render functions, so no runtime compiler and no `unsafe-eval`. `docs/EDITING.md` is the editor's view of it.
+  - **The canvas is the real built page**, because no server can render Astro on demand. `<iframe sandbox="allow-same-origin">`, never `allow-scripts`: with no scripts a built page shows its final state, and content is rendered as HTML next to the sign-in token. The frame stays passive, because WebKit won't deliver a parent's listeners to it: selection, handles and scrolling live in the parent, which writes to the frame and measures it. A parent spacer scrolls and a sticky stage holds the frame still, so `100svh` and sticky cards stay real at a true 1440/768/390, scaled to fit.
+  - **The model is the truth, the frame a projection.** `canvas/reconcile.ts` runs after any change, and running it over an unedited page changes nothing, which `builder.spec` proves on every page and case study. New sections, and fields a built page left out, are cloned from `/admin/builder/specimens/` (one real instance of each, every optional filled). New pages load `/admin/builder/shell/`. Text formatting is shared with the site (`lib/formatters.ts`, `glueDashes`), so an edit looks as it will once built. `data-field` locates text; it never supplies a value, because `typeset` changes built text.
+  - **A frame shows one page and is thrown away.** Each page loads into a new frame behind the one on show, one at a time, latest wins. A frame that navigates leaves a dead document behind for the timer and the pointer, which hangs `fonts.ready` and crashed WebKit. Set `sandbox` once, at creation. `builder-switching.spec` is the guard, so run it in every engine.
+  - **Work is kept raw.** The store holds documents as their files do, never as zod parses them, or defaults would land in files. `persist/merge.ts` and `yaml.ts` patch by path, so untouched lines stay byte for byte and match Sveltia's writer. Nothing commits on its own, because each commit starts a build: work autosaves locally (localStorage, IndexedDB for images) until an editor saves.
+  - **Saving** (`session.ts`, `persist/github.ts`): one `builder/draft` branch and a draft PR give a preview at `builder-draft.peachless.pages.dev`. Publish waits for the `Cloudflare Pages` **check run**, compares the draft's files with main, then squash-merges. If main moved, `recut()` merges every file in the draft, with the list from GitHub, and has all of it in hand before anything is thrown away. A failed `build-test` warns and takes a second press; a failed preview blocks.
+  - **Case studies** edit through the same canvas: `blocks` become sections with ids the builder gives them by position (`block-3`), which never reach the file. A block can leave a `<script>` beside it, so count only real blocks.
+  - **Styles:** the builder's CSS is imported `?inline`. Imported the usual way, the stylesheet it shares with the site would split the site's chunk in two, and two files compress worse than one: every visitor would pay about 0.65 KB for a page they never open.
+  - **Security:** `/admin/builder/` has its own CSP in `public/_headers`; `builder-security.spec` pins it and the sandbox. The token only ever goes to `api.github.com`. Content HTML is written into the frame, never the parent. `zod-config.ts` must stay the first import in `main.ts`, or zod's `new Function` probe trips the CSP.
 - **Static components with scoped scripts:**
   - `blocks/PrototypeEmbed.astro`: a click-to-load Figma facade, inline or fullscreen `<dialog>`, plus "Open in Figma".
   - `static/FortunePeach.astro`.
@@ -168,6 +191,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 
 ## Content & CMS
 
+- **Who owns what:** the builder owns `src/content/pages/`; the CMS has no entry for it (a unit test checks), so a file never has two owners. The CMS owns projects, photos, `site` and `disciplines`. They share two things: the builder edits a project's `blocks` and `site.nav`. That is safe because both patch by key and the builder compares base OIDs before merging.
 - **Sveltia CMS** at `/admin` (`public/admin/config.yml`, GitHub backend).
   - The script in `public/admin/index.html` is **version-pinned with an SRI hash** that matches the exact devDependency `@sveltia/cms`.
   - To bump: update the package, `index.html` and the `$schema` URL in `config.yml` together. `tests/unit/cms-config.spec.ts` prints the correct `integrity` value when it doesn't match. Never loosen the pin. (SRI covers the main bundle only, not lazy-loaded chunks.)
@@ -188,7 +212,7 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 
 ## Deployment
 
-- **Cloudflare Pages**, git-integrated, project `peachless`. Push to `main` → CF builds (`npm run build`, Node from `.node-version`) and deploys to peachless.design. Every PR gets a preview at `https://<branch>.peachless.pages.dev` plus a "Cloudflare Pages" commit status.
+- **Cloudflare Pages**, git-integrated, project `peachless`. Push to `main` → CF builds (`npm run build`, Node from `.node-version`) and deploys to peachless.design. Every PR gets a preview at `https://<branch>.peachless.pages.dev` plus a `Cloudflare Pages` **check run**, not a commit status (`/commits/:sha/status` is empty). The run appears when the build finishes, so no run means still building.
 - **Build cache:** on in the Cloudflare dashboard (Settings → Build → Build cache, beta), not in this repo. It keeps `node_modules/.astro`, so a build reuses its optimised images: about 1.5 minutes instead of 6–9. That folder also holds Astro's content store, which only clears when `src/content.config.ts` itself changes, so an unchanged entry keeps the old schema's data (a new `.default([])` would be `undefined`). The `// content-schema:` hash in that file ties the two together: `content-files.spec` prints the new value after a schema change. Cloudflare purges it 7 days after its last read, so the first build after a quiet week runs at full length. If a deploy ever looks stale, use Clear Cache there first.
 - **GitHub Actions (`ci.yml`) is the test gate only:** check → unit → build → budgets → e2e. It does not deploy. `concurrency` cancels superseded runs, because CMS saves push many small commits.
 - **Redirects:** `redirects.config.mjs` is the single source. It feeds the `astro.config.mjs` `redirects` (portable meta-refresh fallback), and `public/_redirects` mirrors it in both slash forms (CF-native 301s). `tests/unit/redirects.spec.ts` keeps them in sync and forbids redirecting `/projects/graphic-design`, `/projects/uiux` or `/projects/logo-design`.
@@ -197,6 +221,9 @@ Patricia's editing guide is `docs/EDITING.md` (written for a non-developer; keep
 - `docs/CUTOVER.md` — the (executed) June 2026 migration runbook; still useful for DNS facts.
 
 ## Testing gotchas
+
+- **The builder:** `builder.spec` drives it in demo mode. `builder-publish.spec` runs against `fake-github.ts`, a stateful GitHub in memory, seeded with the site's real files, so a save is checked line by line. Read the frame through `evaluateHandle`: `frameLocator` can't reach a sandboxed frame. Drive drags with `page.mouse` on overlay handles. Only the live sign-in can't be tested here: see the admin section of `docs/EDITING.md`.
+- **An emptied collection keeps its entries:** Astro's glob loader returns early when it finds no files, before it clears old ones, so deleting a collection's last file leaves it in `node_modules/.astro/data-store.json`. Delete that file. `pages` can't be empty in practice.
 
 - **Never POST to the real Web3Forms endpoint:** each submission emails the owner. `tests/e2e/fixtures.ts` aborts `api.web3forms.com` for every spec, and specs that exercise the form add their own `page.route` stub. Every spec must import `test` from `./fixtures`; a unit test enforces this.
 - **Expectations come from content:** e2e specs read counts, order, slugs and labels from the content files via `tests/e2e/content.ts` (reusing `project-order.ts`), so routine CMS edits don't turn CI red. Don't hardcode content in specs.

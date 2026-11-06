@@ -1,0 +1,20 @@
+title: Work
+seo:
+  description: Selected UI/UX, brand identity and photography work by Patricia at peachless.
+sections:
+  - id: header
+    type: work-header
+    eyebrow: Work
+    heading: Selected work
+    intro: Interfaces, identities and the stories behind them.
+  - id: list
+    type: work-list
+    emptyText: New work is on its way.
+  - id: work-logos
+    type: work-logos
+    heading: Logos
+  - id: next-step
+    type: cta-band
+    surface: paper
+    heading: There’s more to see.
+    auto: true

@@ -196,80 +196,23 @@ export const photoSchema = <T extends z.ZodType>(image: () => T) =>
 
 const seo = z.object({ description: opt(160) }).default({});
 const link = z.object({ label: req(40), link: z.string().regex(LINK_RE) });
-const section = z.object({ heading: req(120), intro: opt(400) });
-
-export const homeSchema = z.object({
-  eyebrow: opt(80),
-  tagline: z.object({ line1: req(80), line2: req(80) }),
-  lede: opt(300),
-  primaryCta: link,
-  secondaryCta: link.optional(),
-  manifesto: z.object({ heading: req(160), lead: z.string().trim().min(1) }), // markdown
-  services: section,
-  featured: section,
-  photography: section,
-  about: z.object({ heading: req(80), body: req(400), linkLabel: req(40) }),
-  seo,
-});
-
 const disciplineCopy = z.object({ title: req(40), description: req(200) });
 
-export const workSchema = z.object({
-  eyebrow: opt(40),
-  heading: req(80),
-  intro: opt(300),
-  disciplines: z.object({
-    graphicDesign: disciplineCopy,
-    uiux: disciplineCopy,
-    photography: disciplineCopy,
-  }),
-  logos: section,
-  seo,
+/** What each kind of work is called, on Home and on the Work page's own views. */
+export const disciplinesSchema = z.object({
+  graphicDesign: disciplineCopy,
+  uiux: disciplineCopy,
+  photography: disciplineCopy,
 });
 
-export const aboutSchema = <T extends z.ZodType>(image: () => T) =>
-  z.object({
-    eyebrow: opt(40),
-    title: req(80),
-    statement: req(300),
-    portrait: image(),
-    portraitAlt: req(200),
-    closing: opt(200),
-    process: z.array(z.object({ title: req(60), body: req(200) })).max(6).default([]),
-    experience: z.array(z.object({ period: req(40), role: req(80), place: opt(80) })).default([]),
-    seo,
-  });
-
-export const contactSchema = z.object({
-  eyebrow: opt(40),
-  heading: req(80),
-  lede: opt(300),
-  form: z.object({
-    title: req(60),
-    subtitle: opt(200),
-    submitLabel: req(30),
-    successMessage: req(120),
-  }),
-  fortune: z.object({
-    heading: req(80),
-    intro: opt(200),
-    fortunes: z.array(req(200)).min(3),
-  }),
-  seo,
-});
-
-export const photographyPageSchema = z.object({
-  eyebrow: opt(40),
-  heading: req(80),
-  lede: opt(300),
-  seo,
-});
 
 export const siteSchema = <T extends z.ZodType>(image: () => T) =>
   z.object({
     siteName: req(40),
     ownerName: opt(40),
     jobTitle: opt(60),
+    portrait: image(),
+    portraitAlt: req(200),
     tagline: req(120),
     nav: z
       .array(z.object({ label: req(30), href: z.string().regex(LINK_RE), cta: z.boolean().default(false) }))

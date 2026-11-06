@@ -49,6 +49,20 @@ describe('a custom page’s address', () => {
   });
 });
 
+describe('page files', () => {
+  it.each(folders('src/content/pages'))('%s only references images inside its own folder', (id) => {
+    const data = parse(readFileSync(join(ROOT, 'src/content/pages', id, 'index.yaml'), 'utf8'));
+    for (const ref of imageRefs(data)) {
+      expect(ref, `${id}: ${ref}`).not.toMatch(/^(\/|\.\.|https?:)/);
+      expect(existsSync(normalize(join(ROOT, 'src/content/pages', id, ref))), `${id}: missing ${ref}`).toBe(true);
+    }
+  });
+
+  it('are all there', () => {
+    for (const id of PAGE_IDS) expect(existsSync(join(ROOT, 'src/content/pages', id, 'index.yaml')), id).toBe(true);
+  });
+});
+
 describe('the résumé', () => {
   it('exists when the site links to it (the build would not notice)', () => {
     const { resume } = parse(readFileSync(join(ROOT, 'src/content/site/site.yaml'), 'utf8'));

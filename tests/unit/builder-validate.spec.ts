@@ -3,7 +3,6 @@ import { dirname, join, resolve } from 'node:path';
 import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 import { ID_RE, RESERVED_PAGE_IDS, SECTION_TYPES } from '../../src/lib/content-schema';
-import { pagesFromSingletons } from '../../src/lib/page-adapter';
 import { PAGE_IDS } from '../../src/lib/section-catalogue';
 import { SAMPLES } from '../../src/lib/section-samples';
 import { pageIdProblem, validatePage } from '../../src/builder/validate';
@@ -32,16 +31,7 @@ describe('a good page', () => {
   });
 
   describe('the site’s own pages', () => {
-    const yaml = (file: string) => parse(readFileSync(join(PAGES, file), 'utf8'));
-    const [, front, ...body] = readFileSync(join(PAGES, 'about.md'), 'utf8').replaceAll('\r\n', '\n').split(/^---$/m);
-    const pages = pagesFromSingletons({
-      home: yaml('home.yaml'),
-      work: yaml('work.yaml'),
-      about: parse(front),
-      aboutBody: body.join('---').trim(),
-      contact: yaml('contact.yaml'),
-      photography: yaml('photography.yaml'),
-    });
+    const pages = Object.fromEntries(PAGE_IDS.map((id) => [id, parse(readFileSync(join(PAGES, id, 'index.yaml'), 'utf8'))]));
 
     it.each(PAGE_IDS)('%s passes', (id) => {
       expect(validatePage(id, JSON.parse(JSON.stringify(pages[id])), noImages)).toEqual({ ok: true, problems: [] });
@@ -192,7 +182,7 @@ describe('what the schema refuses', () => {
 
   it('copes with a file that isn’t a page', () => {
     for (const raw of ['nope', null, 7, []]) {
-      expect(validatePage('a-page', raw, noImages)).toEqual({ ok: false, problems: [{ message: 'This page’s file can’t be read. Ask Paul to take a look.' }] });
+      expect(validatePage('a-page', raw, noImages)).toEqual({ ok: false, problems: [{ message: 'This page’s file can’t be read. Ask your developer to take a look.' }] });
     }
   });
 

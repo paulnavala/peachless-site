@@ -5,10 +5,9 @@
  * (tests/unit/no-raw-collections.spec.ts enforces it).
  */
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { plainPageSchema, type Discipline, type PageDoc } from './content-schema';
-import { pagesFromSingletons } from './page-adapter';
+import type { Discipline, PageDoc } from './content-schema';
 import { featured, nextProject, published } from './project-order';
-import { PAGE_IDS, type BuiltInPage } from './section-catalogue';
+import { PAGE_IDS } from './section-catalogue';
 
 export type Project = CollectionEntry<'projects'>;
 export type Photo = CollectionEntry<'photos'>;
@@ -37,7 +36,7 @@ export async function getFeaturedPhotos(fallback = 5): Promise<Photo[]> {
   return featured(await getPublishedPhotos(), fallback);
 }
 
-type Singleton = 'home' | 'work' | 'about' | 'contact' | 'photographyPage' | 'site' | 'form';
+type Singleton = 'site' | 'disciplines' | 'form';
 
 /** Read a single-file collection (home, site, …); each holds exactly one entry. */
 export async function getSingleton<C extends Singleton>(collection: C): Promise<CollectionEntry<C>> {
@@ -52,39 +51,20 @@ export async function getCustomPages() {
   return pages.filter((p) => !(PAGE_IDS as readonly string[]).includes(p.id) && !p.data.hidden);
 }
 
-/** A page's document. Parsed like a collection entry, so defaults apply the same. */
+/** A page's document. Its images are metadata here, where PageDoc says paths: see content-schema.ts. */
 export async function getPageDoc(id: string): Promise<PageDoc> {
-  if (!(PAGE_IDS as readonly string[]).includes(id)) {
-    const page = (await getCollection('pages')).find((p) => p.id === id);
-    if (!page) throw new Error(`No page "${id}"`);
-    // Its images are metadata here, where PageDoc says paths: see content-schema.ts.
-    return page.data as unknown as PageDoc;
-  }
-  const [home, work, about, contact, photography] = await Promise.all([
-    getSingleton('home'),
-    getSingleton('work'),
-    getSingleton('about'),
-    getSingleton('contact'),
-    getSingleton('photographyPage'),
-  ]);
-  const pages = pagesFromSingletons({
-    home: home.data,
-    work: work.data,
-    about: about.data,
-    aboutBody: about.body ?? '',
-    contact: contact.data,
-    photography: photography.data,
-  });
-  return plainPageSchema.parse(pages[id as BuiltInPage]);
+  const page = (await getCollection('pages')).find((p) => p.id === id);
+  if (!page) throw new Error(`No page "${id}"`);
+  return page.data as unknown as PageDoc;
 }
 
 /** The owner's portrait: Home's teaser, About and the structured data all use it. */
 export async function getPortrait() {
-  const { portrait, portraitAlt } = (await getSingleton('about')).data;
+  const { portrait, portraitAlt } = (await getSingleton('site')).data;
   return { image: portrait, alt: portraitAlt };
 }
 
 /** The name and line for each kind of work, shared by Home and the Work views. */
 export async function getDisciplineCopy() {
-  return (await getSingleton('work')).data.disciplines;
+  return (await getSingleton('disciplines')).data;
 }

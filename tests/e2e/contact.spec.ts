@@ -1,8 +1,8 @@
 import { test, expect } from './fixtures';
 import { waitForIsland } from './utils';
-import { readYaml, site } from './content';
+import { sectionOf, site } from './content';
 
-const contact = readYaml('pages', 'contact.yaml');
+const contact = sectionOf('contact', 'contact')!;
 const emails = site().emails;
 
 test.describe('/contact', () => {

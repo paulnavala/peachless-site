@@ -1,0 +1,21 @@
+title: Photography
+seo:
+  description: Photography and retouching by peachless. — compare the before and after of selected edits.
+sections:
+  - id: header
+    type: page-header
+    eyebrow: Photography
+    heading: Through my lens
+    intro: Moments of light and texture, and the retouching behind some of them — open a photo marked Before / After to compare.
+  - id: portfolio-photo
+    type: gallery
+    label: Photographs
+  - id: next-step
+    type: cta-band
+    surface: paper
+    heading: See the interface and brand work.
+    links:
+      - label: All work
+        link: /projects/
+      - label: About me
+        link: /about/

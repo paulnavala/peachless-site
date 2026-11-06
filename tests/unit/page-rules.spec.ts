@@ -3,28 +3,11 @@ import { join } from 'node:path';
 import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 import { plainPageSchema, SECTION_TYPES, type SectionType } from '../../src/lib/content-schema';
-import { pagesFromSingletons } from '../../src/lib/page-adapter';
 import { checkPage } from '../../src/lib/page-rules';
 import { allowedOn, coreSections, PAGE_IDS, SECTIONS } from '../../src/lib/section-catalogue';
 
 const PAGES = join(__dirname, '..', '..', 'src', 'content', 'pages');
-const readYaml = (file: string) => parse(readFileSync(join(PAGES, file), 'utf8'));
-
-/** about.md is front matter over a markdown body. */
-function readAbout() {
-  const [, front, ...body] = readFileSync(join(PAGES, 'about.md'), 'utf8').replaceAll('\r\n', '\n').split(/^---$/m);
-  return { data: parse(front), body: body.join('---').trim() };
-}
-
-const about = readAbout();
-const pages = pagesFromSingletons({
-  home: readYaml('home.yaml'),
-  work: readYaml('work.yaml'),
-  about: about.data,
-  aboutBody: about.body,
-  contact: readYaml('contact.yaml'),
-  photography: readYaml('photography.yaml'),
-});
+const pages = Object.fromEntries(PAGE_IDS.map((id) => [id, parse(readFileSync(join(PAGES, id, 'index.yaml'), 'utf8'))]));
 
 const s = (type: SectionType, id: string = type, hidden = false) => ({ id, type, hidden });
 const rules = (pageId: string, ...sections: ReturnType<typeof s>[]) => checkPage(pageId, sections).map((p) => p.rule);

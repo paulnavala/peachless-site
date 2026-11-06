@@ -1,42 +1,102 @@
 # Editing peachless.design
 
-This guide covers everything you need to update the site yourself: new projects, photos, page text and settings. You don't need to know any code. Every field in the editor also has a short hint underneath it.
+This guide covers everything you need to update the site yourself: page layouts, new projects, photos and settings. You don't need to know any code.
 
-**The editor:** https://peachless.design/admin/ (works best in Chrome or Edge on a computer).
+There are two tools, and each has its own job:
+
+| Tool | Address | Use it for |
+|---|---|---|
+| **The builder** | https://peachless.design/admin/builder/ | Your pages: what's on them, in what order, and every word. Laying out new pages. The story of a case study. |
+| **The admin** | https://peachless.design/admin/ | Adding projects and photos, and site settings. |
+
+Both use the same sign-in. They work best in Chrome, Edge or Safari on a computer.
 
 ---
 
 ## 1. Signing in
 
-1. Open https://peachless.design/admin/.
-2. Click **Sign In with GitHub**. The first time, GitHub asks you to approve "peachless. admin". Click **Authorize**.
-3. You're in. Next time it remembers you.
+1. Open the builder or the admin.
+2. Click **Sign in with GitHub**. The first time, GitHub asks you to approve "peachless. admin". Click **Authorize**.
+3. You're in, for both tools. Next time it remembers you.
 
 **The very first time:** you'll get an email from GitHub inviting you to the `peachless-site` repository. Accept it first. If the editor says *"You have a pending invitation"*, accept the invitation on GitHub, then sign in again.
 
 ---
 
-## 2. A quick tour
+## 2. The builder
 
-The menu on the left:
+The builder shows your real pages, with their real fonts, colours and pictures. What you change is what visitors will see.
 
-| Item | What it is |
+| Where | What it's for |
 |---|---|
-| **Projects** | Your portfolio. Each project has its own page and a card on the Work page. |
-| **Photos** | Your photography, with optional before/after comparisons. |
-| **Home page** | The headline, introduction and section titles on the home page. |
-| **Work page** | The Work page's title and introduction, and the text for each kind of work (UI/UX, Graphic design, Photography). |
-| **About page** | Your portrait, statement and story, plus **How I work** and **Experience**. Each of those two sections appears once you add something to it. The list of tools builds itself from your projects. |
-| **Contact page** | The heading, introduction, contact-form texts and the fortunes in the fortune peach. |
-| **Photography page** | The heading and introduction of the photography page. |
-| **Site settings** | Site name, your name, tagline, menu, email addresses, social links and the "Let's create together" invitation in the footer. |
-| **Contact form — developer** | Locked: the technical setup of the contact form. You can look, but there's nothing to change here. |
+| **Top bar** | The size to work at (**Desktop**, **Tablet**, **Phone**), **Undo** and **Redo**, then saving and publishing. |
+| **Add** | Sections to add to this page. With a custom section selected, also the elements to put in it. |
+| **Layers** | Everything on this page, in order. Move or hide things here, or click one to jump to it. |
+| **Pages** | All your pages and case studies. This is also where you add a page and choose what's in the menu. |
+| **Checks** | Anything that needs fixing before this page can go live. A number shows on the tab when something does. |
+| **The right-hand panel** | Whatever you've selected: its words, background, spacing and position. |
+
+### Editing a page
+
+- **Click a section** to select it. It gets crop marks at its corners, and a toolbar: **Move** (drag it), **Up**, **Down**, **Duplicate**, **Hide**, **Delete**.
+- **Double-click text** to change it right there. Press **Enter** to finish, or **Esc** to leave it as it was.
+- **Hover over a section** and click **Add section** to put something new at that spot.
+- **Changed your mind?** **Undo** steps back through everything you've done on this page (**Ctrl+Z**, or **⌘Z** on a Mac).
+
+Some sections go on any page. Others only work on their own page, so they aren't offered elsewhere: the Hero, the About profile, the Contact form, the Fortune peach, the Photo gallery and the Work list.
+
+### Custom sections
+
+A custom section is your own layout, on the same 12 columns as the rest of the site.
+
+1. Add a **Custom section**, then click it. The column guides appear.
+2. In **Add**, pick an element: **Heading**, **Text**, **Image**, **Button**, **Quote** or **Divider**. It lands in the first free space.
+3. Click an element to select it. **Drag** it to move it, and it snaps to the columns. **Drag a handle** to resize it. The small label shows its size in columns and rows.
+4. Dropped it on something? Whatever was there moves down to make room, and comes back if you keep dragging.
+5. For exact numbers, use **Column**, **Row**, **Width** and **Height** in the right-hand panel. The arrow keys nudge a selected element too.
+
+Words never get cut off: if text needs more room, its row grows. An image fills exactly the space you give it, cropped to fit, or choose **Show it all**.
+
+**On phones,** a custom section becomes one column, top to bottom and left to right, so check it with **Phone**. There you can hide an element or make it half width. Images and dividers can also move up or down the stack. Text stays in its reading order, so people using a keyboard or a screen reader hear it in the order you see it.
+
+### Adding a page
+
+1. **Pages** → type a name → **Add page**. Its address comes from the name, and can't be changed afterwards.
+2. It starts with a title and a closing band, because every page needs both. Add what you like between them.
+3. To put it in the menu, switch on **Show this page in the menu**. The menu holds six items.
+
+### Case studies
+
+Open one from **Pages**. You can edit the words of each block, change their order, and add **Text** and **Quote** blocks. Pictures, the title, the cover and the credits stay in the admin.
+
+### What shows here, and what shows after publishing
+
+The builder shows the site as it was last published, plus your changes. A few things only update once you publish: the row of work in the hero, project lists and counts, and the menu. **Preview** always shows you the real thing.
 
 ---
 
 ## 3. How changes go live
 
-You can always check your change before anyone sees it.
+Nothing you do reaches visitors until you publish, and nothing is lost if you close the tab.
+
+| What you see | What it means |
+|---|---|
+| **Unsaved changes, kept on this computer** | Your work is safe in this browser. Nobody else can see it yet. |
+| **Save draft** | Saves your work and starts building a private preview. Do this when you're ready to check it, not after every change: each save starts a build. |
+| **Building a preview…** | Usually a minute or two. After a quiet week it can take up to 10 minutes, because the site has to redo all its images. |
+| **Preview** | Opens the private preview of the whole site, in a new tab. Check the page on your phone too. |
+| **Publish** | Puts it on peachless.design. It's live about two minutes later. |
+| **Discard draft** | Throws the draft away. The live site stays as it is. |
+
+Your draft waits for you on any computer you sign in on. Work you haven't saved stays on the computer you did it on.
+
+> **The live site is protected.** If a change can't be built, it simply doesn't go live. Visitors keep seeing the last working version.
+
+> **If the site changes while you work** (say, you published something from the admin), the builder combines the two when you publish, then asks you to save again. If you both changed the very same thing, it tells you, and keeps yours.
+
+### In the admin
+
+Projects, photos and settings work a little differently:
 
 | You want to… | Do this | Live after |
 |---|---|---|
@@ -44,19 +104,7 @@ You can always check your change before anyone sees it.
 | Fix a small typo | **Save and Publish** | About 2 minutes |
 | Change the order of projects or photos | **Reorder Entries** → drag → **Done Reordering Entries** | About 2 minutes |
 
-> **After a quiet week.** If nothing has been saved for a week or more, your next change takes longer: up to 10 minutes, for the preview and for going live, because the site has to redo all its images. After that, changes are quick again.
-
-### Save → View Preview → Publish
-
-1. Make your changes, then click **Save**. Your change is now a **draft**; the live site hasn't changed.
-2. A private preview of the whole site starts building. After a minute or two, **View Preview** opens it. (*"Checking for Preview…"* or *"The preview is still being built."* means wait a moment.)
-3. Look around the preview: the project page, the Work page, the home page. Want to change something? Edit and **Save** again; the preview rebuilds.
-4. Happy with it? Click **Publish**. About two minutes later it's live on peachless.design.
-
-- **Changed your mind?** **Discard Changes** brings back the version that's live.
-- **Unfinished drafts** wait for you under **Drafts**.
-
-> **The live site is protected.** If a change can't be built, it simply doesn't go live. Visitors keep seeing the last working version.
+**Changed your mind?** **Discard Changes** brings back the version that's live. **Unfinished drafts** wait for you under **Drafts**.
 
 ---
 
@@ -156,16 +204,15 @@ Change the order with **Reorder Entries** on the Photos list.
 
 ---
 
-## 9. Pages and settings
+## 9. Settings
 
-- **Home page**: the headline (two lines; the second is set in the accent colour), the introduction, and the titles and introductions of each home section.
-- **Work page**: the page title and introduction, the title and description of each filter, and the heading of the small tiles section.
-- **About page**: portrait (a tall photo, shown at 4:5, at least 1200 px wide), statement, your story, **How I work**, **Experience** and the closing line. The portrait also appears on the home page. The list of tools builds itself from your projects.
-- **Contact page**: heading, introduction, the contact form's texts and the fortunes (at least three).
-- **Photography page**: heading and introduction.
+Page text lives in the builder. The admin keeps what the whole site shares.
+
+- **Kinds of work**: the name and one line for UI/UX, Graphic design and Photography. Home's "What I do" and the Work filters both read them.
 - **Site settings**:
   - **Site name**: the header, menu and footer draw the peachless. logo from it. Any other name shows there as plain text.
-  - **Menu**: links start with `/` for a page on this site (e.g. `/projects/`) or `https://` for another site. **Show as a button** makes an item a pill, like Contact.
+  - **Portrait**: a tall photo, shown at 4:5 on the About page and the home page, at least 1200 px wide.
+  - **Menu**: links start with `/` for a page on this site (e.g. `/projects/`) or `https://` for another site. **Show as a button** makes an item a pill, like Contact. The builder can add a page to the menu too.
   - **Email addresses**: the first one is also offered when the contact form can't send.
   - **Social links**: Instagram, Behance, LinkedIn… They appear on the Contact page and in the footer.
   - **Your job title**: shown after your name in the browser tab on the home page and in Google.
@@ -189,7 +236,11 @@ Change the order with **Reorder Entries** on the Photos list.
 
 | Problem | What to do |
 |---|---|
-| **"The preview couldn't be built."** | The live site is safe. Open the entry and look for red messages under the fields. If there are none, tell your developer which entry you changed. |
+| **"The preview couldn't be built."** | The live site is safe, and so is your draft. In the builder, press **Copy details** and send that to your developer. In the admin, open the entry and look for red messages under the fields. |
+| **The builder won't save, and shows a list.** | Those are the things to fix first. Click one to go to it. |
+| **"This account can look but can't save."** | Your GitHub account needs access to the site. Ask your developer. |
+| **"The builder is open in another tab."** | Use that tab, so two tabs can't overwrite each other. Or close it and reload this one. |
+| **"The automatic checks found a problem."** | The preview built, so the site works, but a test noticed something. Have a look, or ask your developer. Press **Publish** twice to go ahead anyway. |
 | **My change isn't live yet.** | Publishing takes about two minutes, or up to 10 after a quiet week. Refresh the page. Check **Drafts**: if your change is there, it hasn't been published yet. |
 | **I can't sign in.** | Accept the GitHub invitation (check your email), then try again. Still stuck? Ask your developer. |
 | **An image looks blurry.** | Upload a bigger original (see the sizes above). |
@@ -217,9 +268,17 @@ Without `base_url`, the editor falls back to Netlify's sign-in service, and the 
 ### Giving someone access
 
 1. In the GitHub repository go to **Settings → Collaborators → Add people**. Enter their GitHub username and choose the **Write** role.
-2. They accept the emailed invitation, then sign in at https://peachless.design/admin/ with their own GitHub account.
+2. They accept the emailed invitation, then sign in at https://peachless.design/admin/ or https://peachless.design/admin/builder/ with their own GitHub account.
+
+Without the **Write** role the builder opens, but says the account can't save.
 
 Removing a collaborator removes their access.
+
+### How the builder saves
+
+The builder runs in the browser, with the same token as the admin, and talks only to GitHub. A save commits to the branch `builder/draft` and opens a draft pull request, which gives a preview at https://builder-draft.peachless.pages.dev. Publish squash-merges it once the `Cloudflare Pages` check has passed. A failed `build-test` run warns, and takes a second press of Publish, so a flaky test can't strand an editor. A failed preview blocks publishing.
+
+Sign-in only works on peachless.design, because the worker refuses other hosts. On a preview deployment the builder opens in a demo that can't save. To try the real thing there, sign in at `/admin/` with an access token first: the builder picks it up.
 
 ### Housekeeping
 

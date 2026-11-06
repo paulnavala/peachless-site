@@ -1,0 +1,50 @@
+title: Home
+seo:
+  description: peachless. — the portfolio of Patricia, a UI/UX designer also working in brand identity and photography.
+sections:
+  - id: hero
+    type: hero
+    eyebrow: Hi, I’m Patricia — UI/UX designer
+    line1: Every pixel tells a story.
+    line2: Let the world know yours.
+    lede: I design interfaces, brand identities and images — blending the precision of UI/UX with the expressive freedom of graphic design.
+    primary:
+      label: See my work
+      link: /projects/
+    secondary:
+      label: Let’s talk
+      link: /contact/
+  - id: manifesto
+    type: manifesto
+    surface: paper
+    sheet: true
+    heading: Design isn’t just something you see, it’s something you feel.
+    lead: '**peachless.** — my creative universe, showcasing work shaped by curiosity, clarity and emotion. Here, every color, shape and pixel is crafted with intention.'
+    action:
+      label: More about me
+      link: /about/
+  - id: featured
+    type: deck
+    heading: Selected work
+    intro: A few projects, from first sketch to finished system.
+    action:
+      label: All work
+      link: /projects/
+  - id: services
+    type: disciplines
+    heading: What I do
+    intro: 'Three crafts, one way of seeing: every project starts with the feeling it should leave behind.'
+  - id: photography
+    type: photo-strip
+    surface: blush
+    sheet: true
+    heading: Through my lens
+    intro: Photography and retouching — open a photo to compare the before and after.
+    action:
+      label: View the gallery
+      link: /photography/
+  - id: about-teaser
+    type: about-teaser
+    heading: Hi, I’m Patricia.
+    body: I’m a UI/UX designer driven by the belief that design is more than what we see — it’s what we feel.
+    linkLabel: More about me
