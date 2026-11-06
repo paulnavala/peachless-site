@@ -32,15 +32,16 @@ const KB = 1024;
 //   launch button under small stills, the brand-book viewer's page fit, dock
 //   and thumbnail columns, the palette's chip-sized names) and the balanced
 //   contents line, after removing ~0.1 KB of dead CSS.
-// - Photography CSS 14 → 15 (v3): every route now carries the sections an editor
-//   can place on any page. It is one shared file, cached once for the whole
-//   site, and held to CORE_CSS_KB below so it can't creep.
+// - Work, Photography and Contact CSS 14 → 15 (v3): every route now carries the
+//   sections an editor can place on any page, custom sections included. It is one
+//   shared file, cached once for the whole site, and held to CORE_CSS_KB below so
+//   it can't creep. Home and About stay at 14.
 const BUDGETS = [
   { name: 'Home', match: /^\/$/, js: 4, islands: 0, css: 14 },
-  { name: 'Work', match: /^\/projects\/(graphic-design\/|uiux\/|logo-design\/|tools\/[^/]+\/)?$/, js: 4, islands: 0, css: 14 },
+  { name: 'Work', match: /^\/projects\/(graphic-design\/|uiux\/|logo-design\/|tools\/[^/]+\/)?$/, js: 4, islands: 0, css: 15 },
   { name: 'Project', match: /^\/projects\/[^/]+\/$/, js: 6, islands: 40, css: 16 },
   { name: 'Photography', match: /^\/photography\/$/, js: 5, islands: 40, css: 15 },
-  { name: 'Contact', match: /^\/contact\/$/, js: 6, islands: 40, css: 14 },
+  { name: 'Contact', match: /^\/contact\/$/, js: 6, islands: 40, css: 15 },
   { name: 'Page', match: /./, js: 4, islands: 0, css: 14 },
 ];
 const MAX_FONT_PRELOADS = 2;

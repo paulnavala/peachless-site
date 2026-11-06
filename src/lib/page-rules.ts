@@ -4,12 +4,13 @@
  * an editor and production, because CI doesn't gate Cloudflare's deploy.
  * zod can't do this: it never sees the folder a page lives in.
  */
-import type { SectionType } from './content-schema';
+import type { GridElement, SectionType } from './content-schema';
+import { offGrid, overlapping, tooNarrow } from './grid-plan';
 import { allowedOn, PAGE_IDS, SECTIONS, type BuiltInPage } from './section-catalogue';
 
 export interface PageProblem {
   /** Stable, for tests and for grouping in the Checks panel. */
-  rule: 'opener' | 'next-step' | 'once' | 'reach' | 'required' | 'ids';
+  rule: 'opener' | 'next-step' | 'once' | 'reach' | 'required' | 'ids' | 'grid';
   message: string;
   /** The section to select when the editor clicks the problem. */
   section?: string;
@@ -19,7 +20,17 @@ interface SectionLike {
   id: string;
   type: SectionType;
   hidden?: boolean;
+  /** A custom section's elements, which decide what it can do for a page. */
+  elements?: readonly GridElement[];
 }
+
+const holds = (section: SectionLike, type: GridElement['type']) => !!section.elements?.some((element) => element.type === type);
+
+/** A custom section can open a page with a heading of its own. */
+export const opensPage = (section: SectionLike) => !!SECTIONS[section.type].opener || holds(section, 'heading');
+
+/** A custom section can end a page with a button of its own. */
+export const endsPage = (section: SectionLike) => !!SECTIONS[section.type].nextStep || holds(section, 'button');
 
 export function checkPage(pageId: string, sections: readonly SectionLike[]): PageProblem[] {
   const problems: PageProblem[] = [];
@@ -27,9 +38,10 @@ export function checkPage(pageId: string, sections: readonly SectionLike[]): Pag
   const name = (s: SectionLike) => SECTIONS[s.type].name;
 
   const openers = visible.filter((s) => SECTIONS[s.type].opener);
-  if (openers.length === 0) {
+  const opensWithGrid = visible[0]?.type === 'grid' && opensPage(visible[0]);
+  if (openers.length === 0 && !opensWithGrid) {
     problems.push({ rule: 'opener', message: 'This page has no title. Add a page opener, such as a Page header.' });
-  } else if (visible[0] !== openers[0]) {
+  } else if (openers.length > 0 && visible[0] !== openers[0]) {
     problems.push({ rule: 'opener', message: `${name(openers[0])} holds the page title, so it has to come first.`, section: openers[0].id });
   }
   for (const extra of openers.slice(1)) {
@@ -37,7 +49,7 @@ export function checkPage(pageId: string, sections: readonly SectionLike[]): Pag
   }
 
   const last = visible.at(-1);
-  if (last && !SECTIONS[last.type].nextStep) {
+  if (last && !endsPage(last)) {
     problems.push({ rule: 'next-step', message: 'Pages end by sending people somewhere. Finish with Closing links.', section: last.id });
   }
 
@@ -65,6 +77,19 @@ export function checkPage(pageId: string, sections: readonly SectionLike[]): Pag
       if (def.required && def.page === (pageId as BuiltInPage) && !seen.has(type as SectionType)) {
         problems.push({ rule: 'required', message: `This page needs its ${def.name}.` });
       }
+    }
+  }
+
+  for (const section of visible) {
+    const elements = section.elements ?? [];
+    if (overlapping(elements).length) {
+      problems.push({ rule: 'grid', message: 'Two elements overlap. Move one so each has its own space.', section: section.id });
+    }
+    if (offGrid(elements).length) {
+      problems.push({ rule: 'grid', message: 'An element runs past the grid’s right edge.', section: section.id });
+    }
+    if (tooNarrow(elements).length) {
+      problems.push({ rule: 'grid', message: 'An element is too narrow for its words on a tablet. Widen it.', section: section.id });
     }
   }
 

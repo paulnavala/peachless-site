@@ -48,8 +48,8 @@ export default defineConfig({
   integrations: [
     vue(),
     // The logo-design alias page carries a canonical link to graphic-design;
-    // only the canonical URL belongs in the sitemap.
-    sitemap({ filter: (url) => !url.endsWith('/projects/logo-design/') }),
+    // only the canonical URL belongs in the sitemap. The admin's pages are tools.
+    sitemap({ filter: (url) => !url.endsWith('/projects/logo-design/') && !url.includes('/admin/') }),
     typeset,
   ],
   redirects: REDIRECTS,

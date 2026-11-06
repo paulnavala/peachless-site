@@ -7,6 +7,7 @@ import AboutTeaser from './AboutTeaser.astro';
 import ClosingLinks from './ClosingLinks.astro';
 import Deck from './Deck.astro';
 import Disciplines from './Disciplines.astro';
+import GridSection from './GridSection.astro';
 import Manifesto from './Manifesto.astro';
 import PageHeader from './PageHeader.astro';
 import PhotoBand from './PhotoBand.astro';
@@ -22,6 +23,7 @@ const { plan, bound = {} } = Astro.props;
 type SectionComponent = (props: Record<string, unknown>) => unknown;
 const components = {
   'page-header': PageHeader,
+  grid: GridSection,
   manifesto: Manifesto,
   deck: Deck,
   disciplines: Disciplines,

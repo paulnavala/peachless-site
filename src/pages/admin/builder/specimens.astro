@@ -1,0 +1,33 @@
+---
+// Every section once, every optional field filled: the builder's canvas clones
+// from this page. It imports every bound section, so it is the one page that
+// carries them all. Visitors never see it, and the budgets skip the admin.
+import Base from '../../../layouts/Base.astro';
+import PageBody from '../../../components/sections/PageBody.astro';
+import Contact from '../../../components/sections/Contact.astro';
+import Fortune from '../../../components/sections/Fortune.astro';
+import Gallery from '../../../components/sections/Gallery.astro';
+import Hero from '../../../components/sections/Hero.astro';
+import Profile from '../../../components/sections/Profile.astro';
+import WorkHeader from '../../../components/sections/WorkHeader.astro';
+import WorkList from '../../../components/sections/WorkList.astro';
+import WorkLogos from '../../../components/sections/WorkLogos.astro';
+import { loadSpecimens } from '../../../lib/pages';
+
+const plan = await loadSpecimens();
+---
+<Base title="Section specimens" description="Every section, for the builder." noindex footerCta={false}>
+  <PageBody
+    plan={plan}
+    bound={{
+      hero: Hero,
+      profile: Profile,
+      contact: Contact,
+      fortune: Fortune,
+      gallery: Gallery,
+      'work-header': WorkHeader,
+      'work-list': WorkList,
+      'work-logos': WorkLogos,
+    }}
+  />
+</Base>

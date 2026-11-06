@@ -27,7 +27,7 @@ export interface FieldDef {
 
 export interface SectionDef {
   name: string;
-  group: 'Page openers' | 'Showing work' | 'Telling the story' | 'Next steps';
+  group: 'Page openers' | 'Showing work' | 'Telling the story' | 'Next steps' | 'Your own';
   /** One line for the library, in plain language. */
   note: string;
   /** The page it belongs to. Absent means any page. */
@@ -73,6 +73,12 @@ export const SECTIONS: Record<SectionType, SectionDef> = {
     opener: true,
     once: true,
     fields: [text('eyebrow', 'Small line'), text('heading', 'Page title'), area('intro', 'Introduction')],
+  },
+  grid: {
+    name: 'Custom section',
+    group: 'Your own',
+    note: 'Your own layout: drag and resize elements on a 12-column grid.',
+    fields: [],
   },
   manifesto: {
     name: 'Big statement',

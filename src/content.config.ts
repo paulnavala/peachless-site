@@ -6,9 +6,11 @@ import {
   formSchema,
   homeSchema,
   ID_RE,
+  pageSchema,
   photographyPageSchema,
   photoSchema,
   projectSchema,
+  RESERVED_PAGE_IDS,
   RESERVED_PROJECT_IDS,
   siteSchema,
   workSchema,
@@ -17,7 +19,7 @@ import {
 // Astro's content cache only clears when this file changes, so an entry whose
 // own file didn't change would keep the old schema's data, here and in the
 // Cloudflare build cache. This line changes with the schema (content-files.spec).
-// content-schema: 2ef48d7ae4a3
+// content-schema: c0d1d0c5bdb9
 
 /**
  * Folder-per-entry collections: `projects/<id>/index.yaml` with its images
@@ -45,6 +47,11 @@ const photos = defineCollection({
   schema: ({ image }) => photoSchema(image),
 });
 
+const pages = defineCollection({
+  loader: glob({ base: './src/content/pages', pattern: '*/index.yaml', generateId: folderId(RESERVED_PAGE_IDS) }),
+  schema: ({ image }) => pageSchema(image),
+});
+
 const home = defineCollection({ loader: single('./src/content/pages', 'home.yaml'), schema: homeSchema });
 const work = defineCollection({ loader: single('./src/content/pages', 'work.yaml'), schema: workSchema });
 const about = defineCollection({
@@ -62,4 +69,4 @@ const site = defineCollection({
 });
 const form = defineCollection({ loader: single('./src/content/site', 'form.yaml'), schema: formSchema });
 
-export const collections = { projects, photos, home, work, about, contact, photographyPage, site, form };
+export const collections = { projects, photos, pages, home, work, about, contact, photographyPage, site, form };

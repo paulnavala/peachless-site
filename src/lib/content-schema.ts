@@ -67,6 +67,23 @@ export const RESERVED_PROJECT_IDS = [
   'tools',
 ] as const;
 
+/** Folder names a custom page may not use: its address would clash with a route,
+ *  a redirect or a folder in public/. tests/unit/content-files.spec.ts checks the
+ *  last two against the real ones. */
+export const RESERVED_PAGE_IDS = [
+  'admin',
+  'projects',
+  'files',
+  'uploads',
+  'icons',
+  'og',
+  'index',
+  '404',
+  'uiux',
+  'sitemap',
+  'robots',
+] as const;
+
 export const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const HEX_RE = /^#[0-9A-Fa-f]{6}$/;
 export const FIGMA_RE = /^https:\/\/(www\.)?figma\.com\/(proto|design|file|make|board)\//;
@@ -297,6 +314,7 @@ export type Space = (typeof SPACES)[number];
 export const SECTION_TYPES = [
   'hero',
   'page-header',
+  'grid',
   'manifesto',
   'deck',
   'disciplines',
@@ -322,7 +340,74 @@ const sectionBase = {
   spaceBottom: z.enum(SPACES).default('default'),
 };
 
-export const sectionSchema = z.discriminatedUnion('type', [
+// A custom section: elements on a 12-column grid. Rows only set a minimum height,
+// so text can't clip; elements can't overlap (page-rules.ts), so reading order
+// is simply top to bottom, left to right.
+export const GRID_COLUMNS = 12;
+export const GRID_MAX_ROW = 60;
+
+export const ELEMENT_TYPES = ['heading', 'text', 'image', 'button', 'quote', 'divider'] as const;
+export type ElementType = (typeof ELEMENT_TYPES)[number];
+
+/** The narrowest an element can go, in columns: below this its words won't fit a tablet. */
+export const ELEMENT_MIN_WIDTH: Record<ElementType, number> = { heading: 3, text: 3, image: 2, button: 2, quote: 4, divider: 1 };
+
+/** Heading looks, by the site's own type tokens. A heading's level is worked out
+ *  from its place on the page, so a look can never break the outline. */
+export const HEADING_STYLES = ['statement', 'h1', 'h2', 'h3', 'h4'] as const;
+export const TEXT_SIZES = ['lede', 'body', 'small'] as const;
+export const BUTTON_STYLES = ['primary', 'secondary'] as const;
+export const ALIGNMENTS = ['start', 'center', 'end'] as const;
+export const SECTION_WIDTHS = ['default', 'wide'] as const;
+
+const elementBase = {
+  id: z.string().regex(ID_RE),
+  col: z.number().int().min(1).max(GRID_COLUMNS),
+  row: z.number().int().min(1).max(GRID_MAX_ROW),
+  w: z.number().int().min(1).max(GRID_COLUMNS),
+  h: z.number().int().min(1).max(GRID_MAX_ROW),
+  align: z.enum(ALIGNMENTS).default('start'),
+  valign: z.enum(ALIGNMENTS).default('start'),
+  phone: z
+    .object({
+      hidden: z.boolean().default(false),
+      span: z.enum(['full', 'half']).default('full'),
+      // Only images and dividers can be moved: anything else would part its
+      // reading order from the order keyboard users tab through.
+      order: z.number().int().min(-20).max(20).optional(),
+    })
+    .default({ hidden: false, span: 'full' }),
+};
+
+export const elementSchema = <T extends z.ZodType>(image: () => T) =>
+  z.discriminatedUnion('type', [
+    z.object({ ...elementBase, type: z.literal('heading'), text: req(160), style: z.enum(HEADING_STYLES).default('h2') }),
+    z.object({
+      ...elementBase,
+      type: z.literal('text'),
+      body: z.string().trim().min(1), // markdown
+      size: z.enum(TEXT_SIZES).default('body'),
+    }),
+    z.object({
+      ...elementBase,
+      type: z.literal('image'),
+      image: image(),
+      alt: req(200),
+      caption: opt(200),
+      fit: z.enum(['cover', 'contain']).default('cover'),
+    }),
+    z.object({
+      ...elementBase,
+      type: z.literal('button'),
+      label: req(40),
+      link: z.string().regex(LINK_RE),
+      style: z.enum(BUTTON_STYLES).default('primary'),
+    }),
+    z.object({ ...elementBase, type: z.literal('quote'), quote: req(400), attribution: opt(80) }),
+    z.object({ ...elementBase, type: z.literal('divider') }),
+  ]);
+
+export const sectionSchema = <T extends z.ZodType>(image: () => T) => z.discriminatedUnion('type', [
   z.object({
     ...sectionBase,
     type: z.literal('hero'),
@@ -335,6 +420,12 @@ export const sectionSchema = z.discriminatedUnion('type', [
     reel: z.boolean().default(true),
   }),
   z.object({ ...sectionBase, type: z.literal('page-header'), eyebrow: opt(40), heading: req(80), intro: opt(300) }),
+  z.object({
+    ...sectionBase,
+    type: z.literal('grid'),
+    width: z.enum(SECTION_WIDTHS).default('default'),
+    elements: z.array(elementSchema(image)).max(40).default([]),
+  }),
   z.object({
     ...sectionBase,
     type: z.literal('manifesto'),
@@ -393,13 +484,21 @@ export const sectionSchema = z.discriminatedUnion('type', [
   z.object({ ...sectionBase, type: z.literal('work-list'), emptyText: req(120) }),
   z.object({ ...sectionBase, type: z.literal('work-logos'), heading: req(120), intro: opt(400) }),
 ]);
-export type Section = z.infer<typeof sectionSchema>;
-export type SectionOf<T extends SectionType> = Extract<Section, { type: T }>;
 
-export const pageSchema = z.object({
-  title: req(60),
-  hidden: z.boolean().default(false),
-  seo,
-  sections: z.array(sectionSchema).min(1),
-});
-export type PageDoc = z.infer<typeof pageSchema>;
+export const pageSchema = <T extends z.ZodType>(image: () => T) =>
+  z.object({
+    title: req(60),
+    hidden: z.boolean().default(false),
+    seo,
+    sections: z.array(sectionSchema(image)).min(1),
+  });
+
+// Types use the file form of an image (a path). Parsed by a collection, image()
+// gives metadata instead, which GridSection.astro alone has to know.
+const pathImage = () => z.string();
+export const plainPageSchema = pageSchema(pathImage);
+export type PageDoc = z.infer<typeof plainPageSchema>;
+export type Section = PageDoc['sections'][number];
+export type SectionOf<T extends SectionType> = Extract<Section, { type: T }>;
+export type GridElement = SectionOf<'grid'>['elements'][number];
+export type ElementOf<T extends ElementType> = Extract<GridElement, { type: T }>;

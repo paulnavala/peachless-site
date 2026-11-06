@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
-import { pageSchema, SECTION_TYPES, type SectionType } from '../../src/lib/content-schema';
+import { plainPageSchema, SECTION_TYPES, type SectionType } from '../../src/lib/content-schema';
 import { pagesFromSingletons } from '../../src/lib/page-adapter';
 import { checkPage } from '../../src/lib/page-rules';
 import { allowedOn, coreSections, PAGE_IDS, SECTIONS } from '../../src/lib/section-catalogue';
@@ -31,11 +31,11 @@ const rules = (pageId: string, ...sections: ReturnType<typeof s>[]) => checkPage
 
 describe('the site’s own pages', () => {
   it.each(PAGE_IDS)('%s parses as a page document', (id) => {
-    expect(pageSchema.safeParse(pages[id]).success).toBe(true);
+    expect(plainPageSchema.safeParse(pages[id]).success).toBe(true);
   });
 
   it.each(PAGE_IDS)('%s keeps every page rule', (id) => {
-    expect(checkPage(id, pageSchema.parse(pages[id]).sections)).toEqual([]);
+    expect(checkPage(id, plainPageSchema.parse(pages[id]).sections)).toEqual([]);
   });
 });
 

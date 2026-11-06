@@ -1,0 +1,16 @@
+---
+// A page an editor made in the builder. Built-in pages have routes of their own.
+import Base from '../layouts/Base.astro';
+import PageBody from '../components/sections/PageBody.astro';
+import { getCustomPages } from '../lib/content';
+import { loadPage } from '../lib/pages';
+
+export async function getStaticPaths() {
+  return (await getCustomPages()).map((page) => ({ params: { page: page.id } }));
+}
+
+const { head, plan } = await loadPage(Astro.params.page);
+---
+<Base {...head}>
+  <PageBody plan={plan} />
+</Base>

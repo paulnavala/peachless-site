@@ -18,11 +18,23 @@ import {
   type Photo,
   type Project,
 } from './content';
-import { DISCIPLINES, TOOLS, TOOL_LABELS, type Discipline, type PageDoc, type Section, type SectionOf, type SectionType, type Tool } from './content-schema';
+import {
+  DISCIPLINES,
+  plainPageSchema,
+  SECTION_TYPES,
+  TOOLS,
+  TOOL_LABELS,
+  type Discipline,
+  type PageDoc,
+  type Section,
+  type SectionOf,
+  type SectionType,
+  type Tool,
+} from './content-schema';
 import { checkPage } from './page-rules';
 import { reelPicks, toolCounts, workView } from './project-order';
 import { projectTheme } from './project-theme';
-import type { BuiltInPage } from './section-catalogue';
+import { SAMPLES } from './section-samples';
 import { personLd, websiteLd, type JsonLdNode } from './structured-data';
 
 export interface ReelTile {
@@ -70,6 +82,7 @@ export type WorkFilter = 'all' | Discipline | Tool;
 /** What each section gets besides its own fields. */
 interface SectionData {
   hero: { reel: ReelTile[] };
+  grid: { opener: boolean };
   deck: { projects: Project[] };
   disciplines: { entries: DisciplineEntry[] };
   'photo-strip': { photos: Photo[] };
@@ -307,13 +320,9 @@ function rootAttributes(section: Section): Record<string, string> {
   };
 }
 
-export async function loadPage(id: BuiltInPage, options: WorkViewOptions = {}): Promise<LoadedPage> {
-  const doc = await getPageDoc(id);
-  const problems = checkPage(id, doc.sections);
-  if (problems.length) throw new Error(`The ${id} page breaks a page rule: ${problems.map((p) => p.message).join(' ')}`);
-
+/** Sections with what each needs, in order. */
+async function planSections(doc: PageDoc, sections: Section[], options: WorkViewOptions) {
   const site = (await getSingleton('site')).data;
-  const sections = doc.sections.filter((s) => !s.hidden);
   const shows = (type: SectionType) => sections.some((s) => s.type === type);
 
   const projects = await getPublishedProjects();
@@ -327,6 +336,8 @@ export async function loadPage(id: BuiltInPage, options: WorkViewOptions = {}): 
     switch (section.type) {
       case 'hero':
         return { reel: section.reel ? await reelTiles(projects, deck, photos, strip) : [] };
+      case 'grid':
+        return { opener: section === sections[0] };
       case 'deck':
         return { projects: deck };
       case 'disciplines':
@@ -367,6 +378,17 @@ export async function loadPage(id: BuiltInPage, options: WorkViewOptions = {}): 
     }))
   );
 
+  return { plan, work, site, portrait, shows };
+}
+
+export async function loadPage(id: string, options: WorkViewOptions = {}): Promise<LoadedPage> {
+  const doc = await getPageDoc(id);
+  const problems = checkPage(id, doc.sections);
+  if (problems.length) throw new Error(`The ${id} page breaks a page rule: ${problems.map((p) => p.message).join(' ')}`);
+
+  const sections = doc.sections.filter((s) => !s.hidden);
+  const { plan, work, site, portrait, shows } = await planSections(doc, sections, options);
+
   const jsonLdFor = async (): Promise<JsonLdNode[] | undefined> => {
     if (id !== 'home' && id !== 'about') return undefined;
     const origin = new URL(import.meta.env.SITE);
@@ -388,4 +410,42 @@ export async function loadPage(id: BuiltInPage, options: WorkViewOptions = {}): 
     },
     plan,
   };
+}
+
+/**
+ * One real instance of every section, every optional field filled, for the
+ * builder's canvas to clone. Custom sections come once per surface, so the
+ * accessibility specs can read them on each background.
+ */
+export async function loadSpecimens(): Promise<PlannedSection[]> {
+  const portrait = await getPortrait();
+  const surfaces = ['default', 'paper', 'blush', 'inverse'] as const;
+  const every = (id: string, surface: string) => ({
+    id,
+    type: 'grid',
+    surface,
+    elements: [
+      { id: 'a', type: 'heading', col: 1, row: 1, w: 6, h: 2, text: 'A heading', style: 'h2' },
+      { id: 'b', type: 'heading', col: 7, row: 1, w: 6, h: 2, text: 'A smaller heading', style: 'h4' },
+      { id: 'c', type: 'text', col: 1, row: 3, w: 6, h: 3, body: 'Some **text** with a [link](/about/).' },
+      { id: 'd', type: 'image', col: 7, row: 3, w: 6, h: 6, image: 'portrait.jpg', alt: 'A portrait', caption: 'A caption' },
+      { id: 'e', type: 'quote', col: 1, row: 6, w: 6, h: 2, quote: 'A kind word.', attribution: 'Someone kind' },
+      { id: 'f', type: 'button', col: 1, row: 8, w: 3, h: 1, label: 'A button', link: '/contact/' },
+      { id: 'g', type: 'button', col: 4, row: 8, w: 3, h: 1, label: 'Another', link: '/about/', style: 'secondary' },
+      { id: 'h', type: 'divider', col: 1, row: 9, w: 12, h: 1 },
+    ],
+  });
+  const raw = [
+    ...SECTION_TYPES.filter((type) => type !== 'grid').map((type) => ({ id: `specimen-${type}`, ...SAMPLES[type] })),
+    ...surfaces.map((surface) => every(`specimen-grid-${surface}`, surface)),
+  ];
+  const doc = plainPageSchema.parse({ title: 'Specimens', sections: raw });
+  // The real image, now the schema has seen its path.
+  for (const section of doc.sections) {
+    if (section.type !== 'grid') continue;
+    for (const element of section.elements) {
+      if (element.type === 'image') (element as { image: unknown }).image = portrait.image;
+    }
+  }
+  return (await planSections(doc, doc.sections, {})).plan;
 }
